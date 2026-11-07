@@ -9,7 +9,7 @@ change.
 
 ## Next
 
-TODO: the planned work, most important first.
+TODO: what's planned first?
 
 ## Ideas
 

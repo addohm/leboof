@@ -4,11 +4,18 @@ Orientation for Claude working on leboof. Read this first.
 
 ## What this is
 
-TODO: what the project does, its main parts, and how they fit together.
+A new project, so far only the standard docs (first commit 2026-11-07). The
+remote is `addohm/leboof` on GitHub (`origin`, branch `main`).
+
+TODO: what does leboof do, and what are its main parts?
 
 ## Layout
 
-TODO: the important folders and files, one line each.
+- `README.md`, `CHANGELOG.md`, `DEPLOY.md`, `SECURITY.md`, `ROADMAP.md`: the
+  standard docs (see Workflow)
+- `CLAUDE.md`: this file
+
+No code yet. Add each folder here as it's created.
 
 ## Workflow
 
@@ -22,11 +29,12 @@ TODO: the important folders and files, one line each.
    - SECURITY.md: when secrets, access or permissions change
    - ROADMAP.md: when something on it is done, or new plans are made
    - this file: when the layout, workflow or conventions change
-4. Run the checks (TODO: the lint and test commands), then commit.
+4. Run the checks (none yet; TODO: the lint and test commands once there's code), then commit.
 
 ## Conventions
 
-TODO: coding style, naming, anything a newcomer would get wrong.
+TODO: what language and stack? Coding style, naming, anything a newcomer would
+get wrong.
 
 ## Don't
 

@@ -1,14 +1,19 @@
 # leboof
 
-TODO: one or two sentences on what this is and who it's for.
+leboof is a new project with no code yet; only the standard docs exist so far.
+The source lives at `github.com/addohm/leboof`.
+
+TODO: what is leboof, and who is it for?
 
 ## Getting started
 
-TODO: what you need installed, and how to set it up and run it locally.
+Nothing to install or run yet.
+
+TODO: once there's code, what needs installing and how do you run it locally?
 
 ## Usage
 
-TODO: how to use it.
+TODO: how is it used? (Fill in once there's something to use.)
 
 ## Docs
 

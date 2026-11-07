@@ -9,3 +9,5 @@ All notable changes to leboof. The format follows
 ### Added
 
 - Standard docs: README, CLAUDE, CHANGELOG, DEPLOY, SECURITY and ROADMAP (2026-11-07).
+- Filled the docs with what's known so far; open questions are marked TODO
+  (2026-11-07).

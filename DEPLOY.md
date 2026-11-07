@@ -1,6 +1,8 @@
 # Deploying leboof
 
-TODO: where it runs (host, service, URL).
+Not deployed yet: there's no code.
+
+TODO: where will it run (host, service, URL)?
 
 ## First-time setup
 
