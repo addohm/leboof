@@ -30,33 +30,9 @@ local function WarnCurve(warn)
 	return curve
 end
 
--- Animations the game plays itself (Effects.lua). gained: "pop" (the icon grows in) or "flash"
--- (a white flash) when the buff appears. The warning glow (Glow.lua, any style and colour) goes in
--- the game's refresh window near the end of the buff (the pandemic window).
-local function AddAnimations(button, gained, glow, color, size)
-	if gained == "pop" then
-		local group = button:CreateAnimationGroup()
-		local scale = group:CreateAnimation("Scale")
-		scale:SetScaleFrom(1.6, 1.6)
-		scale:SetScaleTo(1, 1)
-		scale:SetDuration(0.25)
-		scale:SetSmoothing("OUT")
-		button:AddAuraShownAnimation(group)
-	elseif gained == "flash" then
-		local flash = button:CreateTexture(nil, "OVERLAY", nil, 7)
-		flash:SetAllPoints()
-		flash:SetColorTexture(1, 1, 1, 1)
-		flash:SetBlendMode("ADD")
-		flash:SetAlpha(0)
-		local group = button:CreateAnimationGroup()
-		local fade = group:CreateAnimation("Alpha")
-		fade:SetTarget(flash)
-		fade:SetFromAlpha(0.9)
-		fade:SetToAlpha(0)
-		fade:SetDuration(0.5)
-		button:AddAuraShownAnimation(group)
-	end
-
+-- The warning glow (Glow.lua, any style and colour): the game shows it in its refresh window near
+-- the end of the buff (the pandemic window), in combat too.
+local function AddGlow(button, glow, color, size)
 	local built = ns.Glow.Build(button, glow, color, size)
 	for _, region in ipairs(built.regions) do button:AddPandemicRegion(region) end
 	for _, group in ipairs(built.groups) do button:AddPandemicActiveAnimation(group) end
@@ -64,7 +40,7 @@ end
 
 -- Returns the initializeFrame callback that builds a Blizzard aura button's parts. It runs once,
 -- when the game creates the button, before the button is closed to addons.
-local function ButtonStyler(warn, swipe, gained, glow, color)
+local function ButtonStyler(warn, swipe, glow, color)
 	return function(button)
 		local size = ns.db.size
 		button:SetSize(size, size)
@@ -100,7 +76,7 @@ local function ButtonStyler(warn, swipe, gained, glow, color)
 		count:SetPoint("TOPRIGHT", -1, -1)
 		button:SetApplicationCount(count)
 
-		AddAnimations(button, gained, glow, color, size)
+		AddGlow(button, glow, color, size)
 	end
 end
 
@@ -108,12 +84,12 @@ end
 -- so each combination gets its own slot, group or container (they're switched, never removed).
 local function AnimKey(e)
 	local Fx = ns.Fx
-	return Fx.Get(e, "gained") .. ":" .. Fx.Get(e, "expiring") .. ":" .. Fx.Get(e, "expiringColor") .. ":" .. ns.db.size
+	return Fx.Get(e, "expiring") .. ":" .. Fx.Get(e, "expiringColor") .. ":" .. ns.db.size
 end
 
 local function Styler(e, warn, swipe)
 	local Fx = ns.Fx
-	return ButtonStyler(warn, swipe, Fx.Get(e, "gained"), Fx.Get(e, "expiring"), Fx.Get(e, "expiringColor"))
+	return ButtonStyler(warn, swipe, Fx.Get(e, "expiring"), Fx.Get(e, "expiringColor"))
 end
 
 local function NewContainer()
@@ -190,24 +166,10 @@ local function Holder(e)
 		h.icon:SetDesaturated(true)
 		h.icon:SetVertexColor(1, 0.4, 0.4)
 		h:SetAlpha(0.8)
-		-- The pulse only shows while the buff is missing: Blizzard's button covers it otherwise.
-		h.pulse = h:CreateAnimationGroup()
-		h.pulse:SetLooping("BOUNCE")
-		local fade = h.pulse:CreateAnimation("Alpha")
-		fade:SetFromAlpha(1)
-		fade:SetToAlpha(0.35)
-		fade:SetDuration(0.7)
 		holders[e.key] = h
 	end
-	-- The expired glow: "pulse" pulses the red copy itself; a glow style sits inside it, so it's
-	-- hidden with the copy while the buff is up.
-	local style = ns.Fx.Get(e, "missing")
-	if style == "pulse" then
-		if not h.pulse:IsPlaying() then h.pulse:Play() end
-	else
-		h.pulse:Stop()
-	end
-	ns.Glow.Show(h, style == "pulse" and "none" or style, ns.Fx.Get(e, "missingColor"), ns.db.size, true)
+	-- The expired glow sits inside the red copy, so it's hidden with it while the buff is up.
+	ns.Glow.Show(h, ns.Fx.Get(e, "missing"), ns.Fx.Get(e, "missingColor"), ns.db.size, true)
 	local texture = e.icon -- an added buff: the icon it was seen with
 	if not texture and e.enchant then
 		texture = GetInventoryItemTexture("player", e.enchant == "MainHand" and INVSLOT_MAINHAND or INVSLOT_OFFHAND)

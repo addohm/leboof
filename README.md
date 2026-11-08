@@ -96,15 +96,15 @@ A buff you add starts with the one spell ID it was seen with. When Leboof later 
 the same name out of combat (another rank, a group version), it adds that ID too. Its warning time
 is a tenth of its duration, from 3 seconds to 2 minutes.
 
-## Animations and sounds
+## Glows and sounds
 
-**Animations** play in combat too, because the game plays them itself on its own buttons:
+Icons simply appear and disappear. The two **glows** work in combat too, because the game shows
+them itself on its own buttons:
 
-- **When a buff appears:** a pop (the icon grows in) or a white flash.
 - **Warning glow:** in the game's refresh window, the last part of a buff where recasting keeps
   some of the time left. Buffs without one don't glow.
 - **Expired glow:** on the red copy of a missing top-row buff, sized to stay inside it (so it's
-  hidden with the copy while the buff is up). "Pulse" fades the copy itself.
+  hidden with the copy while the buff is up).
 
 Each glow has a style and a colour (gold, white, red, orange, yellow, green, cyan, blue, purple,
 pink or your class colour). The styles: **Pulse** (a pulsing edge), **Pixel glow** (dashes

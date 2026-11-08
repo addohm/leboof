@@ -150,7 +150,6 @@ function ns.BuildFxMenu(e, root)
 				end)
 		end
 	end
-	Choice("When it appears", "gained", Fx.GAINED)
 	Choice("Warning glow (near the end)", "expiring", ns.Glow.STYLES)
 	Choice("Warning glow colour", "expiringColor", ns.Glow.COLORS)
 	if keep then
@@ -370,15 +369,13 @@ Page({
 	note = "Defaults for every buff; the gear next to a tracked buff sets its own. In combat the game hides when buffs change, so sounds there only come from your own casts or Blizzard's Cooldown Manager.",
 	fill = function(stack)
 		local Fx = ns.Fx
-		stack:Add(UI.OptionHeading(stack.inner, "Animations (in combat too)"))
-		stack:Add(UI.OptionSelect(stack.inner, "When a buff appears", Fx.GAINED, EffectSetting("gained")))
-		stack:Add(UI.OptionHeading(stack.inner, "Glows"))
+		stack:Add(UI.OptionHeading(stack.inner, "Glows (in combat too)"))
 		stack:Add(UI.GlowPreview(stack.inner))
 		stack:Add(UI.OptionSelect(stack.inner, "Warning glow (near the end)", ns.Glow.STYLES, EffectGet("expiring"), EffectSet("expiring"),
 			{ tooltip = { "Warning glow", "Shown in the game's refresh window: the last part of a buff, where recasting it keeps some of the time left. The game shows it, so it works in combat. Buffs without a refresh window don't get it." } }))
 		stack:Add(UI.OptionSelect(stack.inner, "Warning glow colour", ns.Glow.COLORS, EffectSetting("expiringColor")))
 		stack:Add(UI.OptionSelect(stack.inner, "Expired glow (top row, while missing)", ns.Glow.STYLES, EffectGet("missing"), EffectSet("missing"),
-			{ tooltip = { "Expired glow", "On the red copy of a missing top-row buff. Pulse fades the copy in and out; the glows sit inside it." } }))
+			{ tooltip = { "Expired glow", "On the red copy of a missing top-row buff, inside it, so it's hidden while the buff is up." } }))
 		stack:Add(UI.OptionSelect(stack.inner, "Expired glow colour", ns.Glow.COLORS, EffectSetting("missingColor")))
 
 		stack:Add(UI.OptionHeading(stack.inner, "Sounds out of combat: buffs to keep up"))

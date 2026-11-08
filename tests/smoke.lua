@@ -271,20 +271,18 @@ ns.AddBuff({ spellId = 999003, name = "Winterfall Firewater", icon = 1, duration
 Check(ns.Profiles.New("Clean") and next(ns.db.custom) == nil, "a new profile has the other profile's buffs")
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
 
--- Animations: the buttons get the chosen ones; changing them switches to other buttons.
+-- Glows: the buttons get the chosen warning glow and nothing else; changing it switches buttons.
 WM.combat = false
 local bs = KeepSlot("battleshout")
-Check(bs and bs.enabled and #bs.button.shownAnims == 1 and #bs.button.pandemicAnims == 1 and #bs.button.pandemicRegions == 8,
-	"Battle Shout's button should pop when it appears and have the pixel glow near the end")
-ns.Fx.Set(ns.byKey.battleshout, "gained", "flash")
+Check(bs and bs.enabled and #bs.button.shownAnims == 0 and #bs.button.pandemicAnims == 1 and #bs.button.pandemicRegions == 8,
+	"Battle Shout's button should have only the pixel glow, near the end")
 ns.Fx.Set(ns.byKey.battleshout, "expiring", "none")
 local bs2 = KeepSlot("battleshout")
-Check(bs2 ~= bs and bs2.enabled and not bs.enabled, "changing the animations should switch buttons")
-Check(#bs2.button.shownAnims == 1 and #bs2.button.pandemicAnims == 0, "flash and no glow")
-ns.Fx.Set(ns.byKey.battleshout, "gained", nil)
+Check(bs2 ~= bs and bs2.enabled and not bs.enabled, "changing the glow should switch buttons")
+Check(#bs2.button.pandemicAnims == 0 and #bs2.button.pandemicRegions == 0, "no glow")
 ns.Fx.Set(ns.byKey.battleshout, "expiring", nil)
 Check(bs.enabled and not bs2.enabled and ns.db.fx.battleshout == nil, "back to the defaults")
-Check(UpGroup(3) and #UpGroup(3).frames[1].shownAnims == 1, "up-row buttons should pop too")
+Check(UpGroup(3) and #UpGroup(3).frames[1].shownAnims == 0 and #UpGroup(3).frames[1].pandemicAnims == 1, "up-row buttons: the glow only")
 
 -- Sounds out of combat: gained (none for keep), running out, drops; entering combat without it.
 WM.sounds = {}
@@ -339,7 +337,7 @@ end
 Check(fortRow and fortRow.gear, "no gear button on a tracked buff")
 fortRow.gear.scripts.OnClick(fortRow.gear)
 local fxMenu = WM.RunMenu(function(root) WM.contextMenu.generator(fortRow.gear, root) end)
-Check(fxMenu.title == "Power Word: Fortitude" and #fxMenu.buttons == 10, "the gear menu should have a submenu per setting")
+Check(fxMenu.title == "Power Word: Fortitude" and #fxMenu.buttons == 9, "the gear menu should have a submenu per setting")
 local lost
 for _, b in ipairs(fxMenu.buttons) do if b.text:find("drops") then lost = b end end
 Check(lost.text:find("drops") and lost.items[1].text:find("Default (Raid warning)", 1, true) and lost.items[1].isSelected(), "Default first, selected")

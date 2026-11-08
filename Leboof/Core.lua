@@ -13,7 +13,7 @@ local DEFAULTS = {
 	modes = {},                         -- key -> "keep" / "up" / "off", only where changed
 	custom = {},                        -- buffs the player added (Custom.lua)
 	effects = {                         -- animation and sound defaults (Effects.lua)
-		gained = "pop", expiring = "pixel", expiringColor = "gold", missing = "pulse", missingColor = "red",
+		expiring = "pixel", expiringColor = "gold", missing = "pixel", missingColor = "red",
 		keepLost = "RAID_WARNING", keepExpiring = "MAP_PING", combatMissing = "RAID_WARNING", combatChat = true,
 		upGained = "none", upLost = "none",
 		cast = "none", castLead = 5,

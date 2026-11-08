@@ -86,13 +86,14 @@ off the table.
   secret (`DenyTaintedAccessWhenAurasAreSecret`). Changes go through `ns.Refresh()`, which waits
   for `PLAYER_REGEN_ENABLED`. Button parts are built in `initializeFrame`.
 - Container slots and groups can't be removed: create each once, then enable, disable or
-  re-filter it. A button's animations are fixed when the game creates it (`initializeFrame`), so
-  slots, groups and enchant containers are keyed by buff (or warn time) *and* animations
-  (`"<key>/<gained>:<expiring>"`); changing a buff's animations switches to another button.
-- Animations go through the button's own methods (`AddAuraShownAnimation`,
-  `AddPandemicRegion`, `AddPandemicActiveAnimation`): the game plays them. Nothing may detect a
-  button showing (no scripts on its children); in combat only casts and Blizzard's Cooldown
-  Manager can make a sound.
+  re-filter it. A button's warning glow is fixed when the game creates it (`initializeFrame`), so
+  slots, groups and enchant containers are keyed by buff (or warn time) *and* glow
+  (`"<key>/<style>:<colour>:<size>"`); changing a buff's glow switches to another button.
+- **Keep it simple:** icons appear and disappear, with a warning glow and an expired glow, and
+  nothing else animates (the owner, 2026-11-08: no growing, shrinking or fading). The warning glow
+  goes through the button's own `AddPandemicRegion` / `AddPandemicActiveAnimation`: the game shows
+  it. Nothing may detect a button showing (no scripts on its children); in combat only casts and
+  Blizzard's Cooldown Manager can make a sound.
 - Check API against Blizzard's UI source, `forever` branch:
   https://github.com/Gethe/wow-ui-source/tree/forever. Prefer `C_*` functions; many old globals
   are gone.

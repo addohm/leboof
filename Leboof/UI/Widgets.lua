@@ -158,22 +158,10 @@ function UI.GlowPreview(parent)
 	local expired = Sample(CONTROL_X + 14, "Expired (the red copy)", 132333)
 	expired.icon:SetDesaturated(true)
 	expired.icon:SetVertexColor(1, 0.4, 0.4)
-	expired.pulse = expired:CreateAnimationGroup()
-	expired.pulse:SetLooping("BOUNCE")
-	local fade = expired.pulse:CreateAnimation("Alpha")
-	fade:SetFromAlpha(1)
-	fade:SetToAlpha(0.35)
-	fade:SetDuration(0.7)
 	row.Sync = function()
 		local d = ns.db.effects
 		ns.Glow.Show(warning, d.expiring, d.expiringColor, 36)
-		local missing = d.missing
-		if missing == "pulse" then
-			if not expired.pulse:IsPlaying() then expired.pulse:Play() end
-		else
-			expired.pulse:Stop()
-		end
-		ns.Glow.Show(expired, missing == "pulse" and "none" or missing, d.missingColor, 36, true)
+		ns.Glow.Show(expired, d.missing, d.missingColor, 36, true)
 	end
 	return row
 end

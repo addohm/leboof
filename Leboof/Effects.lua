@@ -1,8 +1,8 @@
 -- Leboof: animations and sounds.
 --
--- Animations are handed to Blizzard's aura buttons (Display.lua), which play them in combat too:
--- a pop or flash when a buff appears, a pulsing glow in the game's refresh window (the end of the
--- buff), and a pulse on the keep row's red copy (it only shows while the buff is missing).
+-- Glows are handed to Blizzard's aura buttons (Display.lua, Glow.lua), which show them in combat
+-- too: a warning glow in the game's refresh window (the end of the buff), and an expired glow on
+-- the keep row's red copy (it only shows while the buff is missing). Nothing else moves.
 --
 -- Sounds need to know when something happened, and in combat addons can't. So:
 --   out of combat   the player's buffs are readable: sounds when a buff is gained, drops, or runs
@@ -29,7 +29,6 @@ Fx.SOUNDS = {
 	{ "TELL_MESSAGE", "Whisper" },
 	{ "MAP_PING", "Map ping" },
 }
-Fx.GAINED = { { "none", "None" }, { "pop", "Pop" }, { "flash", "Flash" } }
 Fx.LEADS = { { 3, "3 s" }, { 5, "5 s" }, { 10, "10 s" }, { 15, "15 s" }, { 30, "30 s" } }
 
 local function Label(list, value)
@@ -46,7 +45,6 @@ function Fx.Play(name)
 end
 
 -- A buff's setting: its own choice, else the default for its row.
---   gained                              the animation when it appears
 --   expiring, expiringColor             the warning glow near the end (Glow.STYLES, Glow.COLORS)
 --   missing, missingColor               the expired glow on the red copy
 --   sGained, sLost, sExpiring, sCombat  out-of-combat sounds (sCombat: entering combat without it)
@@ -54,7 +52,6 @@ end
 function Fx.Default(e, field)
 	local d = ns.db.effects
 	local keep = ns.Mode(e) == "keep"
-	if field == "gained" then return d.gained end
 	if field == "expiring" or field == "expiringColor" or field == "missing" or field == "missingColor" then
 		return d[field]
 	end

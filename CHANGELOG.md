@@ -30,13 +30,13 @@ All notable changes to leboof. The format follows
 - Glow styles and colours for the warning glow (near the end of a buff) and the expired glow (on a
   missing buff's red copy): Pulse, Pixel glow, Action button glow, Auto-cast shine, GCD, Modern WoW
   glow and Classic WoW glow, in eleven colours or your class colour, with sample icons on the
-  Effects tab and per buff in its gear menu. Defaults: a gold pixel glow, and the red copy
-  pulsing (2026-11-08).
+  Effects tab and per buff in its gear menu. Defaults: a gold pixel glow for the warning, a red
+  pixel glow for expired (2026-11-08).
 - Grow from (Layout tab): both rows grow from the center by default, staying centred on their
   place as icons come and go; Left and Right grow one way (2026-11-08).
-- Animations and sounds (an Effects tab for the defaults, a ⚙ menu per tracked buff for its
-  own): a pop or flash when a buff appears, a pulsing glow near its end (the game's refresh
-  window) and a pulsing red copy while missing, all played by the game in combat too. Sounds out
+- Glows and sounds (an Effects tab for the defaults, a ⚙ menu per tracked buff for its own): a
+  glow near the end of a buff (the game's refresh window) and on a missing buff's red copy, shown
+  by the game in combat too; icons themselves just appear and disappear. Sounds out
   of combat when a buff appears, drops or runs low; a warning entering combat with a "keep up" buff
   missing; a sound before a buff you cast runs out, timed from the cast; and a check for
   Blizzard's Cooldown Manager, whose alerts are the only in-combat sounds the game allows for buffs
