@@ -8,11 +8,17 @@ All notable changes to leboof. The format follows
 
 ### Changed
 
+- `/leboof` opens the options window; `/leboof help` lists the commands (2026-11-08).
 - `tools/install_forever.cmd` installs into the live client (`_forever_`) by default, not the
   beta (2026-11-08).
 
 ### Added
 
+- An options window like Nothing Wasted's (`/leboof`, the minimap button or the addon menu): a
+  Buffs tab with a Keep up / While up / Off picker for every buff, a Layout tab (size, spacing,
+  moving the icons) and a General tab, each with Defaults (2026-11-08).
+- A minimap button with the Leboof icon: click for the window, right-click to unlock or lock the
+  icons, drag to move it; `/leboof minimap` shows or hides it (2026-11-08).
 - An icon for the AddOns list and the addon compartment: two gold chevrons on dark teal with a
   red "missing" pip, drawn by `art/make_logo.py` (2026-11-08).
 - Leboof 0.1.0, the first build: your buffs in combat through Blizzard's aura containers, with no

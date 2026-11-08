@@ -33,14 +33,33 @@ straight from this repo on Windows, see [DEPLOY.md](DEPLOY.md) (`tools\install_f
 
 ## Usage
 
-- `/leboof` (or `/lbf`): help and the build that's running
+**The options window** opens with `/leboof` (or `/lbf`), the minimap button, or the game's addon
+menu by the minimap. It has three tabs:
+
+- **Buffs:** every buff Leboof knows, under headings (class and group buffs, procs and cooldowns,
+  world buffs, weapon enchants), each with its icon and a picker: Keep up, While up or Off.
+  Changed ones are marked; hover one for its default and warning time.
+- **Layout:** icon size, the space between icons, Unlock/Lock to drag the icons, and back to the
+  default place.
+- **General:** show or hide the minimap button, the version, and how Leboof works.
+
+Each tab has a Defaults button. The window can be moved and resized, and Escape closes it.
+
+**The minimap button:** click for the window, right-click to unlock or lock the icons, drag to
+move it around the minimap.
+
+**Chat commands** (`/leboof help` lists them):
+
+- `/leboof`: open or close the options window
 - `/leboof list`: every buff and its mode
 - `/leboof <buff> keep|up|off|default`: e.g. `/leboof fort keep` gives Fortitude a fixed place
 - `/leboof unlock`, then drag the blue box; `/leboof lock` when done
 - `/leboof size 16-64`, `/leboof gap 0-20`
+- `/leboof minimap`: show or hide the minimap button
 - `/leboof reset`: default modes, size and position
 
-Settings are saved per character. Changes made in combat apply when combat ends: the game won't
+The icons' settings are saved per character; the window's place and the minimap button are
+account-wide. Changes made in combat apply when combat ends: the game won't
 let addons touch the icons while auras are secret.
 
 ## What it can't do

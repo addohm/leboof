@@ -47,7 +47,7 @@ Check(ns.db.size == 40, "size out of range was accepted")
 WM.Slash("unlock")
 WM.Slash("lock")
 WM.Slash("list")
-WM.Slash("")
+WM.Slash("help")
 WM.Slash("nonsense")
 WM.Slash("reset")
 Check(ns.db.size == 32 and next(ns.db.modes) == nil, "reset didn't reset")
@@ -59,3 +59,42 @@ Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | 
 for _, e in ipairs(ns.Catalogue) do
 	Check(e.enchant or (e.idList and #e.idList > 0), e.key .. " has no spell IDs")
 end
+
+-- The options window: /leboof opens it on the Buffs tab; the arrows change a buff's mode.
+WM.combat = false
+WM.Slash("")
+Check(ns.Window.IsShown(), "/leboof didn't open the window")
+ns.Window.Select("buffs")
+local panel = ns.Window.CurrentPanel()
+Check(panel and panel.stack, "no Buffs page")
+local shout
+for _, row in ipairs(panel.stack.rows) do
+	if row.label and row.label.text and row.label.text:find("Battle Shout", 1, true) then shout = row end
+end
+Check(shout, "no Battle Shout row")
+shout.next.scripts.OnClick()
+Check(ns.db.modes.battleshout == "up", "the arrow didn't change Battle Shout to While up")
+Check(shout.label.text:find("(changed)", 1, true), "a changed mode isn't marked")
+Check(not Keep().slots.battleshout.enabled, "the change didn't reach the icons")
+shout.prev.scripts.OnClick()
+Check(ns.db.modes.battleshout == nil, "back to the default should clear the saved mode")
+for _, id in ipairs({ "layout", "general", "buffs" }) do
+	ns.Window.Select(id)
+	Check(ns.Window.CurrentPanel().stack, id .. " page didn't build")
+end
+WM.Slash("")
+Check(not ns.Window.IsShown(), "/leboof didn't close the window")
+
+-- Minimap button and the addon compartment.
+Check(LeboofMinimapButton and LeboofMinimapButton.shown, "no minimap button")
+Leboof_OnAddonCompartmentClick(nil, "RightButton")
+Check(ns.db.locked == false, "right-click didn't unlock the icons")
+Leboof_OnAddonCompartmentClick(nil, "RightButton")
+Check(ns.db.locked == true, "right-click didn't lock the icons")
+Leboof_OnAddonCompartmentClick(nil, "LeftButton")
+Check(ns.Window.IsShown(), "left-click didn't open the window")
+WM.Slash("minimap")
+Check(ns.acct.minimap.hide and not LeboofMinimapButton.shown, "/leboof minimap didn't hide the button")
+WM.Slash("minimap")
+Check(not ns.acct.minimap.hide and LeboofMinimapButton.shown, "/leboof minimap didn't show the button")
+Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))

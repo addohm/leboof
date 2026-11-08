@@ -9,11 +9,20 @@
 -- `class` gives the default mode for those classes, `other` for everyone else (default "off").
 -- A "keep" default only applies if the character knows one of the spell's IDs (so a level 10
 -- druid without Omen of Clarity isn't shown it as missing); otherwise it falls back to "up".
--- `warn` is when the time left turns red, in seconds.
+-- `warn` is when the time left turns red, in seconds. Sections are the headings in the options
+-- window's Buffs tab; the order here is the order on screen.
 local _, ns = ...
 
-ns.Catalogue = {
-	-- Buffs to keep up
+ns.Catalogue = {}
+
+local function Section(name, entries)
+	for _, e in ipairs(entries) do
+		e.section = name
+		ns.Catalogue[#ns.Catalogue + 1] = e
+	end
+end
+
+Section("Class and group buffs", {
 	{ key = "battleshout", names = { "Battle Shout" }, class = { WARRIOR = "keep" }, warn = 15 },
 	{ key = "innerfire", names = { "Inner Fire" }, class = { PRIEST = "keep" }, warn = 60 },
 	{ key = "fort", names = { "Power Word: Fortitude", "Prayer of Fortitude" }, class = { PRIEST = "keep" }, other = "up", warn = 120 },
@@ -26,8 +35,9 @@ ns.Catalogue = {
 	{ key = "might", names = { "Blessing of Might", "Greater Blessing of Might" }, class = { WARRIOR = "up" }, warn = 60 },
 	{ key = "wisdom", names = { "Blessing of Wisdom", "Greater Blessing of Wisdom" }, class = { PRIEST = "up", DRUID = "up" }, warn = 60 },
 	{ key = "kings", names = { "Blessing of Kings", "Greater Blessing of Kings" }, other = "up", warn = 60 },
+})
 
-	-- Procs and cooldowns
+Section("Procs and cooldowns", {
 	{ key = "flurry", names = { "Flurry" }, class = { WARRIOR = "up" }, warn = 3 },
 	{ key = "enrage", names = { "Enrage" }, class = { WARRIOR = "up", DRUID = "up" }, warn = 3 },
 	{ key = "bloodrage", names = { "Bloodrage" }, class = { WARRIOR = "up" }, warn = 3 },
@@ -48,8 +58,9 @@ ns.Catalogue = {
 	{ key = "renew", names = { "Renew" }, class = { PRIEST = "up" }, warn = 3 },
 	{ key = "rejuv", names = { "Rejuvenation" }, class = { DRUID = "up" }, warn = 3 },
 	{ key = "regrowth", names = { "Regrowth" }, class = { DRUID = "up" }, warn = 3 },
+})
 
-	-- World buffs
+Section("World buffs", {
 	{ key = "rallyingcry", names = { "Rallying Cry of the Dragonslayer" }, other = "up", warn = 300 },
 	{ key = "zandalar", names = { "Spirit of Zandalar" }, other = "up", warn = 300 },
 	{ key = "warchief", names = { "Warchief's Blessing" }, other = "up", warn = 300 },
@@ -57,9 +68,11 @@ ns.Catalogue = {
 	{ key = "fengus", names = { "Fengus' Ferocity" }, other = "up", warn = 300 },
 	{ key = "moldar", names = { "Mol'dar's Moxie" }, other = "up", warn = 300 },
 	{ key = "slipkik", names = { "Slip'kik's Savvy" }, other = "up", warn = 300 },
+})
 
-	-- Temporary weapon enchants (oils, sharpening stones). They always go at the end of the first
-	-- row; "up" leaves the place empty instead of showing the missing look.
+-- Temporary weapon enchants (oils, sharpening stones). They always go at the end of the first
+-- row; "up" leaves the place empty instead of showing the missing look.
+Section("Weapon enchants", {
 	{ key = "mainhand", enchant = "MainHand", label = "Main hand enchant", other = "up", warn = 120 },
 	{ key = "offhand", enchant = "OffHand", label = "Off hand enchant", warn = 120 },
-}
+})

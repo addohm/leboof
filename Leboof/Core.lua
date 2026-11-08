@@ -1,6 +1,9 @@
--- Leboof: settings, modes and events. Everything is per character (LeboofCharDB), since the
--- buffs worth watching depend on the class.
+-- Leboof: settings, modes and events. The icons' settings are per character (LeboofCharDB), since
+-- the buffs worth watching depend on the class; the options window and the minimap button are
+-- account-wide (LeboofDB).
 local ADDON, ns = ...
+
+ns.ICON = "Interface\\AddOns\\Leboof\\Media\\Icon" -- art/make_logo.py
 
 local DEFAULTS = {
 	point = "CENTER", x = 0, y = -180, -- the anchor's position, relative to UIParent
@@ -10,12 +13,19 @@ local DEFAULTS = {
 	modes = {},                         -- key -> "keep" / "up" / "off", only where changed
 }
 
+local ACCOUNT_DEFAULTS = {
+	window = {},                        -- pos, size, tab
+	minimap = { angle = 250, hide = false }, -- clear of Nothing Wasted (200) and Ticky (225)
+}
+
 ns.MODES = { keep = true, up = true, off = true }
 
 local function CopyDefaults(dst, src)
 	for k, v in pairs(src) do
 		if dst[k] == nil then
 			dst[k] = type(v) == "table" and CopyDefaults({}, v) or v
+		elseif type(v) == "table" and type(dst[k]) == "table" then
+			CopyDefaults(dst[k], v)
 		end
 	end
 	return dst
@@ -70,10 +80,28 @@ function ns.Mode(e)
 	return ns.db.modes[e.key] or ns.DefaultMode(e)
 end
 
--- The display can only be rebuilt out of combat (the game closes the aura buttons to addons
--- while auras are secret). Changes made in combat wait for it to end.
+-- Saves a mode; only modes that differ from the default are kept.
+function ns.SetMode(e, mode)
+	if mode == "default" then mode = nil end
+	ns.db.modes[e.key] = (mode and mode ~= ns.DefaultMode(e)) and mode or nil
+	ns.Refresh()
+end
+
+function ns.ResetModes()
+	wipe(ns.db.modes)
+end
+
+function ns.ResetLayout()
+	for k, v in pairs(DEFAULTS) do
+		if type(v) ~= "table" then ns.db[k] = v end
+	end
+end
+
+-- The icons can only be rebuilt out of combat (the game closes the aura buttons to addons while
+-- auras are secret). Changes made in combat wait for it to end.
 local pending = false
 function ns.Refresh(quiet)
+	if ns.Window then ns.Window.Refresh() end
 	if InCombatLockdown() then
 		if not pending and not quiet then ns.Print("the change applies when combat ends.") end
 		pending = true
@@ -81,6 +109,11 @@ function ns.Refresh(quiet)
 	end
 	pending = false
 	ns.Layout()
+end
+
+function ns.SetLocked(locked)
+	ns.db.locked = locked
+	ns.Refresh()
 end
 
 local events = CreateFrame("Frame")
@@ -92,8 +125,11 @@ events:SetScript("OnEvent", function(_, event, arg)
 	if event == "ADDON_LOADED" and arg == ADDON then
 		LeboofCharDB = CopyDefaults(LeboofCharDB or {}, DEFAULTS)
 		ns.db = LeboofCharDB
+		LeboofDB = CopyDefaults(LeboofDB or {}, ACCOUNT_DEFAULTS)
+		ns.acct = LeboofDB
 	elseif event == "PLAYER_LOGIN" then
 		ns.Refresh(true)
+		ns.Minimap.Init()
 	elseif event == "PLAYER_REGEN_ENABLED" then
 		if pending then ns.Refresh() end
 	elseif event == "SPELLS_CHANGED" then
@@ -119,10 +155,12 @@ end
 
 local function Help()
 	ns.Print(ns.Version())
+	ns.Print("/leboof - open or close the options window")
 	ns.Print("/leboof list - the buffs and their modes")
 	ns.Print("/leboof <buff> keep|up|off|default - keep: always has a place, dim red when missing; up: shown only while up")
 	ns.Print("/leboof unlock | lock - move the icons")
 	ns.Print("/leboof size <16-64> | gap <0-20>")
+	ns.Print("/leboof minimap - show or hide the minimap button")
 	ns.Print("/leboof reset - default modes, size and position")
 end
 
@@ -130,13 +168,16 @@ SLASH_LEBOOF1 = "/leboof"
 SLASH_LEBOOF2 = "/lbf"
 SlashCmdList.LEBOOF = function(msg)
 	local cmd, arg = strsplit(" ", strtrim(msg or ""):lower(), 2)
-	if cmd == "" or cmd == "help" then
+	if cmd == "" then
+		ns.Window.Toggle()
+	elseif cmd == "help" then
 		Help()
 	elseif cmd == "list" then
 		ListBuffs()
 	elseif cmd == "unlock" or cmd == "lock" then
-		ns.db.locked = (cmd == "lock")
-		ns.Refresh()
+		ns.SetLocked(cmd == "lock")
+	elseif cmd == "minimap" then
+		ns.Minimap.SetShown(ns.acct.minimap.hide)
 	elseif cmd == "size" or cmd == "gap" then
 		local n = tonumber(arg)
 		local lo, hi = 16, 64
@@ -148,30 +189,19 @@ SlashCmdList.LEBOOF = function(msg)
 		ns.db[cmd] = math.floor(n + 0.5)
 		ns.Refresh()
 	elseif cmd == "reset" then
-		local modes = ns.db.modes
-		for k in pairs(modes) do modes[k] = nil end
-		for k, v in pairs(DEFAULTS) do
-			if type(v) ~= "table" then ns.db[k] = v end
-		end
+		ns.ResetModes()
+		ns.ResetLayout()
 		ns.Refresh()
 		ns.Print("reset.")
 	elseif ns.byKey[cmd] then
 		local e = ns.byKey[cmd]
-		if arg == "default" then
-			ns.db.modes[cmd] = nil
-		elseif ns.MODES[arg or ""] then
-			ns.db.modes[cmd] = (arg ~= ns.DefaultMode(e)) and arg or nil
-		else
+		if arg ~= "default" and not ns.MODES[arg or ""] then
 			ns.Print(e.label .. " is " .. ns.Mode(e) .. ". Use keep, up, off or default.")
 			return
 		end
+		ns.SetMode(e, arg)
 		ns.Print(e.label .. ": " .. ns.Mode(e))
-		ns.Refresh()
 	else
-		ns.Print("unknown command or buff '" .. cmd .. "'. /leboof list shows the buffs.")
+		ns.Print("unknown command or buff '" .. cmd .. "'. /leboof help lists the commands.")
 	end
-end
-
-function Leboof_OnAddonCompartmentClick()
-	Help()
 end

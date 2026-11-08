@@ -7,7 +7,17 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
 
 0. After installing this build, fully restart the game (the `.toc` changed). The AddOns list and
    the addon compartment show Leboof's icon: gold chevrons on dark teal.
-1. `/leboof` prints the help with a build number, and no Lua errors on login.
+1. No Lua errors on login. `/leboof help` prints the commands with a build number.
+1a. `/leboof` opens the options window (and closes it again); so do the minimap button and the
+    addon menu by the minimap. Escape closes it; it can be dragged and resized, and comes back in
+    the same place.
+1b. Buffs tab: icons and names under four headings; the arrows (or clicking the box) cycle Keep
+    up / While up / Off, the icons change at once, and changed ones say "(changed)". Hover shows the
+    default. Defaults puts them all back.
+1c. Layout tab: icon size and spacing change the icons; Unlock shows the blue box, Lock hides it.
+1d. General tab: untick the minimap button and it goes; tick it and it's back.
+1e. Minimap button: right-click unlocks and locks the icons; drag moves it around the minimap,
+    clear of Nothing Wasted's and Ticky's buttons.
 2. The icons appear a little below the middle of the screen. `/leboof unlock` shows a blue box to
    drag; `/leboof lock` hides it; the place is kept after `/reload`.
 3. Keep row: with the class buff missing (e.g. Battle Shout, Inner Fire), a dimmed red copy shows.

@@ -7,6 +7,7 @@ change.
 
 - Standard docs (2026-11-07).
 - The icon (2026-11-08).
+- The options window and the minimap button (2026-11-08).
 - 0.1.0, first build (2026-11-07): keep row with the missing look, up row, weapon enchants,
   class defaults for warrior, priest and druid, `/leboof` commands, the Windows install script.
 
@@ -17,7 +18,6 @@ change.
 2. Decide the open design points: which buffs belong in each row, the layout (one row each, or
    groups placed separately), and whether in-combat sounds matter (that would mean checking
    whether Forever turns on the Cooldown Manager and its alerts).
-3. An options window instead of slash commands.
 
 ## Ideas
 

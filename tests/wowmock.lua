@@ -3,20 +3,33 @@
 -- filter strings) and record what the addon asked for.
 local M = { printed = {}, combat = false, class = "WARRIOR", known = {}, frames = {} }
 
+-- Unknown methods (capitalised names) do nothing; unknown fields are nil, as on a real frame.
 local function Permissive(t)
 	return setmetatable(t, { __index = function(_, k)
-		return function() return nil end
+		if type(k) == "string" and k:match("^%u") then return function() return nil end end
 	end })
 end
 
 local function NewFrame(kind, name)
 	local f = { kind = kind, name = name, shown = true, points = {}, scripts = {}, events = {}, level = 1, w = 0, h = 0 }
-	function f:Show() self.shown = true end
+	function f:Show()
+		local was = self.shown
+		self.shown = true
+		if not was and self.scripts.OnShow then self.scripts.OnShow(self) end
+	end
 	function f:Hide() self.shown = false end
 	function f:SetShown(v) self.shown = v and true or false end
 	function f:IsShown() return self.shown end
 	function f:SetSize(w, h) self.w, self.h = w, h end
 	function f:GetSize() return self.w, self.h end
+	function f:SetWidth(w) self.w = w end
+	function f:SetHeight(h) self.h = h end
+	function f:GetWidth() return self.w end
+	function f:GetHeight() return self.h end
+	function f:GetCenter() return 0, 0 end
+	function f:GetEffectiveScale() return 1 end
+	function f:GetChecked() return self.checked end
+	function f:SetChecked(v) self.checked = v end
 	function f:ClearAllPoints() self.points = {} end
 	function f:SetPoint(...) table.insert(self.points, { ... }) end
 	function f:GetPoint() local p = self.points[1] or {} return p[1], nil, p[3], p[4], p[5] end
@@ -25,7 +38,12 @@ local function NewFrame(kind, name)
 	function f:SetScript(event, fn) self.scripts[event] = fn end
 	function f:RegisterEvent(e) self.events[e] = true end
 	function f:CreateTexture() return Permissive({}) end
-	function f:CreateFontString() return Permissive({}) end
+	function f:CreateFontString()
+		local fs = Permissive({})
+		function fs:SetText(t) self.text = t end
+		function fs:GetText() return self.text end
+		return fs
+	end
 	table.insert(M.frames, f)
 	return Permissive(f)
 end
@@ -95,6 +113,14 @@ function CreateFrame(kind, name, parent, template)
 end
 
 UIParent = NewFrame("Frame", "UIParent")
+Minimap = NewFrame("Frame", "Minimap")
+Minimap:SetSize(140, 140)
+GameTooltip = NewFrame("GameTooltip", "GameTooltip")
+function GameTooltip_Hide() end
+UISpecialFrames = {}
+tinsert = table.insert
+function wipe(t) for k in pairs(t) do t[k] = nil end return t end
+function GetCursorPosition() return 0, 0 end
 INVSLOT_MAINHAND, INVSLOT_OFFHAND = 16, 17
 SlashCmdList = {}
 Enum = {

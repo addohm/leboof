@@ -14,8 +14,8 @@ except ImportError:
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 ADDON = ROOT / "Leboof"
 TESTS = ROOT / "tests"
-ALLOWED_GLOBALS = {"LeboofCharDB", "LeboofAnchor", "SLASH_LEBOOF1", "SLASH_LEBOOF2",
-                   "Leboof_OnAddonCompartmentClick"}
+ALLOWED_GLOBALS = {"LeboofCharDB", "LeboofDB", "LeboofAnchor", "LeboofFrame", "LeboofMinimapButton",
+                   "SLASH_LEBOOF1", "SLASH_LEBOOF2", "Leboof_OnAddonCompartmentClick"}
 
 failed = False
 

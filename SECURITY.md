@@ -15,7 +15,8 @@ secrets.
 
 It runs inside the WoW client with the normal addon permissions. It never reads aura data or calls
 protected functions; it only creates frames and hands spell IDs to Blizzard's aura containers.
-It saves its settings (modes, size, position) in `LeboofCharDB`, per character.
+It saves its settings in `LeboofCharDB` (modes, size, position; per character) and `LeboofDB`
+(the options window's place and size, the minimap button; account-wide).
 
 ## Access
 
