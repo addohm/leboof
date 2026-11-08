@@ -17,7 +17,8 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
 1c. Layout tab: icon size and spacing change the icons; both rows are centred on their place, and
     stay centred as second-row icons come and go (Grow from: Center); Left and Right grow one way; Unlock shows the blue box, Lock hides it.
 1d. General tab: untick the minimap button and it goes; tick it and it's back.
-1e. Profiles tab: it says this character's profile ("Name - Realm"). Make a new one: settings go
+1e. Profiles tab: it says this character's profile, by first and last name (no realm); a profile
+    from an earlier build named "Name - Realm" has been renamed that way. Make a new one: settings go
     back to defaults; switch back and yours return. On a second character, pick the first one's
     profile: its buffs and layout follow, and the first character's tab says "Also used by".
     Copy, rename, delete (asks first) and reset work. Settings from an earlier build are kept.

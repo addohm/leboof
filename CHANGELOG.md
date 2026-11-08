@@ -8,6 +8,8 @@ All notable changes to leboof. The format follows
 
 ### Changed
 
+- Profiles and characters go by first and last name ("Adam Smith"), without the realm. Profiles
+  named "Name - Realm" by an earlier build are renamed at the next login (2026-11-08).
 - The expired glow is as big as the warning glow, right at the icon's edge. Each top-row buff has
   an invisible container holding only that buff; the glow is drawn in a frame stretched from that
   container's edge, which the game squeezes to nothing while the buff is up (2026-11-08).

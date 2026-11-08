@@ -77,8 +77,8 @@ move it around the minimap.
 - `/leboof reset`: default modes, size and position
 
 **Profiles:** every setting (buff modes, size, spacing, where the icons and the window are, the
-minimap button) is in a profile. Each character starts with its own, named after it ("Name -
-Realm"). Pick another character's profile to share it, say between two warriors: a change on one
+minimap button) is in a profile. Each character starts with its own, named after it, first and last
+name ("Adam Smith"). Pick another character's profile to share it, say between two warriors: a change on one
 then shows on both. `/leboof profile` shows the one in use.
 
 Changes made in combat apply when combat ends: the game won't

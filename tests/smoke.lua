@@ -31,8 +31,8 @@ LeboofDB = { window = { tab = "layout" }, minimap = { angle = 10, hide = false }
 WM.known[6673] = true
 WM.Fire("ADDON_LOADED", "Leboof")
 WM.Fire("PLAYER_LOGIN")
-Check(ns.Profiles.Current() == "Tester - Realm", "the character's profile isn't in use")
-Check(ns.db == LeboofDB.profiles["Tester - Realm"], "ns.db isn't the profile")
+Check(ns.Profiles.Current() == "Tester Smith", "the character's profile isn't in use")
+Check(ns.db == LeboofDB.profiles["Tester Smith"], "ns.db isn't the profile")
 Check(ns.db.modes.thorns == "off" and ns.db.minimap.angle == 10 and ns.db.window.tab == "layout", "old settings weren't moved")
 Check(LeboofCharDB == nil, "the old per-character settings weren't cleared")
 Check(ns.built, "display not built: " .. table.concat(WM.printed, " | "))
@@ -151,15 +151,15 @@ Check(P.Current() == "Shared" and ns.db.size == 32, "the new profile isn't in us
 Check(not P.New("Shared") and not P.New("   "), "a duplicate or empty name was accepted")
 ns.SetMode(ns.byKey.fort, "keep")
 Check(KeepSlot("fort").enabled, "fort keep in Shared didn't reach the icons")
-Check(P.Switch("Tester - Realm"), "Switch failed")
+Check(P.Switch("Tester Smith"), "Switch failed")
 Check(not KeepSlot("fort").enabled and ns.db.modes.fort == nil, "profiles aren't separate")
 Check(P.CopyFrom("Shared") and ns.db.modes.fort == "keep" and KeepSlot("fort").enabled, "CopyFrom didn't copy")
-Check(not P.CopyFrom("Tester - Realm"), "copied a profile onto itself")
-Check(not P.Delete("Tester - Realm"), "deleted the profile in use")
+Check(not P.CopyFrom("Tester Smith"), "copied a profile onto itself")
+Check(not P.Delete("Tester Smith"), "deleted the profile in use")
 Check(P.Rename("Main") and P.Current() == "Main", "Rename failed")
-Check(LeboofDB.profiles.Main == ns.db and LeboofDB.profiles["Tester - Realm"] == nil, "Rename left the old name")
-LeboofDB.chars["Alt - Realm"] = "Shared"
-Check(P.UsedBy("Shared")[1] == "Alt - Realm", "UsedBy")
+Check(LeboofDB.profiles.Main == ns.db and LeboofDB.profiles["Tester Smith"] == nil, "Rename left the old name")
+LeboofDB.chars["Alt Jones"] = "Shared"
+Check(P.UsedBy("Shared")[1] == "Alt Jones", "UsedBy")
 
 -- The Profiles tab: the picker switches, Delete asks first.
 ns.Window.Show()
@@ -177,14 +177,14 @@ Check(P.Current() == "Main", "the picker didn't switch back")
 delete.button.scripts.OnClick()
 Check(LeboofDB.profiles.Shared, "Delete didn't ask first")
 WM.Accept()
-Check(LeboofDB.profiles.Shared == nil and LeboofDB.chars["Alt - Realm"] == nil, "Delete didn't delete")
+Check(LeboofDB.profiles.Shared == nil and LeboofDB.chars["Alt Jones"] == nil, "Delete didn't delete")
 
 Check(P.Reset() and next(ns.db.modes) == nil and ns.db.minimap.angle == 250, "Reset didn't reset")
 
 -- A character whose profile was deleted elsewhere gets its own at the next login.
-LeboofDB.chars["Tester - Realm"] = "Gone"
+LeboofDB.chars["Tester Smith"] = "Gone"
 P.Init()
-Check(P.Current() == "Tester - Realm" and ns.db == LeboofDB.profiles["Tester - Realm"], "no fallback profile")
+Check(P.Current() == "Tester Smith" and ns.db == LeboofDB.profiles["Tester Smith"], "no fallback profile")
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
 
 -- Adding and removing buffs.
@@ -437,3 +437,35 @@ Check(enchantPresence and enchantPresence.enchants[0].enabled, "a kept weapon en
 ns.SetMode(ns.byKey.mainhand, "default")
 Check(not enchantPresence.enchants[0].enabled, "the enchant's presence container should be switched off with it")
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
+
+-- Characters by first and last name; old "Name - Realm" keys and profiles are renamed.
+LeboofDB.profiles["Tester Smith"] = nil
+LeboofDB.chars["Tester Smith"] = nil
+LeboofDB.profiles["Tester - Realm"] = { size = 44, modes = { fort = "keep" } }
+LeboofDB.chars["Tester - Realm"] = "Tester - Realm"
+LeboofDB.chars["Alt - Realm"] = "Tester - Realm"
+LeboofDB.durations = { ["Tester - Realm"] = { [25289] = 180 } }
+ns.Profiles.Init()
+Check(ns.Profiles.Current() == "Tester Smith" and ns.db.size == 44 and ns.db.modes.fort == "keep", "the old profile wasn't moved to First Last")
+Check(LeboofDB.profiles["Tester - Realm"] == nil and LeboofDB.chars["Tester - Realm"] == nil, "the old key is still there")
+Check(LeboofDB.chars["Alt - Realm"] == "Tester Smith", "a character sharing the renamed profile should follow it")
+Check(LeboofDB.durations["Tester Smith"][25289] == 180, "learned durations should move too")
+-- A profile the player named themselves keeps its name.
+LeboofDB.chars["Tester Smith"] = nil
+LeboofDB.chars["Tester - Realm"] = "Main"
+LeboofDB.profiles.Main = { size = 40 }
+ns.Profiles.Init()
+Check(ns.Profiles.Current() == "Main" and LeboofDB.profiles.Main, "a named profile should keep its name")
+
+-- The surname isn't known at first: a defaults profile made under the first name is dropped once
+-- it is, and the character goes back to its own.
+LeboofDB.chars["Tester Smith"] = "Tester Smith"
+LeboofDB.profiles["Tester Smith"] = { size = 48 }
+LeboofDB.chars["Tester - Realm"] = nil
+WM.surname = nil
+ns.Profiles.Init()
+Check(ns.Profiles.Current() == "Tester" and LeboofDB.profiles.Tester, "without a surname the key is the first name")
+WM.surname = "Smith"
+ns.Profiles.Init()
+Check(ns.Profiles.Current() == "Tester Smith" and ns.db.size == 48, "back to the First Last profile")
+Check(LeboofDB.profiles.Tester == nil and LeboofDB.chars.Tester == nil, "the throwaway first-name profile should go")

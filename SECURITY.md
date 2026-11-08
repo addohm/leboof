@@ -18,7 +18,7 @@ buffs on your own character, to offer them on the Buffs tab, learn their ranks a
 out-of-combat sounds; it also sees your own spell casts, for the cast-timed sound. It never calls
 protected functions; it only creates frames and hands spell IDs to Blizzard's aura containers.
 It saves its settings in `LeboofDB`: the profiles (modes, size, positions, the minimap button) and
-which profile each character uses, by character name and realm.
+which profile each character uses, by the character's first and last name.
 
 ## Access
 

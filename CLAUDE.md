@@ -33,7 +33,8 @@ off the table.
     (`UNIT_SPELLCAST_SUCCEEDED`, durations learned per character in `LeboofDB.durations`), and the
     Cooldown Manager check.
   - `Profiles.lua`: profiles. `LeboofDB.profiles[name]` holds every setting (modes, size, gap,
-    icon position, `window`, `minimap`); `LeboofDB.chars["Name - Realm"]` is the profile each
+    icon position, `window`, `minimap`); `LeboofDB.chars["First Last"]` (`P.CharKey`: UnitName's second value is the surname on
+    Forever; no realm) is the profile each
     character uses; `ns.db` is the one in use. New, switch, copy, rename, delete, reset. It also
     moves 0.1.0's settings (per-character `LeboofCharDB`, account `LeboofDB.window/.minimap`)
     into the character's profile once, then clears `LeboofCharDB`.

@@ -135,6 +135,7 @@ events:SetScript("OnEvent", function(_, event, arg)
 	if event == "ADDON_LOADED" and arg == ADDON then
 		ns.Profiles.Init()
 	elseif event == "PLAYER_LOGIN" then
+		ns.Profiles.Init() -- again: the surname may only be known now
 		ns.Refresh(true)
 		ns.Minimap.Init()
 	elseif event == "PLAYER_REGEN_ENABLED" then

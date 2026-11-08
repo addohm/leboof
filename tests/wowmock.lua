@@ -179,8 +179,9 @@ UISpecialFrames = {}
 tinsert = table.insert
 function wipe(t) for k in pairs(t) do t[k] = nil end return t end
 function GetCursorPosition() return 0, 0 end
-M.name, M.realm = "Tester", "Realm"
-function UnitName() return M.name end
+M.name, M.surname, M.realm = "Tester", "Smith", "Realm"
+-- On Forever the second value is the surname.
+function UnitName() return M.name, M.surname end
 function GetRealmName() return M.realm end
 YES, NO = "Yes", "No"
 StaticPopupDialogs = {}
