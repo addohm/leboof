@@ -158,10 +158,14 @@ function UI.GlowPreview(parent)
 	local expired = Sample(CONTROL_X + 14, "Expired (the red copy)", 132333)
 	expired.icon:SetDesaturated(true)
 	expired.icon:SetVertexColor(1, 0.4, 0.4)
+	-- As on the red copy: the glow trimmed to a 3 px band around the icon.
+	expired.band = CreateFrame("Frame", nil, expired)
+	expired.band:SetPoint("TOPLEFT", -3, 3)
+	expired.band:SetPoint("BOTTOMRIGHT", 3, -3)
 	row.Sync = function()
 		local d = ns.db.effects
 		ns.Glow.Show(warning, d.expiring, d.expiringColor, 36)
-		ns.Glow.Show(expired, d.missing, d.missingColor, 36, true)
+		ns.Glow.Show(expired.band, d.missing, d.missingColor, 36, true)
 	end
 	return row
 end

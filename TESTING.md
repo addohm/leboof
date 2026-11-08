@@ -42,7 +42,8 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
 1i. Glows: on the Effects tab, step through each warning glow style and colour; the sample icon
     shows it. Then check each style on a real buff near its end (Renew or Battle Shout): Pixel,
     Action button, Auto-cast, GCD, Modern, Classic. Expired glows: a missing top-row buff shows
-    the chosen glow inside its red copy, and nothing of it shows around the icon once the buff is
+    the chosen glow around its red copy (as big as the warning glow, within 3 px), and nothing of it
+    shows around the icon once the buff is
     back. Note any style that looks wrong or doesn't animate (the Classic ants and Modern loop
     use the game's own art, so they need checking most).
 2. The icons appear a little below the middle of the screen. `/leboof unlock` shows a blue box to

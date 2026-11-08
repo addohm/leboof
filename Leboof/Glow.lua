@@ -248,35 +248,25 @@ function Glow.SetActive(built, on)
 	end
 end
 
--- How big an icon a style can glow around and still stay within `size`: for the red copy, which
--- Blizzard's button must cover completely while the buff is up.
-local function FitSize(style, size)
-	if style == "pulse" then return size - 6 end
-	if style == "pixel" then return size - 4 end
-	if style == "action" or style == "classic" then return size / 1.5 end
-	if style == "modern" then return size / 1.4 end
-	if style == "autocast" then return size / 1.4 end
-	return size
-end
-
 -- Keeps one active glow per style/colour/size on one of our frames, making them as needed.
--- fit: keep the whole glow inside the frame (on a smaller frame in its middle).
-function Glow.Show(owner, style, color, size, fit)
+-- trim: the glow goes round an icon `size` big in the middle of `owner`, and is cut off at
+-- owner's edges (for the red copy's band).
+function Glow.Show(owner, style, color, size, trim)
 	owner.glows = owner.glows or {}
-	local key = style .. ":" .. tostring(color) .. ":" .. size .. (fit and ":fit" or "")
+	local key = style .. ":" .. tostring(color) .. ":" .. size .. (trim and ":trim" or "")
 	for k, built in pairs(owner.glows) do
 		if k ~= key then Glow.SetActive(built, false) end
 	end
 	if style == "none" then return end
 	if not owner.glows[key] then
-		local host, inner = owner, size
-		if fit then
-			inner = FitSize(style, size)
+		local host = owner
+		if trim then
+			owner:SetClipsChildren(true)
 			host = CreateFrame("Frame", nil, owner)
-			host:SetSize(inner, inner)
+			host:SetSize(size, size)
 			host:SetPoint("CENTER", owner, "CENTER")
 		end
-		owner.glows[key] = Glow.Build(host, style, color, inner)
+		owner.glows[key] = Glow.Build(host, style, color, size)
 	end
 	Glow.SetActive(owner.glows[key], true)
 end

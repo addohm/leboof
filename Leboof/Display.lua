@@ -38,17 +38,21 @@ local function AddGlow(button, glow, color, size)
 	for _, group in ipairs(built.groups) do button:AddPandemicActiveAnimation(group) end
 end
 
+-- The keep row's expired glow lives in a band this wide around the red copy. Blizzard's buttons
+-- there get a dark border just as wide, which covers the band while the buff is up.
+local BAND = 3
+
 -- Returns the initializeFrame callback that builds a Blizzard aura button's parts. It runs once,
--- when the game creates the button, before the button is closed to addons.
-local function ButtonStyler(warn, swipe, glow, color)
+-- when the game creates the button, before the button is closed to addons. border: its width.
+local function ButtonStyler(warn, swipe, glow, color, border)
 	return function(button)
 		local size = ns.db.size
 		button:SetSize(size, size)
 
-		local border = button:CreateTexture(nil, "BACKGROUND")
-		border:SetPoint("TOPLEFT", -1, 1)
-		border:SetPoint("BOTTOMRIGHT", 1, -1)
-		border:SetColorTexture(0, 0, 0, 1)
+		local edge = button:CreateTexture(nil, "BACKGROUND")
+		edge:SetPoint("TOPLEFT", -border, border)
+		edge:SetPoint("BOTTOMRIGHT", border, -border)
+		edge:SetColorTexture(0, 0, 0, 1)
 
 		local icon = button:CreateTexture(nil, "ARTWORK")
 		icon:SetAllPoints()
@@ -87,9 +91,10 @@ local function AnimKey(e)
 	return Fx.Get(e, "expiring") .. ":" .. Fx.Get(e, "expiringColor") .. ":" .. ns.db.size
 end
 
-local function Styler(e, warn, swipe)
+-- upRow: the second row's buttons, with a cooldown swipe and a thin border (no expired glow there).
+local function Styler(e, warn, upRow)
 	local Fx = ns.Fx
-	return ButtonStyler(warn, swipe, Fx.Get(e, "expiring"), Fx.Get(e, "expiringColor"))
+	return ButtonStyler(warn, upRow, Fx.Get(e, "expiring"), Fx.Get(e, "expiringColor"), upRow and 1 or BAND)
 end
 
 local function NewContainer()
@@ -166,10 +171,14 @@ local function Holder(e)
 		h.icon:SetDesaturated(true)
 		h.icon:SetVertexColor(1, 0.4, 0.4)
 		h:SetAlpha(0.8)
+		-- The expired glow: around the red copy like the warning glow, but trimmed to a band
+		-- BAND wide, which Blizzard's button (with its border) covers while the buff is up.
+		h.band = CreateFrame("Frame", nil, h)
+		h.band:SetPoint("TOPLEFT", -BAND, BAND)
+		h.band:SetPoint("BOTTOMRIGHT", BAND, -BAND)
 		holders[e.key] = h
 	end
-	-- The expired glow sits inside the red copy, so it's hidden with it while the buff is up.
-	ns.Glow.Show(h, ns.Fx.Get(e, "missing"), ns.Fx.Get(e, "missingColor"), ns.db.size, true)
+	ns.Glow.Show(h.band, ns.Fx.Get(e, "missing"), ns.Fx.Get(e, "missingColor"), ns.db.size, true)
 	local texture = e.icon -- an added buff: the icon it was seen with
 	if not texture and e.enchant then
 		texture = GetInventoryItemTexture("player", e.enchant == "MainHand" and INVSLOT_MAINHAND or INVSLOT_OFFHAND)
@@ -229,7 +238,10 @@ local function Layout()
 		local mode = ns.Mode(e)
 		if mode == "keep" or (e.enchant and mode == "up") then count = count + 1 end
 	end
-	local keepWidth = count > 0 and (count * (size + gap) - gap) or 0
+	-- The keep row's borders are BAND wide (the second row's, 1), so its icons sit further apart
+	-- to keep the same gap between borders.
+	local step = size + gap + 2 * (BAND - 1)
+	local keepWidth = count > 0 and (count * step - (step - size)) or 0
 	local grow = db.grow
 	local x = grow == "center" and -keepWidth / 2 or grow == "right" and -keepWidth or 0
 	for pass = 1, 2 do
@@ -256,7 +268,7 @@ local function Layout()
 						Place(button, x, 0, size)
 						keepContainer:SetAuraSlotEnabled(key, true)
 					end
-					x = x + size + gap
+					x = x + step
 				elseif holders[e.key] then
 					holders[e.key]:Hide()
 				end

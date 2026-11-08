@@ -103,8 +103,9 @@ them itself on its own buttons:
 
 - **Warning glow:** in the game's refresh window, the last part of a buff where recasting keeps
   some of the time left. Buffs without one don't glow.
-- **Expired glow:** on the red copy of a missing top-row buff, sized to stay inside it (so it's
-  hidden with the copy while the buff is up).
+- **Expired glow:** around the red copy of a missing top-row buff, like the warning glow, but
+  within 3 px of the icon. Top-row icons have a 3 px dark border, which covers that band while
+  the buff is up. Pixel glow and Pulse fit it; the bigger styles are trimmed at its edge.
 
 Each glow has a style and a colour (gold, white, red, orange, yellow, green, cyan, blue, purple,
 pink or your class colour). The styles: **Pulse** (a pulsing edge), **Pixel glow** (dashes

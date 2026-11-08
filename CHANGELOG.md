@@ -8,6 +8,9 @@ All notable changes to leboof. The format follows
 
 ### Changed
 
+- The expired glow is as big as the warning glow: it goes round the red copy within a 3 px band,
+  and top-row icons have a 3 px dark border that covers the band while the buff is up (their
+  spacing grows to match) (2026-11-08).
 - The buff list checked against WoW: Forever (2026-11-08):
   - Removed Spirit of Zandalar: Zul'Gurub isn't in Forever.
   - Added warrior Shield Block, Shield Wall, Last Stand, Retaliation, Reckless Swings and Gore

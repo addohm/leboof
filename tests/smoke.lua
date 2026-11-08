@@ -369,7 +369,8 @@ ns.Refresh()
 local keepCount = 0
 for _, e in ipairs(ns.Entries()) do if ns.Mode(e) == "keep" then keepCount = keepCount + 1 end end
 Check(ns.db.grow == "center", "rows should grow from the centre by default")
-local width = keepCount * (ns.db.size + ns.db.gap) - ns.db.gap
+local step = ns.db.size + ns.db.gap + 4 -- the keep row's 3 px borders
+local width = keepCount * step - (step - ns.db.size)
 Check(FirstX(KeepSlot("battleshout")) == -width / 2, "the keep row isn't centred")
 Check(Up().points[1][1] == "TOP", "the up row isn't centred")
 ns.db.grow = "left"
