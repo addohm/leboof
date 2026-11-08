@@ -39,9 +39,13 @@ local function Label(list, value)
 end
 Fx.Label = Label
 
-function Fx.Play(name)
+-- why: what the sound is for, for the sound log (/leboof soundlog).
+function Fx.Play(name, why)
 	local id = name and name ~= "none" and SOUNDKIT and SOUNDKIT[name]
-	if id then PlaySound(id, "Master") end
+	if id then
+		if ns.SoundLog then ns.SoundLog.Reason(why) end
+		PlaySound(id, "Master")
+	end
 end
 
 -- A buff's setting: its own choice, else the default for its row.
@@ -126,9 +130,9 @@ local function Compare(old, new)
 	for _, e in ipairs(ns.Entries()) do
 		local was, is = old[e.key], new[e.key]
 		if is and not was then
-			Fx.Play(Fx.Get(e, "sGained"))
+			Fx.Play(Fx.Get(e, "sGained"), "appeared: " .. e.label)
 		elseif was and not is then
-			Fx.Play(Fx.Get(e, "sLost"))
+			Fx.Play(Fx.Get(e, "sLost"), "dropped: " .. e.label)
 		end
 	end
 end
@@ -152,7 +156,7 @@ local function CheckExpiring()
 			local left = exp - now
 			if left > 0 and left <= (e.warn or 0) then
 				played[e.key] = exp
-				Fx.Play(Fx.Get(e, "sExpiring"))
+				Fx.Play(Fx.Get(e, "sExpiring"), "running out: " .. e.label)
 			end
 		end
 	end
@@ -172,7 +176,7 @@ local function CombatStarted()
 		end
 	end
 	if #missing > 0 then
-		Fx.Play(sound)
+		Fx.Play(sound, "entering combat without: " .. table.concat(missing, ", "))
 		if ns.db.effects.combatChat then ns.Print("missing: " .. table.concat(missing, ", ")) end
 	end
 end
@@ -203,7 +207,7 @@ local function OnCast(spellID)
 			local exp = state[e.key]
 			if not exp or exp - GetTime() > lead + 1 then return end
 		end
-		Fx.Play(sound)
+		Fx.Play(sound, "before your cast runs out: " .. e.label)
 	end)
 end
 

@@ -74,6 +74,9 @@ move it around the minimap.
 - `/leboof size 16-64`, `/leboof gap 0-20`
 - `/leboof minimap`: show or hide the minimap button
 - `/leboof profile`: the profile in use, and the others
+- `/leboof soundlog`: log every sound any addon plays, with the addon that played it (and, for
+  Leboof's own, why). `/leboof soundlog show` opens it ready to copy (Ctrl+C); `off` stops it,
+  `clear` empties it. It's also saved in `WTF\Account\<account>\SavedVariables\Leboof.lua`.
 - `/leboof reset`: default modes, size and position
 
 **Profiles:** every setting (buff modes, size, spacing, where the icons and the window are, the

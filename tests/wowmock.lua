@@ -247,12 +247,29 @@ function M.Advance(seconds)
 	end
 	M.now = target
 end
+-- hooksecurefunc([table,] name, hook): the hook runs after the original.
+function hooksecurefunc(t, name, hook)
+	if type(t) == "string" then t, name, hook = _G, t, name end
+	local original = t[name]
+	t[name] = function(...)
+		local a, b, c, d = original(...)
+		hook(...)
+		return a, b, c, d
+	end
+end
+-- A call stack whose file names look like an addon's.
+function debugstack(start)
+	local tb = debug.traceback("", (start or 1) + 1)
+	return (tb:gsub("([%w_]+%.lua):", "Interface/AddOns/Leboof/%1:"))
+end
+function date(fmt) return "12:00:00" end
+ChatFontNormal = {}
 -- Sounds played, by sound kit ID; SOUNDKIT maps each name to a made-up ID.
 M.sounds = {}
-SOUNDKIT = setmetatable({}, { __index = function(_, name) return "kit:" .. name end })
+SOUNDKIT = setmetatable({ READY_CHECK = 8960 }, { __index = function(_, name) return "kit:" .. name end })
 function PlaySound(id) table.insert(M.sounds, id) end
 function M.Played(name)
-	for _, id in ipairs(M.sounds) do if id == "kit:" .. name then return true end end
+	for _, id in ipairs(M.sounds) do if id == SOUNDKIT[name] then return true end end
 	return false
 end
 M.enchant = {}

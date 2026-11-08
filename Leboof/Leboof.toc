@@ -16,6 +16,7 @@ Profiles.lua
 Custom.lua
 Glow.lua
 Effects.lua
+SoundLog.lua
 Display.lua
 
 UI\Widgets.lua

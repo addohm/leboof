@@ -61,6 +61,8 @@ per-character file from 0.1.0 is moved into a profile at the first login and the
   the client's Interface number isn't 16001.
 - **"the game's aura containers aren't available":** `Blizzard_AuraContainer` didn't load or
   doesn't accept addon containers on this client. Report the message text.
+- **A sound and you don't know where it's from:** `/leboof soundlog`, wait for it, then
+  `/leboof soundlog show` and copy the lines. Each says which addon played the sound.
 - **Lua errors:** `/console scriptErrors 1` shows them; report them with the `/leboof` build.
 
 TODO: where should public releases go (CurseForge, Wago, GitHub Releases, or nowhere yet)?

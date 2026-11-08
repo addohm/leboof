@@ -32,6 +32,9 @@ All notable changes to leboof. The format follows
 
 ### Added
 
+- `/leboof soundlog`: logs every sound any addon plays (including Blizzard's Cooldown Manager
+  alerts and text-to-speech) with the time, the sound's name and the addon that played it; Leboof's
+  own say why. `show` opens it ready to copy, and it's saved with the settings (2026-11-08).
 - Glow styles and colours for the warning glow (near the end of a buff) and the expired glow (on a
   missing buff's red copy): Pulse, Pixel glow, Action button glow, Auto-cast shine, GCD, Modern WoW
   glow and Classic WoW glow, in eleven colours or your class colour, with sample icons on the

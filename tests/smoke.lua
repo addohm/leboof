@@ -469,3 +469,23 @@ WM.surname = "Smith"
 ns.Profiles.Init()
 Check(ns.Profiles.Current() == "Tester Smith" and ns.db.size == 48, "back to the First Last profile")
 Check(LeboofDB.profiles.Tester == nil and LeboofDB.chars.Tester == nil, "the throwaway first-name profile should go")
+
+-- The sound log: every sound, which addon played it, and why for Leboof's own.
+WM.printed = {}
+WM.Slash("soundlog")
+Check(LeboofDB.soundlog.on, "/leboof soundlog didn't turn the log on")
+ns.Fx.Play("RAID_WARNING", "dropped: Battle Shout")
+local last = LeboofDB.soundlog.entries[#LeboofDB.soundlog.entries]
+Check(last and last:find("from Leboof", 1, true) and last:find("(dropped: Battle Shout)", 1, true), "Leboof's sound wasn't logged with its reason: " .. tostring(last))
+PlaySound(8960)
+last = LeboofDB.soundlog.entries[#LeboofDB.soundlog.entries]
+Check(last:find("READY_CHECK (8960)", 1, true) and not last:find("(dropped", 1, true), "another sound should be logged by name, without Leboof's reason: " .. last)
+Check(Printed("sound"), "the log should print to chat")
+WM.Slash("soundlog show")
+Check(LeboofSoundLog and LeboofSoundLog.shown, "/leboof soundlog show didn't open the window")
+WM.Slash("soundlog off")
+local n = #LeboofDB.soundlog.entries
+PlaySound(8960)
+Check(#LeboofDB.soundlog.entries == n, "logged while off")
+WM.Slash("soundlog clear")
+Check(#LeboofDB.soundlog.entries == 0, "clear didn't clear")

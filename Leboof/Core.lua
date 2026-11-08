@@ -170,6 +170,7 @@ local function Help()
 	ns.Print("/leboof size <16-64> | gap <0-20>")
 	ns.Print("/leboof minimap - show or hide the minimap button")
 	ns.Print("/leboof profile - the profile in use and the others (the Profiles tab manages them)")
+	ns.Print("/leboof soundlog [off | show | clear] - log every sound any addon plays, and which addon")
 	ns.Print("/leboof reset - default modes, size and position")
 end
 
@@ -187,6 +188,11 @@ SlashCmdList.LEBOOF = function(msg)
 		ns.SetLocked(cmd == "lock")
 	elseif cmd == "minimap" then
 		ns.Minimap.SetShown(ns.db.minimap.hide)
+	elseif cmd == "soundlog" then
+		if arg == "off" then ns.SoundLog.SetOn(false)
+		elseif arg == "show" then ns.SoundLog.Show()
+		elseif arg == "clear" then ns.SoundLog.Clear()
+		else ns.SoundLog.SetOn(true) end
 	elseif cmd == "profile" then
 		ns.Print("profile: " .. ns.Profiles.Current() .. ". All: " .. table.concat(ns.Profiles.Names(), ", "))
 	elseif cmd == "size" or cmd == "gap" then

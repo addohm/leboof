@@ -32,6 +32,10 @@ off the table.
     the warning on entering combat, the sound timed from your own casts
     (`UNIT_SPELLCAST_SUCCEEDED`, durations learned per character in `LeboofDB.durations`), and the
     Cooldown Manager check.
+  - `SoundLog.lua`: `/leboof soundlog`: hooks PlaySound, PlaySoundFile,
+    C_Sound.PlaySoundWithOptions (Cooldown Manager alerts) and C_VoiceChat.SpeakText with
+    `hooksecurefunc`, names the calling addon from `debugstack`, keeps the last 300 entries in
+    `LeboofDB.soundlog`. `ns.Fx.Play(name, why)` passes Leboof's reason. Global frame `LeboofSoundLog`.
   - `Profiles.lua`: profiles. `LeboofDB.profiles[name]` holds every setting (modes, size, gap,
     icon position, `window`, `minimap`); `LeboofDB.chars["First Last"]` (`P.CharKey`: UnitName's second value is the surname on
     Forever; no realm) is the profile each
@@ -113,7 +117,7 @@ off the table.
   running `tools/gen_data.py`; it reports names with no IDs.
 - Lua 5.1, no libraries (Ace, LibStub). Every file starts `local _, ns = ...`; shared state goes
   on `ns`. Globals: `LeboofCharDB`, `LeboofDB`, `LeboofAnchor`, `LeboofFrame`,
-  `LeboofMinimapButton`, `SLASH_LEBOOF1/2`,
+  `LeboofMinimapButton`, `LeboofSoundLog`, `SLASH_LEBOOF1/2`,
   `Leboof_OnAddonCompartmentClick` (the tests enforce this). `LeboofCharDB` is only read
   for the move to profiles; new settings go in a profile (`ns.DEFAULTS`), never there.
 - Display only: never automate anything or call protected functions.

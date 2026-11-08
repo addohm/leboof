@@ -146,7 +146,7 @@ function ns.BuildFxMenu(e, root)
 				function() return ns.db.fx[e.key] ~= nil and ns.db.fx[e.key][field] == v[1] end,
 				function()
 					Fx.Set(e, field, v[1])
-					if list == Fx.SOUNDS then Fx.Play(v[1]) end
+					if list == Fx.SOUNDS then Fx.Play(v[1], "picked in the menu") end
 				end)
 		end
 	end

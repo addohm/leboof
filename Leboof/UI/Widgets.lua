@@ -126,13 +126,13 @@ end
 function UI.OptionSound(parent, label, get, set, tooltip)
 	local row = UI.OptionSelect(parent, label, ns.Fx.SOUNDS, get, function(v)
 		set(v)
-		ns.Fx.Play(v)
+		ns.Fx.Play(v, "picked on the Effects tab")
 	end, { tooltip = tooltip, boxWidth = 130 })
 	local test = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
 	test:SetSize(50, 22)
 	test:SetPoint("LEFT", row.right + 4, 0)
 	test:SetText("Test")
-	test:SetScript("OnClick", function() ns.Fx.Play(get()) end)
+	test:SetScript("OnClick", function() ns.Fx.Play(get(), "Test button") end)
 	row.test = test
 	return row
 end
