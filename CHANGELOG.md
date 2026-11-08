@@ -6,6 +6,11 @@ All notable changes to leboof. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- The listing banner (`art/leboof-banner.png`), a 400 px avatar icon and `LISTING.md`, the
+  CurseForge and Wago page text (2026-11-08).
+
 ## [1.0.0] - 2026-11-08
 
 The first release, for WoW: Forever.

@@ -1,12 +1,15 @@
-"""Draws the Leboof icon into art/ (512, 256 and 128 px PNGs) and the in-game icon
-Leboof/Media/Icon.tga (128 px; the game reads TGA with power-of-two sizes; the .toc's IconTexture
-uses it for the AddOns list and the addon compartment).
+"""Draws the Leboof icon into art/ (512, 400, 256 and 128 px PNGs; 400 is the CurseForge and Wago
+avatar), the in-game icon Leboof/Media/Icon.tga (128 px; the game reads TGA with power-of-two
+sizes; the .toc's IconTexture uses it for the AddOns list and the addon compartment), and the
+listing banner art/leboof-banner.png (1600x500: the icon, the name, the tagline and a sample row).
 
 The design: two gold chevrons pointing up (a buff) on a dark teal rounded square, with a small red
 pip in the corner for the "missing" look of the keep row.
 
-Needs Pillow. Run: python3 art/make_logo.py
+Needs Pillow, and the Inter font for the banner (bold and semibold): point LEBOOF_FONT_BOLD and
+LEBOOF_FONT_SEMI at the files, then run: python3 art/make_logo.py
 """
+import os
 import pathlib
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
@@ -104,13 +107,70 @@ def draw_icon():
     return img
 
 
+BOLD = os.environ.get("LEBOOF_FONT_BOLD", "Inter-Bold.ttf")
+SEMI = os.environ.get("LEBOOF_FONT_SEMI", "Inter-SemiBold.ttf")
+TAGLINE = "Your buffs in combat, and what's missing."
+
+
+def tile(icon, size, missing):
+    """A sample buff icon for the banner: the icon itself, or its dimmed red copy with a red glow."""
+    pad = size // 4
+    out = Image.new("RGBA", (size + 2 * pad, size + 2 * pad), (0, 0, 0, 0))
+    ic = icon.resize((size, size), Image.LANCZOS)
+    if missing:
+        grey = ic.convert("L").convert("RGBA")
+        r, g, b, a = grey.split()
+        ic = Image.merge("RGBA", (r, g.point(lambda v: v * 0.4), b.point(lambda v: v * 0.4), ic.getchannel("A")))
+        ring = Image.new("L", out.size, 0)
+        ImageDraw.Draw(ring).rounded_rectangle([pad - 6, pad - 6, pad + size + 6, pad + size + 6], radius=size // 5, outline=255, width=8)
+        ring = ring.filter(ImageFilter.GaussianBlur(6))
+        for _ in range(2):  # twice, for a strong glow
+            out.paste(Image.new("RGBA", out.size, (255, 50, 40, 255)), (0, 0), ring)
+    out.alpha_composite(ic, (pad, pad))
+    return out
+
+
+def banner(icon):
+    from PIL import ImageFont
+    W, H = 1600, 500
+    img = vgrad(W, H, TEAL_TOP, TEAL_BOT).convert("RGBA")
+    light = Image.new("L", (W, H), 0)
+    ImageDraw.Draw(light).ellipse([-200, -500, 1100, 300], fill=60)
+    light = light.filter(ImageFilter.GaussianBlur(120))
+    img = Image.composite(Image.new("RGBA", (W, H), (255, 255, 255, 255)), img, light)
+    ic = icon.resize((380, 380), Image.LANCZOS)
+    img.alpha_composite(ic, (60, 60))
+    d = ImageDraw.Draw(img)
+    title = ImageFont.truetype(BOLD, 140)
+    tag = ImageFont.truetype(SEMI, 46)
+    d.text((500, 52), "Leboof", font=title, fill=GOLD_TOP)
+    d.line([(506, 228), (1530, 228)], fill=GOLD_BOT + (255,), width=3)
+    d.text((506, 244), TAGLINE, font=tag, fill=(214, 236, 236))
+    # A sample keep row: two buffs up, one missing (dimmed red, glowing).
+    x = 506
+    for missing in (False, False, True, False):
+        t = tile(icon, 104, missing)
+        img.alpha_composite(t, (x - 26, 318))
+        x += 104 + 22
+    img.convert("RGB").save(ART / "leboof-banner.png")
+    # Sanity checks without looking at it: the text fits, the tiles sit inside the canvas.
+    tb = d.textbbox((500, 52), "Leboof", font=title)
+    tg = d.textbbox((506, 244), TAGLINE, font=tag)
+    print("title", tb, "tagline", tg, "fits:", tg[2] < W - 40 and tb[3] < 228, "tiles end at x", x, "y", 318 + 156)
+
+
 def main():
     big = draw_icon()
-    for px in (512, 256, 128):
+    for px in (512, 400, 256, 128):
         big.resize((px, px), Image.LANCZOS).save(ART / f"leboof-icon-{px}.png")
     GAME_ICON.parent.mkdir(exist_ok=True)
     big.resize((128, 128), Image.LANCZOS).save(GAME_ICON)
-    print(f"Wrote art/leboof-icon-{{512,256,128}}.png and {GAME_ICON.relative_to(ROOT)}")
+    print(f"Wrote art/leboof-icon-{{512,400,256,128}}.png and {GAME_ICON.relative_to(ROOT)}")
+    if os.path.exists(BOLD) and os.path.exists(SEMI):
+        banner(big)
+        print("Wrote art/leboof-banner.png")
+    else:
+        print("No Inter font files (LEBOOF_FONT_BOLD, LEBOOF_FONT_SEMI): skipped the banner")
 
 
 if __name__ == "__main__":

@@ -158,4 +158,5 @@ python3 art/make_logo.py                              # redraw the icon (needs P
 - [SECURITY.md](SECURITY.md): secrets, access, reporting problems
 - [ROADMAP.md](ROADMAP.md): what's done and what's next
 - [TESTING.md](TESTING.md): what to check in game
+- [LISTING.md](LISTING.md): the CurseForge and Wago page text
 - [CLAUDE.md](CLAUDE.md): notes for Claude working on it

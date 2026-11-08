@@ -19,7 +19,8 @@ change.
 
 1. Finish the in-game checks in TESTING.md (glow styles, the expired glow hiding in combat, which
    buffs get a refresh window) and fix what turns up.
-2. Publishing: where public releases go (CurseForge, Wago, GitHub Releases), and the listing.
+2. Publishing: where public releases go (CurseForge, Wago, GitHub Releases). The listing text,
+   banner and avatar are ready (LISTING.md, art/); screenshots still to take.
 
 ## Ideas
 

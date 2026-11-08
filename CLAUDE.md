@@ -51,8 +51,11 @@ off the table.
     General tabs. `UI/Minimap.lua`: the minimap button and the addon compartment entry.
   - `Media/Icon.tga`: the in-game icon (TOC `IconTexture`: AddOns list, addon compartment),
     128 px 32-bit TGA, drawn by `art/make_logo.py`. Never edit by hand.
-- `art/`: `make_logo.py` (Pillow; run `python3 art/make_logo.py`) and the icon PNGs it draws
-  (512, 256, 128 px) for listings.
+- `art/`: `make_logo.py` (Pillow; Inter for the banner via LEBOOF_FONT_BOLD/SEMI) and what it
+  draws: the icon PNGs (512, 400 for the listing avatar, 256, 128) and `leboof-banner.png`
+  (1600x500).
+- `LISTING.md`: the CurseForge / Wago page text (basics, summary, description, screenshot list,
+  release notes). Keep its feature list in step with README.md.
 - `release/`: `Leboof-<version>.zip` release packages, built by `tools/make_release.py` from the
   committed `Leboof/` folder; committed with each release.
 - `tools/gen_data.py`: fetches Forever's SpellName table from wago.tools and writes `Data.lua`.
