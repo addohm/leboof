@@ -25,7 +25,7 @@ Hovering an icon shows the game's tooltip.
 By default you see **your own class's buffs and nothing else** (warrior, priest and druid so
 far): the long self-buffs in the top row (Battle Shout; Inner Fire and Fortitude; Mark of the Wild
 and Omen of Clarity), and your procs, cooldowns, shields and HoTs in the second row. Buffs from
-other classes, world buffs and weapon enchants start off; add them on the Buffs tab. A self-buff
+other classes, world buffs and weapon enchants start off; tick them in the Buffs tab's checklist. A self-buff
 only gets a top-row place if you know the spell (otherwise it's in the second row). Built-in
 buffs work by spell name, so all ranks count, and group versions like Prayer of Fortitude count as
 Fortitude.
@@ -41,10 +41,12 @@ straight from this repo on Windows, see [DEPLOY.md](DEPLOY.md) (`tools\install_f
 menu by the minimap. It has four tabs:
 
 - **Buffs:** add and remove what's tracked.
+  - **Leboof's buffs ▾:** a checklist of the built-in buffs, with a submenu per section (class and
+    group buffs, procs and cooldowns, world buffs, weapon enchants). Tick to track, untick to
+    remove; the menu stays open so you can tick several. They're known to work, with every rank
+    and group version.
   - **Tracked:** the buffs shown, under their headings, each with Keep up / While up and
     **Remove**. Changed ones are marked; hover one for its default and warning time.
-  - **Add from Leboof's list:** the built-in buffs you're not tracking. They're known to work,
-    with every rank and group version.
   - **Add from the buffs on you now:** your current buffs (out of combat), each with **Add**. This
     is the only way to add a buff of your own, and it's what keeps it to buffs that can work (see
     below). Added buffs go in the profile.

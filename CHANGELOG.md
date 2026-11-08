@@ -16,6 +16,8 @@ All notable changes to leboof. The format follows
 
 ### Added
 
+- The Buffs tab's "Leboof's buffs" checklist: a dropdown with a submenu per section, ticked for
+  what's tracked; tick to add, untick to remove. It replaces the one-at-a-time picker (2026-11-08).
 - Adding and removing buffs: the Buffs tab lists what's tracked, each with Remove, and adds from
   Leboof's list or from the buffs on you now (out of combat). Only buffs on you can be added,
   since those are the only ones the game's containers can show; nothing is typed in. An added

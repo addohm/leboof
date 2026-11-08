@@ -122,7 +122,7 @@ local function CurrentRow(parent)
 		local lines = { b.name }
 		local e = ns.EntryForSpell(b.spellId)
 		if e then
-			lines[#lines + 1] = "In Leboof's list: Add switches it on, with every rank."
+			lines[#lines + 1] = "One of Leboof's buffs: Add switches it on, with every rank."
 		else
 			lines[#lines + 1] = "Adds it as your own buff (spell ID " .. b.spellId .. ")."
 		end
@@ -140,12 +140,57 @@ local function Duration(seconds)
 	return math.floor(seconds + 0.5) .. " s"
 end
 
-local function UntrackedBuiltins()
-	local list = {}
-	for _, e in ipairs(ns.Catalogue) do
-		if not Tracked(e) then list[#list + 1] = { e.key, e.label } end
+-- Leboof's own buffs as a checklist: a dropdown (Blizzard's menu system) with a submenu per
+-- section; ticking tracks a buff, unticking removes it, and the menu stays open between ticks.
+local function SetTracked(e, on)
+	if on then
+		local mode = ns.DefaultMode(e)
+		ns.SetMode(e, mode ~= "off" and mode or "up")
+	else
+		ns.RemoveBuff(e)
 	end
-	return list
+	ns.Window.Refresh()
+end
+
+local function MenuText(e)
+	return Icon(e):gsub(":20:20:", ":16:16:") .. e.label
+end
+
+function ns.BuildBuffMenu(_, root)
+	local order, sections = {}, {}
+	for _, e in ipairs(ns.Catalogue) do
+		if not sections[e.section] then
+			sections[e.section] = {}
+			order[#order + 1] = e.section
+		end
+		table.insert(sections[e.section], e)
+	end
+	for _, name in ipairs(order) do
+		local sub = root:CreateButton(name)
+		for _, e in ipairs(sections[name]) do
+			sub:CreateCheckbox(MenuText(e), function() return Tracked(e) end, function() SetTracked(e, not Tracked(e)) end)
+		end
+	end
+end
+
+local function ChecklistRow(parent)
+	local row = CreateFrame("Frame", nil, parent)
+	row:SetHeight(36)
+	row.label = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	row.label:SetPoint("LEFT", 16, 0)
+	row.label:SetText("Leboof's buffs")
+	local dropdown = CreateFrame("DropdownButton", nil, row, "WowStyle1FilterDropdownTemplate")
+	dropdown:SetPoint("LEFT", 330, 0)
+	dropdown:SetupMenu(ns.BuildBuffMenu)
+	row.dropdown = dropdown
+	row.Sync = function()
+		local n = 0
+		for _, e in ipairs(ns.Catalogue) do
+			if Tracked(e) then n = n + 1 end
+		end
+		dropdown:SetText(n .. " of " .. #ns.Catalogue .. " tracked")
+	end
+	return row
 end
 
 Page({
@@ -155,20 +200,9 @@ Page({
 	fill = function(stack, panel)
 		local p = { tracked = {}, sections = {}, current = {} }
 		panel.parts = p
+		p.checklist = ChecklistRow(stack.inner)
 		p.headTracked = UI.OptionHeading(stack.inner, "Tracked")
-		p.noneTracked = UI.OptionText(stack.inner, "Nothing is tracked. Add buffs below.", 24)
-
-		p.headBuiltin = UI.OptionHeading(stack.inner, "Add from Leboof's list")
-		local getPick, setPick = Picker(UntrackedBuiltins)
-		p.builtinPick = UI.OptionSelect(stack.inner, "Buff", UntrackedBuiltins, getPick, setPick,
-			{ tooltip = { "Leboof's list", "Buffs known to work, with every rank and group version." } })
-		p.builtinAdd = UI.OptionButton(stack.inner, "", "Add", function()
-			local e = getPick() and ns.Entry(getPick())
-			if not e then return end
-			local mode = ns.DefaultMode(e)
-			ns.SetMode(e, mode ~= "off" and mode or "up")
-			ns.Window.Refresh()
-		end)
+		p.noneTracked = UI.OptionText(stack.inner, "Nothing is tracked. Tick buffs in Leboof's buffs above, or add one below.", 24)
 
 		p.headCurrent = UI.OptionHeading(stack.inner, "Add from the buffs on you now")
 		p.currentNote = UI.OptionText(stack.inner, function() return p.noteText end, 44)
@@ -177,6 +211,7 @@ Page({
 		local stack, p = panel.stack, panel.parts
 		stack:Reset()
 
+		stack:Add(p.checklist)
 		stack:Add(p.headTracked)
 		local n, section = 0, nil
 		for _, e in ipairs(ns.Entries()) do
@@ -193,12 +228,6 @@ Page({
 			end
 		end
 		if n == 0 then stack:Add(p.noneTracked) end
-
-		stack:Add(p.headBuiltin)
-		if #UntrackedBuiltins() > 0 then
-			stack:Add(p.builtinPick)
-			stack:Add(p.builtinAdd)
-		end
 
 		stack:Add(p.headCurrent)
 		local buffs, why = ns.ReadBuffs()
@@ -225,6 +254,7 @@ Page({
 		end
 		stack:Add(p.currentNote)
 		stack:Sync()
+		stack:Done()
 	end,
 	defaults = function()
 		ns.ResetModes()

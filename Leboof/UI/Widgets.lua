@@ -187,11 +187,20 @@ function UI.Stack(parent)
 	function stack:Sync()
 		for _, row in ipairs(self.rows) do row:Sync() end
 	end
-	-- Takes every row out (hidden), for pages that rebuild their list: Add them again in order.
+	-- For pages that rebuild their list: Reset, Add the rows again in order, then Done hides the
+	-- rows that weren't added back. Rows that stay are never hidden, so an open dropdown menu on
+	-- one stays open.
 	function stack:Reset()
-		for _, row in ipairs(self.rows) do row:Hide() end
-		self.rows, self.height = {}, 0
+		self.old, self.rows, self.height = self.rows, {}, 0
 		inner:SetHeight(1)
+	end
+	function stack:Done()
+		local kept = {}
+		for _, row in ipairs(self.rows) do kept[row] = true end
+		for _, row in ipairs(self.old or {}) do
+			if not kept[row] then row:Hide() end
+		end
+		self.old = nil
 	end
 	return stack
 end

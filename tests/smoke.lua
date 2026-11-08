@@ -218,18 +218,26 @@ Check(Keep().slots.c999001 and Keep().slots.c999001.enabled and Keep().slots.c99
 TrackedRowFor("c999001").remove.scripts.OnClick()
 Check(ns.db.custom.c999001 == nil and ns.db.modes.c999001 == nil and not Keep().slots.c999001.enabled, "Remove didn't delete the added buff")
 
--- Leboof's list: Add switches the picked buff on.
-local builtinAdd
+-- Leboof's buffs: a checklist dropdown, a submenu per section; ticking tracks, unticking removes.
+local checklist
 for _, row in ipairs(BuffsRows()) do
-	if row.button and row.button.text == "Add" and not row.ref then builtinAdd = row end
+	if row.dropdown then checklist = row end
 end
-Check(builtinAdd, "no Add button for Leboof's list")
-local before = 0
-for _, e in ipairs(ns.Entries()) do if ns.Mode(e) ~= "off" then before = before + 1 end end
-builtinAdd.button.scripts.OnClick()
-local after = 0
-for _, e in ipairs(ns.Entries()) do if ns.Mode(e) ~= "off" then after = after + 1 end end
-Check(after == before + 1, "Add from Leboof's list didn't add one")
+Check(checklist, "no Leboof's buffs dropdown")
+local menu = WM.Menu(checklist.dropdown)
+Check(#menu.buttons == 4 and menu.buttons[4].text == "Weapon enchants", "the menu should have a submenu per section")
+local total = 0
+for _, sub in ipairs(menu.buttons) do total = total + #sub.items end
+Check(total == #ns.Catalogue, "every built-in buff should be in the checklist")
+local mh = menu.buttons[4].items[1]
+Check(mh.text:find("Main hand enchant", 1, true) and not mh.isSelected(), "the main hand enchant should start unticked")
+mh.setSelected()
+Check(mh.isSelected() and ns.Mode(ns.byKey.mainhand) == "up", "ticking didn't track it")
+Check(TrackedRowFor("mainhand"), "a ticked buff should be in Tracked")
+Check(checklist.dropdown.text and checklist.dropdown.text:find("tracked"), "the dropdown should count the tracked buffs")
+mh.setSelected()
+Check(not mh.isSelected() and ns.Mode(ns.byKey.mainhand) == "off" and not TrackedRowFor("mainhand"), "unticking didn't remove it")
+Check(checklist.shown, "the dropdown row was hidden by a refresh (its menu would close)")
 
 -- In combat the buffs can't be read: the tab says so instead of failing.
 WM.combat = true

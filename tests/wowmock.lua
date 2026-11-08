@@ -115,8 +115,35 @@ function CreateFrame(kind, name, parent, template)
 		return NewContainer()
 	end
 	local f = NewFrame(kind, name)
+	if kind == "DropdownButton" then
+		function f:SetupMenu(generator) self.generator = generator end
+	end
 	if name then _G[name] = f end
 	return f
+end
+
+-- Runs a dropdown's menu generator into a plain table: { buttons = { { text, items = { checkbox } } } },
+-- each checkbox { text, isSelected, setSelected }.
+function M.Menu(dropdown)
+	local function Description()
+		local d = { buttons = {}, items = {} }
+		function d:CreateButton(text)
+			local sub = Description()
+			sub.text = text
+			table.insert(self.buttons, sub)
+			return sub
+		end
+		function d:CreateCheckbox(text, isSelected, setSelected)
+			local item = { text = text, isSelected = isSelected, setSelected = setSelected }
+			table.insert(self.items, item)
+			return item
+		end
+		function d:CreateTitle() end
+		return d
+	end
+	local root = Description()
+	dropdown.generator(dropdown, root)
+	return root
 end
 
 UIParent = NewFrame("Frame", "UIParent")

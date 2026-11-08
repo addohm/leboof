@@ -22,8 +22,10 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
     Copy, rename, delete (asks first) and reset work. Settings from an earlier build are kept.
 1f. Minimap button: right-click unlocks and locks the icons; drag moves it around the minimap,
     clear of Nothing Wasted's and Ticky's buttons.
-1g. Adding and removing: Remove a tracked buff, and it leaves the icons and shows up under "Add
-    from Leboof's list". Out of combat, with a buff on you that isn't tracked (a food or elixir
+1g. Adding and removing: "Leboof's buffs" opens a menu with four sections; each opens a checklist
+    with icons, ticked for what's tracked. Tick a few without the menu closing: each one appears in
+    Tracked and on screen, and the button's count goes up. Untick, or Remove in Tracked, and it
+    goes. Out of combat, with a buff on you that isn't tracked (a food or elixir
     buff, say), it's listed under "Add from the buffs on you now"; Add puts it in Tracked and on
     screen, and it shows in combat too, inside a dungeon as well. In combat the list says it
     can't read your buffs. Debuffs never appear in that list.
