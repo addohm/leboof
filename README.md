@@ -19,7 +19,7 @@ Two rows of icons, a little below the middle of the screen by default:
 - **While up** (second row): procs, cooldowns and any other buffs you add, shown only
   while they're on you. The row closes its gaps.
 
-The time left turns red near the end (each buff has its own warning time). Procs get a swipe.
+The time left turns red near the end, at the warning time (see below). Procs get a swipe.
 Hovering an icon shows the game's tooltip.
 
 By default you see **your own class's buffs and nothing else** (warrior, priest and druid so
@@ -119,13 +119,16 @@ old glow with marching ants). The Effects tab shows both glows on sample icons a
 
 **Sounds** need to know when something happened, and in combat the game hides that. So:
 
-- **Out of combat**, Leboof reads your buffs: a sound when a buff appears, drops, or runs low
-  (under its warning time), with separate defaults for the two rows.
+- **Running out:** one sound when a buff's time left goes under the **warning time**, which you
+  choose on the Effects tab ("Each buff's own" by default: 15 s for Battle Shout, 2 min for
+  Fortitude...) or per buff in its ⚙ menu. The time left turns red at the same moment. Out of
+  combat it comes from the buff's own timer; in combat, where that's hidden, it's timed from your
+  own cast with the duration last seen out of combat. So in combat it only works for buffs you
+  cast yourself, and it can't know about a dispel. It never plays twice for one cast.
+- **Out of combat**, Leboof reads your buffs: a sound when a buff appears or drops, with
+  separate defaults for the two rows.
 - **Entering combat** with a "keep up" buff missing: a warning sound, and the missing ones listed
   in chat, from what Leboof saw just before the fight.
-- **In combat**, a sound a few seconds before a buff *you cast* should run out, timed from your
-  cast with the duration last seen out of combat. It's a guess: it still plays if the buff was
-  dispelled, its charges used, or it went on someone else. Off by default.
 - **Blizzard's Cooldown Manager** is the only way the game plays a sound in combat when a buff is
   applied or removed. The Effects tab says whether Forever has it on and opens it; the alerts are
   set there, not in Leboof.
@@ -135,8 +138,8 @@ Every sound picker has a Test button, and picking a sound plays it.
 ## What it can't do
 
 The game decides what's visible in combat, and the addon never learns it. So nothing in Leboof
-can react to a buff changing in combat: no logic, and no sounds except the cast timer and
-Blizzard's Cooldown Manager above. The animations and the "missing" look are the game's own
+can react to a buff changing in combat: no logic, and no sounds except running out (timed from your
+own casts) and Blizzard's Cooldown Manager above. The animations and the "missing" look are the game's own
 display, layered.
 
 ## Development

@@ -4,14 +4,15 @@
 -- too: a warning glow in the game's refresh window (the end of the buff), and an expired glow on
 -- the keep row's red copy (it only shows while the buff is missing). Nothing else moves.
 --
--- Sounds need to know when something happened, and in combat addons can't. So:
---   out of combat   the player's buffs are readable: sounds when a buff is gained, drops, or runs
---                   low (under its warning time), and a warning on entering combat with a "keep
---                   up" buff missing (from the last out-of-combat look)
---   in combat       a sound shortly before a buff you cast yourself should end, timed from the
---                   cast (UNIT_SPELLCAST_SUCCEEDED is readable) with the duration last seen out of
---                   combat; a guess, wrong if the buff ends early. Blizzard's Cooldown Manager can
---                   play sounds when a buff is applied or removed: Leboof only points there.
+-- Sounds need to know when something happened, and in combat addons can't read buffs. So:
+--   running out     one sound when a buff's time left goes under its warning time (the player
+--                   picks it; "auto" is each buff's own). Out of combat from the buff's real timer;
+--                   in combat timed from the player's own cast (UNIT_SPELLCAST_SUCCEEDED is
+--                   readable) with the duration last seen out of combat. Never twice for one cast.
+--   out of combat   sounds when a buff appears or drops, and a warning on entering combat with a
+--                   "keep up" buff missing (from the last out-of-combat look)
+--   Blizzard's Cooldown Manager can play sounds in combat when a buff is applied or removed:
+--   Leboof only points there.
 --
 -- Settings: ns.db.effects holds the defaults, ns.db.fx[key] a buff's own choices (nil = default).
 local _, ns = ...
@@ -29,7 +30,15 @@ Fx.SOUNDS = {
 	{ "TELL_MESSAGE", "Whisper" },
 	{ "MAP_PING", "Map ping" },
 }
-Fx.LEADS = { { 3, "3 s" }, { 5, "5 s" }, { 10, "10 s" }, { 15, "15 s" }, { 30, "30 s" } }
+Fx.WARNS = {
+	{ "auto", "Each buff's own" }, { 3, "3 s" }, { 5, "5 s" }, { 10, "10 s" }, { 15, "15 s" },
+	{ 30, "30 s" }, { 60, "1 min" }, { 120, "2 min" }, { 300, "5 min" }, { 600, "10 min" },
+}
+
+function Fx.Seconds(s)
+	if s >= 60 and s % 60 == 0 then return (s / 60) .. " min" end
+	return s .. " s"
+end
 
 local function Label(list, value)
 	for _, v in ipairs(list) do
@@ -51,8 +60,9 @@ end
 -- A buff's setting: its own choice, else the default for its row.
 --   expiring, expiringColor             the warning glow near the end (Glow.STYLES, Glow.COLORS)
 --   missing, missingColor               the expired glow on the red copy
---   sGained, sLost, sExpiring, sCombat  out-of-combat sounds (sCombat: entering combat without it)
---   sCast                               the sound before your own cast runs out
+--   warn                                the warning time: seconds, or "auto" (the buff's own)
+--   sExpiring                           the running-out sound (in combat too, for your own casts)
+--   sGained, sLost, sCombat             out-of-combat sounds (sCombat: entering combat without it)
 function Fx.Default(e, field)
 	local d = ns.db.effects
 	local keep = ns.Mode(e) == "keep"
@@ -63,7 +73,14 @@ function Fx.Default(e, field)
 	if field == "sLost" then return keep and d.keepLost or d.upLost end
 	if field == "sExpiring" then return keep and d.keepExpiring or "none" end
 	if field == "sCombat" then return keep and d.combatMissing or "none" end
-	if field == "sCast" then return d.cast end
+	if field == "warn" then return d.warn end
+end
+
+-- A buff's warning time in seconds: when its time left turns red and "running out" plays.
+function Fx.Warn(e)
+	local w = Fx.Get(e, "warn")
+	if type(w) ~= "number" then return e.warn or 0 end
+	return w
 end
 
 -- Before glow styles, the two glows were just on or off.
@@ -146,6 +163,8 @@ function Fx.Update(quiet)
 	state = new
 end
 
+local castPlayed = {} -- key -> when the cast it was played for in combat should end
+
 -- Every second out of combat: "running out" sounds, from the expirations last read.
 local function CheckExpiring()
 	if InCombatLockdown() or not state then return end
@@ -154,7 +173,9 @@ local function CheckExpiring()
 		local exp = state[e.key]
 		if exp and exp > 0 and played[e.key] ~= exp then
 			local left = exp - now
-			if left > 0 and left <= (e.warn or 0) then
+			if castPlayed[e.key] and math.abs(castPlayed[e.key] - exp) < 3 then
+				played[e.key] = exp -- already played for this cast, in combat
+			elseif left > 0 and left <= Fx.Warn(e) then
 				played[e.key] = exp
 				Fx.Play(Fx.Get(e, "sExpiring"), "running out: " .. e.label)
 			end
@@ -181,16 +202,14 @@ local function CombatStarted()
 	end
 end
 
--- In combat: timed from your own casts ---------------------------------------------------------
+-- In combat: "running out" timed from your own casts --------------------------------------------
 
 local castTimers = {} -- key -> timer
 
 local function OnCast(spellID)
 	if Secret(spellID) then return end
 	local e = ns.EntryForSpell(spellID)
-	if not e or ns.Mode(e) == "off" then return end
-	local sound = Fx.Get(e, "sCast")
-	if sound == "none" then return end
+	if not e or ns.Mode(e) == "off" or Fx.Get(e, "sExpiring") == "none" then return end
 	local duration = Durations()[spellID]
 	if not duration then
 		for _, id in ipairs(e.idList or {}) do
@@ -198,16 +217,16 @@ local function OnCast(spellID)
 		end
 	end
 	if not duration then return end -- not seen out of combat yet
-	local lead = ns.db.effects.castLead
+	local warn = Fx.Warn(e)
+	if warn <= 0 or warn >= duration then return end
+	local ends = GetTime() + duration
 	if castTimers[e.key] then castTimers[e.key]:Cancel() end
-	castTimers[e.key] = C_Timer.NewTimer(math.max(0, duration - lead), function()
+	castTimers[e.key] = C_Timer.NewTimer(duration - warn, function()
 		castTimers[e.key] = nil
-		-- Out of combat the buff can be checked: skip if it's gone or was refreshed since.
-		if not InCombatLockdown() and state then
-			local exp = state[e.key]
-			if not exp or exp - GetTime() > lead + 1 then return end
-		end
-		Fx.Play(sound, "before your cast runs out: " .. e.label)
+		-- Out of combat the buff's real timer does it (CheckExpiring).
+		if not InCombatLockdown() then return end
+		castPlayed[e.key] = ends
+		Fx.Play(Fx.Get(e, "sExpiring"), "running out: " .. e.label .. " (timed from your cast)")
 	end)
 end
 

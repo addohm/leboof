@@ -86,7 +86,8 @@ local function EntryTooltip(e)
 	end
 	if e.note then lines[#lines + 1] = e.note end
 	lines[#lines + 1] = "Default for you: " .. MODE_NAMES[ns.DefaultMode(e)]
-	if e.warn and e.warn > 0 then lines[#lines + 1] = "Time left turns red under " .. e.warn .. " s" end
+	local warn = ns.Fx.Warn(e)
+	if warn > 0 then lines[#lines + 1] = "Running out (time turns red) at " .. ns.Fx.Seconds(warn) end
 	return lines
 end
 
@@ -160,7 +161,9 @@ function ns.BuildFxMenu(e, root)
 	Choice("Sound when it drops (out of combat)", "sLost", Fx.SOUNDS)
 	Choice("Sound when it's running out (out of combat)", "sExpiring", Fx.SOUNDS)
 	if keep then Choice("Sound entering combat without it", "sCombat", Fx.SOUNDS) end
-	if not e.enchant then Choice("Sound before your cast runs out (in combat)", "sCast", Fx.SOUNDS) end
+	local warns = { { "auto", "Its own (" .. Fx.Seconds(e.warn or 0) .. ")" } }
+	for i = 2, #Fx.WARNS do warns[#warns + 1] = Fx.WARNS[i] end
+	Choice("Warning time (running out)", "warn", warns)
 end
 
 local function CurrentRow(parent)
@@ -378,22 +381,24 @@ Page({
 			{ tooltip = { "Expired glow", "Around the red copy of a missing top-row buff, the same size as the warning glow. It's gone the moment the buff is back." } }))
 		stack:Add(UI.OptionSelect(stack.inner, "Expired glow colour", ns.Glow.COLORS, EffectSetting("missingColor")))
 
-		stack:Add(UI.OptionHeading(stack.inner, "Sounds out of combat: buffs to keep up"))
-		stack:Add(UI.OptionSound(stack.inner, "When one drops", EffectSetting("keepLost")))
+		stack:Add(UI.OptionHeading(stack.inner, "Running out"))
+		stack:Add(UI.OptionSelect(stack.inner, "Warning time", Fx.WARNS, EffectGet("warn"), EffectSet("warn"),
+			{ tooltip = { "Warning time", "When a buff counts as running out: its time left turns red and the running-out sound plays. \"Each buff's own\" uses Leboof's time for each (15 s for Battle Shout, 2 min for Fortitude...). A buff's gear menu can set its own." } }))
+		stack:Add(UI.OptionText(stack.inner, "Out of combat the sound comes from the buff's own timer. In combat Leboof can't read it, so it's timed from your own cast instead: buffs someone else cast on you only warn out of combat.", 40))
+
+		stack:Add(UI.OptionHeading(stack.inner, "Sounds: buffs to keep up"))
 		stack:Add(UI.OptionSound(stack.inner, "When one is running out", EffectGet("keepExpiring"), EffectSet("keepExpiring"),
-			{ "When one is running out", "When its time left goes under its warning time (the time left turns red then)." }))
+			{ "When one is running out", "When its time left goes under the warning time. In combat too, for buffs you cast yourself." }))
+		stack:Add(UI.OptionSound(stack.inner, "When one drops (out of combat)", EffectSetting("keepLost")))
 		stack:Add(UI.OptionSound(stack.inner, "Entering combat without one", EffectGet("combatMissing"), EffectSet("combatMissing"),
 			{ "Entering combat without one", "From what Leboof saw just before the fight." }))
 		stack:Add(UI.OptionCheck(stack.inner, "Also list the missing ones in chat", EffectSetting("combatChat")))
 
-		stack:Add(UI.OptionHeading(stack.inner, "Sounds out of combat: buffs while up"))
-		stack:Add(UI.OptionSound(stack.inner, "When one appears", EffectSetting("upGained")))
-		stack:Add(UI.OptionSound(stack.inner, "When one drops", EffectSetting("upLost")))
+		stack:Add(UI.OptionHeading(stack.inner, "Sounds: buffs while up"))
+		stack:Add(UI.OptionSound(stack.inner, "When one appears (out of combat)", EffectSetting("upGained")))
+		stack:Add(UI.OptionSound(stack.inner, "When one drops (out of combat)", EffectSetting("upLost")))
 
-		stack:Add(UI.OptionHeading(stack.inner, "Sounds in combat"))
-		stack:Add(UI.OptionSound(stack.inner, "Before a buff you cast runs out", EffectGet("cast"), EffectSet("cast"),
-			{ "Before a buff you cast runs out", "Timed from your cast, with the duration Leboof last saw out of combat. It's a guess: it still plays if the buff was dispelled, its charges used, or it was cast on someone else." }))
-		stack:Add(UI.OptionSelect(stack.inner, "How long before", Fx.LEADS, EffectSetting("castLead")))
+		stack:Add(UI.OptionHeading(stack.inner, "Blizzard's Cooldown Manager"))
 		stack:Add(UI.OptionText(stack.inner, function()
 			local available, reason = Fx.CooldownManager()
 			if available then

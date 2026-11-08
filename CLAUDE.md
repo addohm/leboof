@@ -29,9 +29,11 @@ off the table.
     animations only (`Glow.Build`); `Glow.Show` keeps one active on our own frames.
   - `Effects.lua`: animation and sound settings (`ns.db.effects` defaults, `ns.db.fx[key]` a
     buff's own; `ns.Fx.Get(e, field)` resolves them), sounds out of combat (from `ns.ReadBuffs()`),
-    the warning on entering combat, the sound timed from your own casts
-    (`UNIT_SPELLCAST_SUCCEEDED`, durations learned per character in `LeboofDB.durations`), and the
-    Cooldown Manager check.
+    the warning on entering combat, the running-out sound (out of combat from the real timer, in
+    combat timed from your own casts: `UNIT_SPELLCAST_SUCCEEDED`, durations learned per character
+    in `LeboofDB.durations`; `castPlayed` stops a second play after combat), the warning time
+    (`Fx.Warn(e)`: the player's choice or "auto" = the buff's built-in `warn`; it also sets the
+    red text, so it's part of a button's key), and the Cooldown Manager check.
   - `SoundLog.lua`: `/leboof soundlog`: hooks PlaySound, PlaySoundFile,
     C_Sound.PlaySoundWithOptions (Cooldown Manager alerts) and C_VoiceChat.SpeakText with
     `hooksecurefunc`, names the calling addon from `debugstack`, keeps the last 300 entries in

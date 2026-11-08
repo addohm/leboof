@@ -304,29 +304,67 @@ WM.combat = true
 WM.Fire("PLAYER_REGEN_DISABLED")
 Check(WM.Played("RAID_WARNING") and Printed("missing: Battle Shout"), "no warning entering combat without Battle Shout")
 
--- In combat: a sound before your own cast runs out (duration from the earlier look: 120 s).
-ns.db.effects.cast = "ALARM_CLOCK_WARNING_3"
+-- In combat, "running out" is timed from your own cast (duration from the earlier look: 120 s),
+-- at the warning time (Battle Shout's own: 15 s).
 WM.sounds = {}
 WM.Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 25289)
-WM.Advance(110)
-Check(#WM.sounds == 0, "the cast sound came too early")
+WM.Advance(100)
+Check(#WM.sounds == 0, "the in-combat running-out sound came too early")
 WM.Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 25289) -- recast: starts again
-WM.Advance(110)
+WM.Advance(100)
 Check(#WM.sounds == 0, "a recast didn't restart the timer")
 WM.Advance(6)
-Check(WM.Played("ALARM_CLOCK_WARNING_3"), "no sound before the cast ran out")
+Check(#WM.sounds == 1 and WM.Played("MAP_PING"), "no running-out sound in combat")
 WM.sounds = {}
 WM.Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 12345) -- not a tracked buff
 WM.Advance(200)
 Check(#WM.sounds == 0, "a sound for a spell that isn't tracked")
 
--- After combat: what changed during the fight isn't announced.
+-- Combat ends with the buff still running low: no second running-out sound for that cast.
+WM.Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 25289)
+WM.Advance(106)
+Check(#WM.sounds == 1, "the in-combat sound")
+WM.buffs = { { spellId = 25289, name = "Battle Shout", icon = 1, duration = 120, expirationTime = WM.now + 14 } }
+WM.combat = false
+WM.Fire("PLAYER_REGEN_ENABLED")
+WM.Advance(3)
+Check(#WM.sounds == 1, "running out played twice for one cast")
+
+-- Out of combat the cast timer stays quiet: the buff's real timer plays it, once.
 WM.sounds = {}
 WM.buffs = { { spellId = 25289, name = "Battle Shout", icon = 1, duration = 120, expirationTime = WM.now + 120 } }
+WM.Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 25289)
+WM.Fire("UNIT_AURA", "player")
+WM.Advance(110)
+Check(#WM.sounds == 1 and WM.Played("MAP_PING"), "out of combat it should play once, from the real timer")
+
+-- The warning time: the player's own for every buff, or per buff.
+WM.sounds = {}
+ns.db.effects.warn = 30
+ns.Refresh()
+WM.buffs = { { spellId = 25289, name = "Battle Shout", icon = 1, duration = 120, expirationTime = WM.now + 120 } }
+WM.Fire("UNIT_AURA", "player")
+WM.Advance(85)
+Check(#WM.sounds == 0, "a 30 s warning came early")
+WM.Advance(6)
+Check(#WM.sounds == 1, "no sound at the 30 s warning time")
+Check(KeepSlot("battleshout").button and UpGroup(30), "the warning time should reach the icons (red text) too")
+ns.Fx.Set(ns.byKey.battleshout, "warn", 5)
+Check(ns.Fx.Warn(ns.byKey.battleshout) == 5 and ns.Fx.Warn(ns.byKey.flurry) == 30, "a buff's own warning time")
+ns.Fx.Set(ns.byKey.battleshout, "warn", nil)
+ns.db.effects.warn = "auto"
+ns.Refresh()
+Check(ns.Fx.Warn(ns.byKey.battleshout) == 15, "auto is the buff's own")
+
+-- After combat: what changed during the fight isn't announced.
+WM.sounds = {}
+WM.combat = true
+WM.Fire("PLAYER_REGEN_DISABLED")
+WM.buffs = { { spellId = 25289, name = "Battle Shout", icon = 1, duration = 120, expirationTime = WM.now + 120 } }
+WM.sounds = {}
 WM.combat = false
 WM.Fire("PLAYER_REGEN_ENABLED")
 Check(#WM.sounds == 0, "a change during combat was announced afterwards")
-ns.db.effects.cast = "none"
 
 -- A buff's own choices: the gear menu.
 local fortRow
@@ -351,7 +389,7 @@ Check(ns.db.fx.fort == nil, "Default should clear the buff's own choice")
 ns.Window.Select("effects")
 local dropsRow
 for _, row in ipairs(ns.Window.CurrentPanel().stack.rows) do
-	if row.test and row.label.text == "When one drops" and not dropsRow then dropsRow = row end
+	if row.test and row.label.text == "When one drops (out of combat)" and not dropsRow then dropsRow = row end
 end
 Check(dropsRow, "no sound picker on the Effects tab")
 WM.sounds = {}

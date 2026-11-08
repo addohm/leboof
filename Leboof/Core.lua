@@ -16,7 +16,7 @@ local DEFAULTS = {
 		expiring = "pixel", expiringColor = "gold", missing = "pixel", missingColor = "red",
 		keepLost = "RAID_WARNING", keepExpiring = "MAP_PING", combatMissing = "RAID_WARNING", combatChat = true,
 		upGained = "none", upLost = "none",
-		cast = "none", castLead = 5,
+		warn = "auto",                  -- the warning time: "auto" (each buff's own) or seconds
 	},
 	fx = {},                            -- key -> a buff's own animation and sound choices
 	window = {},                        -- the options window: pos, size, tab

@@ -36,9 +36,10 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
     buffs a refresh window; say which ones glow. A missing top-row buff's red copy has a red
     glow, and the copy itself stays still. Out of
     combat: let Battle Shout run low (map ping at 15 s), then drop (raid warning). Pull with it
-    missing: a raid warning and "missing: Battle Shout" in chat. Turn on "Before a buff you cast
-    runs out", see Battle Shout once out of combat, then recast it in combat: the sound comes 5 s
-    before it ends. The ⚙ menu on a tracked buff changes just that buff. The Effects tab says
+    missing: a raid warning and "missing: Battle Shout" in chat. Recast Battle Shout in combat
+    (after seeing it once out of combat): the running-out sound comes 15 s before it ends, once,
+    and not again if combat ends before it runs out. Set Warning time to 30 s on the Effects tab:
+    the sound and the red text both move to 30 s. The ⚙ menu on a tracked buff changes just that buff. The Effects tab says
     whether Blizzard's Cooldown Manager is available; note what it says.
 1i. Glows: on the Effects tab, step through each warning glow style and colour; the sample icon
     shows it. Then check each style on a real buff near its end (Renew or Battle Shout): Pixel,

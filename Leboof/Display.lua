@@ -84,7 +84,7 @@ end
 -- so each combination gets its own slot, group or container (they're switched, never removed).
 local function AnimKey(e)
 	local Fx = ns.Fx
-	return Fx.Get(e, "expiring") .. ":" .. Fx.Get(e, "expiringColor") .. ":" .. ns.db.size
+	return Fx.Get(e, "expiring") .. ":" .. Fx.Get(e, "expiringColor") .. ":" .. ns.db.size .. ":" .. Fx.Warn(e)
 end
 
 -- upRow: the second row's buttons, with a cooldown swipe.
@@ -263,7 +263,7 @@ local function Slot(e, key)
 	if not button then
 		button = keepContainer:AddAuraSlot(key, "HELPFUL", {
 			candidateFilters = { includeSpellIDs = e.ids },
-			initializeFrame = Styler(e, e.warn, false),
+			initializeFrame = Styler(e, ns.Fx.Warn(e), false),
 		})
 		slots[key] = button
 	end
@@ -275,7 +275,7 @@ local function Enchant(e, key)
 	if not en then
 		en = { container = NewContainer(), slot = AuraContainerItemEnchantmentSlot[e.enchant] }
 		en.button = en.container:AddItemEnchantment(en.slot, {
-			initializeFrame = Styler(e, e.warn, false),
+			initializeFrame = Styler(e, ns.Fx.Warn(e), false),
 			hidePermanent = true,
 		})
 		enchants[key] = en
@@ -368,7 +368,7 @@ local function Layout()
 	local groups = {}
 	for _, e in ipairs(entries) do
 		if not e.enchant and ns.Mode(e) == "up" then
-			local w = e.warn or 0
+			local w = ns.Fx.Warn(e)
 			local key = "warn" .. w .. "/" .. AnimKey(e)
 			local g = groups[key]
 			if not g then

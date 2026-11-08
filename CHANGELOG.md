@@ -8,6 +8,11 @@ All notable changes to leboof. The format follows
 
 ### Changed
 
+- One running-out sound that works in and out of combat: out of combat from the buff's timer, in
+  combat timed from your own cast. It replaces "Before a buff you cast runs out", which also
+  played out of combat and doubled up. The warning time (when it plays and the time turns red) is
+  now a setting: each buff's own by default, or 3 s to 10 min, on the Effects tab or per buff
+  (2026-11-08).
 - Profiles and characters go by first and last name ("Brenna Ashford"), without the realm. Profiles
   named "Name - Realm" by an earlier build are renamed at the next login (2026-11-08).
 - The expired glow is as big as the warning glow, right at the icon's edge. Each top-row buff has
