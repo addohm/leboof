@@ -137,6 +137,47 @@ function UI.OptionSound(parent, label, get, set, tooltip)
 	return row
 end
 
+-- Two sample icons showing the default warning and expired glows as they're set.
+function UI.GlowPreview(parent)
+	local row = CreateFrame("Frame", nil, parent)
+	row:SetHeight(64)
+	local function Sample(x, label, icon)
+		local f = CreateFrame("Frame", nil, row)
+		f:SetSize(36, 36)
+		f:SetPoint("LEFT", x, 0)
+		f.icon = f:CreateTexture(nil, "ARTWORK")
+		f.icon:SetAllPoints()
+		f.icon:SetTexture(icon)
+		f.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+		local text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+		text:SetPoint("LEFT", f, "RIGHT", 14, 0)
+		text:SetText(label)
+		return f
+	end
+	local warning = Sample(LABEL_X + 14, "Warning", 132333) -- Battle Shout's icon
+	local expired = Sample(CONTROL_X + 14, "Expired (the red copy)", 132333)
+	expired.icon:SetDesaturated(true)
+	expired.icon:SetVertexColor(1, 0.4, 0.4)
+	expired.pulse = expired:CreateAnimationGroup()
+	expired.pulse:SetLooping("BOUNCE")
+	local fade = expired.pulse:CreateAnimation("Alpha")
+	fade:SetFromAlpha(1)
+	fade:SetToAlpha(0.35)
+	fade:SetDuration(0.7)
+	row.Sync = function()
+		local d = ns.db.effects
+		ns.Glow.Show(warning, d.expiring, d.expiringColor, 36)
+		local missing = d.missing
+		if missing == "pulse" then
+			if not expired.pulse:IsPlaying() then expired.pulse:Play() end
+		else
+			expired.pulse:Stop()
+		end
+		ns.Glow.Show(expired, missing == "pulse" and "none" or missing, d.missingColor, 36, true)
+	end
+	return row
+end
+
 -- buttonText may be a function, read at each Sync.
 function UI.OptionButton(parent, label, buttonText, onClick, tooltip)
 	local row = OptionRow(parent, label, nil, tooltip)

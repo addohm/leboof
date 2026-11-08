@@ -38,6 +38,12 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
     runs out", see Battle Shout once out of combat, then recast it in combat: the sound comes 5 s
     before it ends. The ⚙ menu on a tracked buff changes just that buff. The Effects tab says
     whether Blizzard's Cooldown Manager is available; note what it says.
+1i. Glows: on the Effects tab, step through each warning glow style and colour; the sample icon
+    shows it. Then check each style on a real buff near its end (Renew or Battle Shout): Pixel,
+    Action button, Auto-cast, GCD, Modern, Classic. Expired glows: a missing top-row buff shows
+    the chosen glow inside its red copy, and nothing of it shows around the icon once the buff is
+    back. Note any style that looks wrong or doesn't animate (the Classic ants and Modern loop
+    use the game's own art, so they need checking most).
 2. The icons appear a little below the middle of the screen. `/leboof unlock` shows a blue box to
    drag; `/leboof lock` hides it; the place is kept after `/reload`.
 3. Keep row: with the class buff missing (e.g. Battle Shout, Inner Fire), a dimmed red copy shows.

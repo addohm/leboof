@@ -25,6 +25,9 @@ off the table.
   - `Core.lua`: the defaults (`ns.DEFAULTS`), modes, events, `/leboof`.
   - `Custom.lua`: buffs the player adds (`ns.db.custom`), `ns.Entries()`, reading the player's buffs
     out of combat, learning other IDs of added buffs by name.
+  - `Glow.lua`: the glow styles, built from textures and Alpha/Translation/Rotation/FlipBook
+    animations only (`Glow.Build`); `Glow.Show` keeps one active on our own frames (`fit` keeps it
+    inside the frame, for the red copy).
   - `Effects.lua`: animation and sound settings (`ns.db.effects` defaults, `ns.db.fx[key]` a
     buff's own; `ns.Fx.Get(e, field)` resolves them), sounds out of combat (from `ns.ReadBuffs()`),
     the warning on entering combat, the sound timed from your own casts

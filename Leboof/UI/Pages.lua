@@ -151,8 +151,12 @@ function ns.BuildFxMenu(e, root)
 		end
 	end
 	Choice("When it appears", "gained", Fx.GAINED)
-	Choice("Glow near the end", "expiring", Fx.ONOFF)
-	if keep then Choice("Pulse while missing", "missing", Fx.ONOFF) end
+	Choice("Warning glow (near the end)", "expiring", ns.Glow.STYLES)
+	Choice("Warning glow colour", "expiringColor", ns.Glow.COLORS)
+	if keep then
+		Choice("Expired glow (while missing)", "missing", ns.Glow.STYLES)
+		Choice("Expired glow colour", "missingColor", ns.Glow.COLORS)
+	end
 	Choice("Sound when it appears (out of combat)", "sGained", Fx.SOUNDS)
 	Choice("Sound when it drops (out of combat)", "sLost", Fx.SOUNDS)
 	Choice("Sound when it's running out (out of combat)", "sExpiring", Fx.SOUNDS)
@@ -368,9 +372,14 @@ Page({
 		local Fx = ns.Fx
 		stack:Add(UI.OptionHeading(stack.inner, "Animations (in combat too)"))
 		stack:Add(UI.OptionSelect(stack.inner, "When a buff appears", Fx.GAINED, EffectSetting("gained")))
-		stack:Add(UI.OptionSelect(stack.inner, "Glow near the end", Fx.ONOFF, EffectGet("expiring"), EffectSet("expiring"), nil,
-			{ tooltip = { "Glow near the end", "A pulsing gold edge in the game's refresh window: the last part of a buff, where recasting it keeps some of the time left. Buffs without one don't glow." } }))
-		stack:Add(UI.OptionSelect(stack.inner, "Pulse the red copy while missing", Fx.ONOFF, EffectSetting("missing")))
+		stack:Add(UI.OptionHeading(stack.inner, "Glows"))
+		stack:Add(UI.GlowPreview(stack.inner))
+		stack:Add(UI.OptionSelect(stack.inner, "Warning glow (near the end)", ns.Glow.STYLES, EffectGet("expiring"), EffectSet("expiring"),
+			{ tooltip = { "Warning glow", "Shown in the game's refresh window: the last part of a buff, where recasting it keeps some of the time left. The game shows it, so it works in combat. Buffs without a refresh window don't get it." } }))
+		stack:Add(UI.OptionSelect(stack.inner, "Warning glow colour", ns.Glow.COLORS, EffectSetting("expiringColor")))
+		stack:Add(UI.OptionSelect(stack.inner, "Expired glow (top row, while missing)", ns.Glow.STYLES, EffectGet("missing"), EffectSet("missing"),
+			{ tooltip = { "Expired glow", "On the red copy of a missing top-row buff. Pulse fades the copy in and out; the glows sit inside it." } }))
+		stack:Add(UI.OptionSelect(stack.inner, "Expired glow colour", ns.Glow.COLORS, EffectSetting("missingColor")))
 
 		stack:Add(UI.OptionHeading(stack.inner, "Sounds out of combat: buffs to keep up"))
 		stack:Add(UI.OptionSound(stack.inner, "When one drops", EffectSetting("keepLost")))

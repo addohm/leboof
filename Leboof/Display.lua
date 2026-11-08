@@ -30,12 +30,10 @@ local function WarnCurve(warn)
 	return curve
 end
 
-local GLOW = { 1, 0.82, 0 }
-
 -- Animations the game plays itself (Effects.lua). gained: "pop" (the icon grows in) or "flash"
--- (a white flash) when the buff appears. expiring "on": a pulsing gold edge in the game's refresh
--- window near the end of the buff (the pandemic window).
-local function AddAnimations(button, gained, expiring)
+-- (a white flash) when the buff appears. The warning glow (Glow.lua, any style and colour) goes in
+-- the game's refresh window near the end of the buff (the pandemic window).
+local function AddAnimations(button, gained, glow, color, size)
 	if gained == "pop" then
 		local group = button:CreateAnimationGroup()
 		local scale = group:CreateAnimation("Scale")
@@ -59,32 +57,14 @@ local function AddAnimations(button, gained, expiring)
 		button:AddAuraShownAnimation(group)
 	end
 
-	if expiring == "on" then
-		local group = button:CreateAnimationGroup()
-		group:SetLooping("BOUNCE")
-		local edges = {
-			{ "TOPLEFT", -3, 3, "TOPRIGHT", 3, 1 }, { "BOTTOMLEFT", -3, -1, "BOTTOMRIGHT", 3, -3 },
-			{ "TOPLEFT", -3, 3, "BOTTOMLEFT", -1, -3 }, { "TOPRIGHT", 1, 3, "BOTTOMRIGHT", 3, -3 },
-		}
-		for _, p in ipairs(edges) do
-			local edge = button:CreateTexture(nil, "OVERLAY", nil, 6)
-			edge:SetPoint(p[1], p[2], p[3])
-			edge:SetPoint(p[4], p[5], p[6])
-			edge:SetColorTexture(GLOW[1], GLOW[2], GLOW[3], 1)
-			button:AddPandemicRegion(edge)
-			local pulse = group:CreateAnimation("Alpha")
-			pulse:SetTarget(edge)
-			pulse:SetFromAlpha(1)
-			pulse:SetToAlpha(0.2)
-			pulse:SetDuration(0.5)
-		end
-		button:AddPandemicActiveAnimation(group)
-	end
+	local built = ns.Glow.Build(button, glow, color, size)
+	for _, region in ipairs(built.regions) do button:AddPandemicRegion(region) end
+	for _, group in ipairs(built.groups) do button:AddPandemicActiveAnimation(group) end
 end
 
 -- Returns the initializeFrame callback that builds a Blizzard aura button's parts. It runs once,
 -- when the game creates the button, before the button is closed to addons.
-local function ButtonStyler(warn, swipe, gained, expiring)
+local function ButtonStyler(warn, swipe, gained, glow, color)
 	return function(button)
 		local size = ns.db.size
 		button:SetSize(size, size)
@@ -120,14 +100,20 @@ local function ButtonStyler(warn, swipe, gained, expiring)
 		count:SetPoint("TOPRIGHT", -1, -1)
 		button:SetApplicationCount(count)
 
-		AddAnimations(button, gained, expiring)
+		AddAnimations(button, gained, glow, color, size)
 	end
 end
 
 -- Which animations a buff's button has. A button's animations are fixed when the game creates it,
 -- so each combination gets its own slot, group or container (they're switched, never removed).
 local function AnimKey(e)
-	return ns.Fx.Get(e, "gained") .. ":" .. ns.Fx.Get(e, "expiring")
+	local Fx = ns.Fx
+	return Fx.Get(e, "gained") .. ":" .. Fx.Get(e, "expiring") .. ":" .. Fx.Get(e, "expiringColor") .. ":" .. ns.db.size
+end
+
+local function Styler(e, warn, swipe)
+	local Fx = ns.Fx
+	return ButtonStyler(warn, swipe, Fx.Get(e, "gained"), Fx.Get(e, "expiring"), Fx.Get(e, "expiringColor"))
 end
 
 local function NewContainer()
@@ -213,11 +199,15 @@ local function Holder(e)
 		fade:SetDuration(0.7)
 		holders[e.key] = h
 	end
-	if ns.Fx.Get(e, "missing") == "on" then
+	-- The expired glow: "pulse" pulses the red copy itself; a glow style sits inside it, so it's
+	-- hidden with the copy while the buff is up.
+	local style = ns.Fx.Get(e, "missing")
+	if style == "pulse" then
 		if not h.pulse:IsPlaying() then h.pulse:Play() end
 	else
 		h.pulse:Stop()
 	end
+	ns.Glow.Show(h, style == "pulse" and "none" or style, ns.Fx.Get(e, "missingColor"), ns.db.size, true)
 	local texture = e.icon -- an added buff: the icon it was seen with
 	if not texture and e.enchant then
 		texture = GetInventoryItemTexture("player", e.enchant == "MainHand" and INVSLOT_MAINHAND or INVSLOT_OFFHAND)
@@ -234,7 +224,7 @@ local function Slot(e, key)
 	if not button then
 		button = keepContainer:AddAuraSlot(key, "HELPFUL", {
 			candidateFilters = { includeSpellIDs = e.ids },
-			initializeFrame = ButtonStyler(e.warn, false, ns.Fx.Get(e, "gained"), ns.Fx.Get(e, "expiring")),
+			initializeFrame = Styler(e, e.warn, false),
 		})
 		slots[key] = button
 	end
@@ -246,7 +236,7 @@ local function Enchant(e, key)
 	if not en then
 		en = { container = NewContainer(), slot = AuraContainerItemEnchantmentSlot[e.enchant] }
 		en.button = en.container:AddItemEnchantment(en.slot, {
-			initializeFrame = ButtonStyler(e.warn, false, ns.Fx.Get(e, "gained"), ns.Fx.Get(e, "expiring")),
+			initializeFrame = Styler(e, e.warn, false),
 			hidePermanent = true,
 		})
 		enchants[key] = en
@@ -337,7 +327,7 @@ local function Layout()
 			local key = "warn" .. w .. "/" .. AnimKey(e)
 			local g = groups[key]
 			if not g then
-				g = { ids = {}, warn = w, gained = ns.Fx.Get(e, "gained"), expiring = ns.Fx.Get(e, "expiring") }
+				g = { ids = {}, warn = w, entry = e }
 				groups[key] = g
 			end
 			for id in pairs(e.ids) do g.ids[id] = true end
@@ -354,7 +344,7 @@ local function Layout()
 		if not upGroups[key] then
 			upContainer:AddAuraGroup(key, "HELPFUL", {
 				candidateFilters = { includeSpellIDs = g.ids },
-				initializeFrame = ButtonStyler(g.warn, true, g.gained, g.expiring),
+				initializeFrame = Styler(g.entry, g.warn, true),
 				sortMethod = AuraContainerSortMethod.Expiration,
 			})
 			upGroups[key] = true

@@ -30,7 +30,6 @@ Fx.SOUNDS = {
 	{ "MAP_PING", "Map ping" },
 }
 Fx.GAINED = { { "none", "None" }, { "pop", "Pop" }, { "flash", "Flash" } }
-Fx.ONOFF = { { "on", "On" }, { "off", "Off" } }
 Fx.LEADS = { { 3, "3 s" }, { 5, "5 s" }, { 10, "10 s" }, { 15, "15 s" }, { 30, "30 s" } }
 
 local function Label(list, value)
@@ -47,15 +46,18 @@ function Fx.Play(name)
 end
 
 -- A buff's setting: its own choice, else the default for its row.
---   gained, expiring, missing           animations
+--   gained                              the animation when it appears
+--   expiring, expiringColor             the warning glow near the end (Glow.STYLES, Glow.COLORS)
+--   missing, missingColor               the expired glow on the red copy
 --   sGained, sLost, sExpiring, sCombat  out-of-combat sounds (sCombat: entering combat without it)
 --   sCast                               the sound before your own cast runs out
 function Fx.Default(e, field)
 	local d = ns.db.effects
 	local keep = ns.Mode(e) == "keep"
 	if field == "gained" then return d.gained end
-	if field == "expiring" then return d.expiring end
-	if field == "missing" then return d.missing end
+	if field == "expiring" or field == "expiringColor" or field == "missing" or field == "missingColor" then
+		return d[field]
+	end
 	if field == "sGained" then return keep and "none" or d.upGained end
 	if field == "sLost" then return keep and d.keepLost or d.upLost end
 	if field == "sExpiring" then return keep and d.keepExpiring or "none" end
@@ -63,10 +65,15 @@ function Fx.Default(e, field)
 	if field == "sCast" then return d.cast end
 end
 
+-- Before glow styles, the two glows were just on or off.
+local OLD_GLOW = { on = "pulse", off = "none" }
+
 function Fx.Get(e, field)
 	local own = ns.db.fx[e.key]
-	if own and own[field] ~= nil then return own[field] end
-	return Fx.Default(e, field)
+	local value
+	if own and own[field] ~= nil then value = own[field] else value = Fx.Default(e, field) end
+	if field == "expiring" or field == "missing" then value = OLD_GLOW[value] or value end
+	return value
 end
 
 -- value nil goes back to the default.

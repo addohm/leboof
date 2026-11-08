@@ -101,9 +101,17 @@ is a tenth of its duration, from 3 seconds to 2 minutes.
 **Animations** play in combat too, because the game plays them itself on its own buttons:
 
 - **When a buff appears:** a pop (the icon grows in) or a white flash.
-- **Glow near the end:** a pulsing gold edge in the game's refresh window, the last part of a buff
-  where recasting keeps some of the time left. Buffs without one don't glow.
-- **Pulse while missing:** the red copy in the top row pulses.
+- **Warning glow:** in the game's refresh window, the last part of a buff where recasting keeps
+  some of the time left. Buffs without one don't glow.
+- **Expired glow:** on the red copy of a missing top-row buff, sized to stay inside it (so it's
+  hidden with the copy while the buff is up). "Pulse" fades the copy itself.
+
+Each glow has a style and a colour (gold, white, red, orange, yellow, green, cyan, blue, purple,
+pink or your class colour). The styles: **Pulse** (a pulsing edge), **Pixel glow** (dashes
+marching round the edge), **Action button glow** (Blizzard's spell-alert glow, pulsing),
+**Auto-cast shine** (sparkles chasing round the icon), **GCD** (a hand sweeping round, like the
+global cooldown), **Modern WoW glow** (today's action-bar proc glow) and **Classic WoW glow** (the
+old glow with marching ants). The Effects tab shows both glows on sample icons as you pick.
 
 **Sounds** need to know when something happened, and in combat the game hides that. So:
 

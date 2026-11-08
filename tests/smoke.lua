@@ -274,10 +274,10 @@ Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | 
 -- Animations: the buttons get the chosen ones; changing them switches to other buttons.
 WM.combat = false
 local bs = KeepSlot("battleshout")
-Check(bs and bs.enabled and #bs.button.shownAnims == 1 and #bs.button.pandemicAnims == 1 and #bs.button.pandemicRegions == 4,
-	"Battle Shout's button should pop when it appears and glow near the end")
+Check(bs and bs.enabled and #bs.button.shownAnims == 1 and #bs.button.pandemicAnims == 1 and #bs.button.pandemicRegions == 8,
+	"Battle Shout's button should pop when it appears and have the pixel glow near the end")
 ns.Fx.Set(ns.byKey.battleshout, "gained", "flash")
-ns.Fx.Set(ns.byKey.battleshout, "expiring", "off")
+ns.Fx.Set(ns.byKey.battleshout, "expiring", "none")
 local bs2 = KeepSlot("battleshout")
 Check(bs2 ~= bs and bs2.enabled and not bs.enabled, "changing the animations should switch buttons")
 Check(#bs2.button.shownAnims == 1 and #bs2.button.pandemicAnims == 0, "flash and no glow")
@@ -339,8 +339,9 @@ end
 Check(fortRow and fortRow.gear, "no gear button on a tracked buff")
 fortRow.gear.scripts.OnClick(fortRow.gear)
 local fxMenu = WM.RunMenu(function(root) WM.contextMenu.generator(fortRow.gear, root) end)
-Check(fxMenu.title == "Power Word: Fortitude" and #fxMenu.buttons == 8, "the gear menu should have a submenu per setting")
-local lost = fxMenu.buttons[5]
+Check(fxMenu.title == "Power Word: Fortitude" and #fxMenu.buttons == 10, "the gear menu should have a submenu per setting")
+local lost
+for _, b in ipairs(fxMenu.buttons) do if b.text:find("drops") then lost = b end end
 Check(lost.text:find("drops") and lost.items[1].text:find("Default (Raid warning)", 1, true) and lost.items[1].isSelected(), "Default first, selected")
 lost.items[#lost.items].setSelected()
 Check(ns.Fx.Get(ns.byKey.fort, "sLost") == "MAP_PING" and WM.Played("MAP_PING"), "picking a sound should set and play it")
@@ -381,3 +382,29 @@ ns.Refresh()
 Check(FirstX(KeepSlot("battleshout")) == -width and Up().points[1][1] == "TOPRIGHT", "grow from the right")
 ns.db.grow = "center"
 ns.Refresh()
+
+-- Glow styles: each builds; the warning glow goes to the game's button, the expired glow inside
+-- the red copy (so the button covers it while the buff is up); old on/off settings still work.
+for _, v in ipairs(ns.Glow.STYLES) do
+	local owner = CreateFrame("Frame")
+	owner:SetSize(32, 32)
+	local built = ns.Glow.Build(owner, v[1], "class", 32)
+	Check(v[1] == "none" or (#built.regions > 0 and #built.groups > 0), v[1] .. " built nothing")
+end
+for _, v in ipairs(ns.Glow.STYLES) do
+	ns.db.effects.expiring = v[1]
+	ns.db.effects.missing = v[1]
+	ns.Refresh()
+	Check(not Printed("couldn't"), v[1] .. ": " .. table.concat(WM.printed, " | "))
+end
+ns.db.effects.expiring = "modern"
+ns.db.effects.expiringColor = "blue"
+ns.Refresh()
+Check(#KeepSlot("battleshout").button.pandemicRegions == 1, "the modern glow is one flipbook texture")
+ns.db.fx.battleshout = { expiring = "on", missing = "off" }
+Check(ns.Fx.Get(ns.byKey.battleshout, "expiring") == "pulse" and ns.Fx.Get(ns.byKey.battleshout, "missing") == "none", "old on/off values")
+ns.db.fx.battleshout = nil
+ns.db.effects.expiring, ns.db.effects.expiringColor = "pixel", "gold"
+ns.db.effects.missing = "classic"
+ns.Refresh()
+Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
