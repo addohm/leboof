@@ -23,8 +23,9 @@ The time left turns red near the end (each buff has its own warning time). Procs
 Hovering an icon shows the game's tooltip.
 
 By default you see **your own class's buffs and nothing else** (warrior, priest and druid so
-far): the long self-buffs in the top row (Battle Shout; Inner Fire and Fortitude; Mark of the Wild
-and Omen of Clarity), and your procs, cooldowns, shields and HoTs in the second row. Buffs from
+far): the long self-buffs in the top row (Battle Shout; Inner Fire, Fortitude and Divine Spirit,
+plus Shadowguard or Touch of Weakness for troll and undead priests; Mark of the Wild and Omen of
+Clarity), and your procs, cooldowns, shields and HoTs in the second row. Buffs from
 other classes, world buffs and weapon enchants start off; tick them in the Buffs tab's checklist. A self-buff
 only gets a top-row place if you know the spell (otherwise it's in the second row). Built-in
 buffs work by spell name, so all ranks count, and group versions like Prayer of Fortitude count as

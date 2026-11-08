@@ -83,6 +83,7 @@ local function EntryTooltip(e)
 	elseif e.names and #e.names > 1 then
 		lines[#lines + 1] = "Counts: " .. table.concat(e.names, ", ")
 	end
+	if e.note then lines[#lines + 1] = e.note end
 	lines[#lines + 1] = "Default for you: " .. MODE_NAMES[ns.DefaultMode(e)]
 	if e.warn and e.warn > 0 then lines[#lines + 1] = "Time left turns red under " .. e.warn .. " s" end
 	return lines
@@ -213,7 +214,13 @@ function ns.BuildBuffMenu(_, root)
 	for _, name in ipairs(order) do
 		local sub = root:CreateButton(name)
 		for _, e in ipairs(sections[name]) do
-			sub:CreateCheckbox(MenuText(e), function() return Tracked(e) end, function() SetTracked(e, not Tracked(e)) end)
+			local item = sub:CreateCheckbox(MenuText(e), function() return Tracked(e) end, function() SetTracked(e, not Tracked(e)) end)
+			if e.note then
+				item:SetTooltip(function(tooltip)
+					GameTooltip_SetTitle(tooltip, e.label)
+					GameTooltip_AddNormalLine(tooltip, e.note)
+				end)
+			end
 		end
 	end
 end

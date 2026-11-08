@@ -8,6 +8,17 @@ All notable changes to leboof. The format follows
 
 ### Changed
 
+- The buff list checked against WoW: Forever (2026-11-08):
+  - Removed Spirit of Zandalar: Zul'Gurub isn't in Forever.
+  - Added warrior Shield Block, Shield Wall, Last Stand, Retaliation, Reckless Swings and Gore
+    Drinker; priest Spirit Tap, Inspiration, Dark Inspiration, Divine Aegis, Prayer of Mending and
+    the racials (Shadowguard, Touch of Weakness, Elune's Grace, Feedback, Dark Sacrifice); druid
+    Dash, Frenzied Regeneration, Nature's Swiftness, Nature's Grace, Eclipse, Leader of the Pack,
+    Moonkin Aura and Wild Growth. On by default for their class.
+  - Added the world buffs Traces of Silithyst and Sayge's Dark Fortune (off by default).
+  - Divine Spirit is trained by every priest in Forever, so it's in the top row for priests.
+  - World buffs and racials say where they come from in their tooltips; Rallying Cry (Onyxia, from
+    Dec 9) and Warchief's Blessing (Upper Blackrock Spire may not be in Forever) are marked.
 - Defaults: each class sees only its own buffs (self-buffs, procs, cooldowns, shields, HoTs).
   Buffs from other classes, world buffs and weapon enchants start off (2026-11-08).
 - `/leboof` opens the options window; `/leboof help` lists the commands (2026-11-08).

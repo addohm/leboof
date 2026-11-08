@@ -93,6 +93,11 @@ off the table.
 - Check API against Blizzard's UI source, `forever` branch:
   https://github.com/Gethe/wow-ui-source/tree/forever. Prefer `C_*` functions; many old globals
   are gone.
+- **Check a buff is in Forever before adding it.** Forever's spell data (wago.tools `wowf`) also
+  holds Season of Discovery runes and spells that aren't in the game, so a name with IDs proves
+  nothing. Use Forever sources: the wiki's `<Class>_abilities_(Forever)` pages, Blizzard's class
+  deep dives, Wowhead's Forever database. World buffs and racials get a `note` (shown in tooltips)
+  saying where they come from, and whether that's confirmed.
 - Spell IDs come from `Data.lua`, by name. Add a buff by adding its names to `Buffs.lua` and
   running `tools/gen_data.py`; it reports names with no IDs.
 - Lua 5.1, no libraries (Ace, LibStub). Every file starts `local _, ns = ...`; shared state goes

@@ -47,7 +47,9 @@ Check(UpGroup(3) and UpGroup(3).filters.includeSpellIDs[12966], "Flurry should b
 
 -- Defaults: the class's own buffs on, everything else off.
 local function M(key) return ns.DefaultMode(ns.byKey[key]) end
-Check(M("battleshout") == "keep" and M("flurry") == "up" and M("deathwish") == "up", "a warrior's own buffs should be on")
+Check(M("battleshout") == "keep" and M("flurry") == "up" and M("deathwish") == "up" and M("shieldwall") == "up", "a warrior's own buffs should be on")
+Check(ns.byKey.zandalar == nil and ns.byKey.silithyst and ns.byKey.sayge and #ns.byKey.sayge.idList >= 8, "the world buffs list")
+Check(ns.byKey.rallyingcry.note and ns.byKey.warchief.note:find("unconfirmed"), "world buffs should say where they come from")
 for _, key in ipairs({ "fort", "motw", "kings", "might", "intellect", "rallyingcry", "mainhand", "offhand", "innerfire", "renew" }) do
 	Check(M(key) == "off", key .. " should be off for a warrior")
 end
@@ -248,6 +250,8 @@ for _, sub in ipairs(menu.buttons) do total = total + #sub.items end
 Check(total == #ns.Catalogue, "every built-in buff should be in the checklist")
 local mh = menu.buttons[4].items[1]
 Check(mh.text:find("Main hand enchant", 1, true) and not mh.isSelected(), "the main hand enchant should start unticked")
+local world = menu.buttons[3]
+Check(world.text == "World buffs" and world.items[1].tooltip, "world buffs in the checklist should have a tooltip")
 mh.setSelected()
 Check(mh.isSelected() and ns.Mode(ns.byKey.mainhand) == "up", "ticking didn't track it")
 Check(TrackedRowFor("mainhand"), "a ticked buff should be in Tracked")

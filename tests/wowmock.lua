@@ -157,6 +157,7 @@ function M.RunMenu(generate)
 		end
 		function d:CreateCheckbox(text, isSelected, setSelected)
 			local item = { text = text, isSelected = isSelected, setSelected = setSelected }
+			function item:SetTooltip(fn) self.tooltip = fn end
 			table.insert(self.items, item)
 			return item
 		end

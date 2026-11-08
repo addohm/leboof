@@ -10,7 +10,8 @@
 -- each class sees its own buffs (self-buffs, procs, cooldowns, shields, HoTs) and nothing else.
 -- A "keep" default only applies if the character knows one of the spell's IDs (so a level 10
 -- druid without Omen of Clarity isn't shown it as missing); otherwise it falls back to "up".
--- `warn` is when the time left turns red, in seconds. Sections are the headings in the options
+-- `warn` is when the time left turns red, in seconds. `note` is shown in the options window's
+-- tooltips: where a world buff comes from, or which race a racial is for. Sections are the headings in the options
 -- window's Buffs tab; the order here is the order on screen.
 local _, ns = ...
 
@@ -30,8 +31,10 @@ Section("Class and group buffs", {
 	{ key = "motw", names = { "Mark of the Wild", "Gift of the Wild" }, class = { DRUID = "keep" }, warn = 120 },
 	{ key = "omen", names = { "Omen of Clarity" }, class = { DRUID = "keep" }, warn = 60 },
 	{ key = "thorns", names = { "Thorns" }, class = { DRUID = "up" }, warn = 60 },
-	{ key = "spirit", names = { "Divine Spirit", "Prayer of Spirit" }, class = { PRIEST = "up" }, warn = 120 },
+	{ key = "spirit", names = { "Divine Spirit", "Prayer of Spirit" }, class = { PRIEST = "keep" }, warn = 120 },
 	{ key = "shadowprot", names = { "Shadow Protection", "Prayer of Shadow Protection" }, class = { PRIEST = "up" }, warn = 120 },
+	{ key = "shadowguard", names = { "Shadowguard" }, class = { PRIEST = "keep" }, warn = 60, note = "Troll priests." },
+	{ key = "touchofweakness", names = { "Touch of Weakness" }, class = { PRIEST = "keep" }, warn = 60, note = "Undead priests." },
 	{ key = "intellect", names = { "Arcane Intellect", "Arcane Brilliance" }, warn = 120 },
 	{ key = "might", names = { "Blessing of Might", "Greater Blessing of Might" }, warn = 60 },
 	{ key = "wisdom", names = { "Blessing of Wisdom", "Greater Blessing of Wisdom" }, warn = 60 },
@@ -46,12 +49,34 @@ Section("Procs and cooldowns", {
 	{ key = "deathwish", names = { "Death Wish" }, class = { WARRIOR = "up" }, warn = 5 },
 	{ key = "recklessness", names = { "Recklessness" }, class = { WARRIOR = "up" }, warn = 5 },
 	{ key = "sweeping", names = { "Sweeping Strikes" }, class = { WARRIOR = "up" }, warn = 3 },
+	{ key = "recklessswings", names = { "Reckless Swings" }, class = { WARRIOR = "up" }, warn = 2 },
+	{ key = "goredrinker", names = { "Gore Drinker" }, class = { WARRIOR = "up" }, warn = 2 },
+	{ key = "shieldblock", names = { "Shield Block" }, class = { WARRIOR = "up" }, warn = 2 },
+	{ key = "shieldwall", names = { "Shield Wall" }, class = { WARRIOR = "up" }, warn = 3 },
+	{ key = "laststand", names = { "Last Stand" }, class = { WARRIOR = "up" }, warn = 3 },
+	{ key = "retaliation", names = { "Retaliation" }, class = { WARRIOR = "up" }, warn = 3 },
 	{ key = "shadowform", names = { "Shadowform" }, class = { PRIEST = "up" }, warn = 0 },
 	{ key = "innerfocus", names = { "Inner Focus" }, class = { PRIEST = "up" }, warn = 0 },
 	{ key = "fade", names = { "Fade" }, class = { PRIEST = "up" }, warn = 3 },
+	{ key = "spirittap", names = { "Spirit Tap" }, class = { PRIEST = "up" }, warn = 3 },
+	{ key = "darkinspiration", names = { "Dark Inspiration" }, class = { PRIEST = "up" }, warn = 3 },
+	{ key = "inspiration", names = { "Inspiration" }, class = { PRIEST = "up" }, warn = 3 },
+	{ key = "divineaegis", names = { "Divine Aegis" }, class = { PRIEST = "up" }, warn = 3 },
+	{ key = "prayerofmending", names = { "Prayer of Mending" }, class = { PRIEST = "up" }, warn = 5 },
+	{ key = "elunesgrace", names = { "Elune's Grace" }, class = { PRIEST = "up" }, warn = 3, note = "Night elf priests." },
+	{ key = "feedback", names = { "Feedback" }, class = { PRIEST = "up" }, warn = 3, note = "Human priests." },
+	{ key = "darksacrifice", names = { "Dark Sacrifice" }, class = { PRIEST = "up" }, warn = 3, note = "Undead priests." },
 	{ key = "clearcasting", names = { "Clearcasting" }, class = { DRUID = "up" }, warn = 3 },
 	{ key = "barkskin", names = { "Barkskin" }, class = { DRUID = "up" }, warn = 3 },
 	{ key = "naturesgrasp", names = { "Nature's Grasp" }, class = { DRUID = "up" }, warn = 5 },
+	{ key = "dash", names = { "Dash" }, class = { DRUID = "up" }, warn = 3 },
+	{ key = "frenziedregen", names = { "Frenzied Regeneration" }, class = { DRUID = "up" }, warn = 3 },
+	{ key = "naturesswiftness", names = { "Nature's Swiftness" }, class = { DRUID = "up" }, warn = 0 },
+	{ key = "naturesgrace", names = { "Nature's Grace" }, class = { DRUID = "up" }, warn = 1 },
+	{ key = "eclipse", names = { "Eclipse" }, class = { DRUID = "up" }, warn = 3 },
+	{ key = "leaderofthepack", names = { "Leader of the Pack" }, class = { DRUID = "up" }, warn = 0 },
+	{ key = "moonkinaura", names = { "Moonkin Aura" }, class = { DRUID = "up" }, warn = 0 },
+	{ key = "wildgrowth", names = { "Wild Growth" }, class = { DRUID = "up" }, warn = 3 },
 	{ key = "powerinfusion", names = { "Power Infusion" }, class = { PRIEST = "up" }, warn = 3 },
 	{ key = "innervate", names = { "Innervate" }, class = { DRUID = "up" }, warn = 3 },
 	{ key = "fearward", names = { "Fear Ward" }, class = { PRIEST = "up" }, warn = 30 },
@@ -62,13 +87,20 @@ Section("Procs and cooldowns", {
 })
 
 Section("World buffs", {
-	{ key = "rallyingcry", names = { "Rallying Cry of the Dragonslayer" }, warn = 300 },
-	{ key = "zandalar", names = { "Spirit of Zandalar" }, warn = 300 },
-	{ key = "warchief", names = { "Warchief's Blessing" }, warn = 300 },
-	{ key = "songflower", names = { "Songflower Serenade" }, warn = 300 },
-	{ key = "fengus", names = { "Fengus' Ferocity" }, warn = 300 },
-	{ key = "moldar", names = { "Mol'dar's Moxie" }, warn = 300 },
-	{ key = "slipkik", names = { "Slip'kik's Savvy" }, warn = 300 },
+	{ key = "rallyingcry", names = { "Rallying Cry of the Dragonslayer" }, warn = 300,
+		note = "From Onyxia's head (Onyxia's Lair opens Dec 9). No effect inside raids." },
+	{ key = "warchief", names = { "Warchief's Blessing" }, warn = 300,
+		note = "From Rend's head in Upper Blackrock Spire, which may not be in Forever: unconfirmed. No effect inside raids." },
+	{ key = "songflower", names = { "Songflower Serenade" }, warn = 300, note = "Songflowers in Felwood. No effect inside raids." },
+	{ key = "fengus", names = { "Fengus' Ferocity" }, warn = 300, note = "Dire Maul tribute run. No effect inside raids." },
+	{ key = "moldar", names = { "Mol'dar's Moxie" }, warn = 300, note = "Dire Maul tribute run. No effect inside raids." },
+	{ key = "slipkik", names = { "Slip'kik's Savvy" }, warn = 300, note = "Dire Maul tribute run. No effect inside raids." },
+	{ key = "silithyst", names = { "Traces of Silithyst" }, warn = 120, note = "Turning in Silithyst in Silithus." },
+	{ key = "sayge", label = "Sayge's Dark Fortune", warn = 300, names = {
+		"Sayge's Dark Fortune of Damage", "Sayge's Dark Fortune of Agility", "Sayge's Dark Fortune of Intelligence",
+		"Sayge's Dark Fortune of Spirit", "Sayge's Dark Fortune of Stamina", "Sayge's Dark Fortune of Strength",
+		"Sayge's Dark Fortune of Armor", "Sayge's Dark Fortune of Resistance",
+	}, note = "Sayge at the Darkmoon Faire. Whether the Faire runs in Forever is unconfirmed. No effect inside raids." },
 })
 
 -- Temporary weapon enchants (oils, sharpening stones). They always go at the end of the first
