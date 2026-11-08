@@ -69,7 +69,7 @@ end
 function ns.DefaultMode(e)
 	if e.custom then return "up" end
 	local _, class = UnitClass("player")
-	local mode = (e.class and e.class[class]) or e.other or "off"
+	local mode = (e.class and e.class[class]) or "off"
 	if mode == "keep" and not e.enchant and e.class and e.class[class] == "keep" and not Knows(e) then
 		mode = "up"
 	end

@@ -8,6 +8,8 @@ All notable changes to leboof. The format follows
 
 ### Changed
 
+- Defaults: each class sees only its own buffs (self-buffs, procs, cooldowns, shields, HoTs).
+  Buffs from other classes, world buffs and weapon enchants start off (2026-11-08).
 - `/leboof` opens the options window; `/leboof help` lists the commands (2026-11-08).
 - `tools/install_forever.cmd` installs into the live client (`_forever_`) by default, not the
   beta (2026-11-08).

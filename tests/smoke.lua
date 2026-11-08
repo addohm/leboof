@@ -28,12 +28,30 @@ for _, g in pairs(Up().groups) do if g.enabled then groups = groups + 1 end end
 Check(groups > 0, "the up row should have groups")
 Check(Up().groups.warn3 and Up().groups.warn3.filters.includeSpellIDs[12966], "Flurry should be in the 3s group")
 
+-- Defaults: the class's own buffs on, everything else off.
+local function M(key) return ns.DefaultMode(ns.byKey[key]) end
+Check(M("battleshout") == "keep" and M("flurry") == "up" and M("deathwish") == "up", "a warrior's own buffs should be on")
+for _, key in ipairs({ "fort", "motw", "kings", "might", "intellect", "rallyingcry", "mainhand", "offhand", "innerfire", "renew" }) do
+	Check(M(key) == "off", key .. " should be off for a warrior")
+end
+WM.class = "PRIEST"
+WM.known[10938] = true
+Check(M("fort") == "keep" and M("innerfire") == "up" and M("renew") == "up" and M("shield") == "up", "a priest's own buffs should be on (keep needs the spell known)")
+Check(M("battleshout") == "off" and M("motw") == "off" and M("kings") == "off", "other classes' buffs should be off for a priest")
+WM.class = "DRUID"
+Check(M("motw") == "up" and M("thorns") == "up" and M("clearcasting") == "up" and M("fort") == "off", "a druid's defaults")
+WM.class = "WARRIOR"
+WM.known[10938] = nil
+
 -- Moving Fort to keep adds a place; turning it off disables it again.
 WM.Slash("fort keep")
 Check(Keep().slots.fort and Keep().slots.fort.enabled, "fort keep didn't add a place")
 WM.Slash("fort off")
 Check(not Keep().slots.fort.enabled, "fort off didn't disable the place")
-Check(ns.db.modes.fort == "off", "fort off wasn't saved")
+Check(ns.Mode(ns.byKey.fort) == "off" and ns.db.modes.fort == nil, "off is a warrior's default for fort, so nothing is saved")
+WM.Slash("battleshout off")
+Check(ns.db.modes.battleshout == "off", "a change from the default wasn't saved")
+WM.Slash("battleshout default")
 WM.Slash("fort default")
 Check(ns.db.modes.fort == nil, "fort default should clear the saved mode")
 
@@ -172,6 +190,7 @@ WM.buffs = {
 	{ spellId = 999001, name = "Juju Power", icon = 5555, duration = 1800 },
 	{ spellId = 10938, name = "Power Word: Fortitude", icon = 135987, duration = 1800 },
 }
+ns.SetMode(ns.byKey.fort, "up")
 Check(TrackedRowFor("fort") and not CurrentRowFor(10938), "a tracked buff shouldn't be offered again")
 TrackedRowFor("fort").remove.scripts.OnClick()
 Check(ns.Mode(ns.byKey.fort) == "off" and CurrentRowFor(10938), "Remove didn't turn Fortitude off")

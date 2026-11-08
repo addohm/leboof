@@ -34,7 +34,9 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
 4. The same in combat, out in the world: the icon appears on cast and the red copy comes back when
    the buff ends or is cancelled.
 5. The same in combat inside a dungeon (where addons get no aura data at all).
-6. Up row: procs (Flurry, Enrage, Clearcasting) and buffs from others appear while up, and the row
+5a. Defaults on a fresh profile: only your class's buffs are tracked (Buffs tab); Fortitude from
+    another priest, Kings, world buffs and weapon enchants aren't, until you add them.
+6. Up row: procs (Flurry, Enrage, Clearcasting) and buffs you've added appear while up, and the row
    closes its gaps.
 7. Time left turns red near the end.
 8. Weapon enchant: apply a sharpening stone or oil; it shows at the end of the keep row.

@@ -16,15 +16,19 @@ Two rows of icons, a little below the middle of the screen by default:
   Inner Fire, Fortitude, Mark of the Wild or Omen of Clarity. When the buff is up you see its icon
   and time left. When it's missing you see a dimmed red copy instead. Weapon enchants (oils,
   sharpening stones) sit at the end of this row.
-- **While up** (second row): procs, cooldowns, buffs from others and world buffs, shown only
+- **While up** (second row): procs, cooldowns and any other buffs you add, shown only
   while they're on you. The row closes its gaps.
 
 The time left turns red near the end (each buff has its own warning time). Procs get a swipe.
 Hovering an icon shows the game's tooltip.
 
-The defaults depend on your class (warrior, priest and druid so far). A class buff only
-gets a "keep" place if you know the spell. Everything works by spell name, so all ranks count,
-and group versions like Prayer of Fortitude count as Fortitude.
+By default you see **your own class's buffs and nothing else** (warrior, priest and druid so
+far): the long self-buffs in the top row (Battle Shout; Inner Fire and Fortitude; Mark of the Wild
+and Omen of Clarity), and your procs, cooldowns, shields and HoTs in the second row. Buffs from
+other classes, world buffs and weapon enchants start off; add them on the Buffs tab. A self-buff
+only gets a top-row place if you know the spell (otherwise it's in the second row). Built-in
+buffs work by spell name, so all ranks count, and group versions like Prayer of Fortitude count as
+Fortitude.
 
 ## Getting started
 
