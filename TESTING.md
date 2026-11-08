@@ -68,7 +68,11 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
 
 ## Confirmed
 
-Nothing yet.
+- The expired glow shows round a missing top-row buff's red copy in combat (2026-11-08).
+- The top row's warning glow comes up at the warning time in combat (Battle Shout; f681d69,
+  2026-11-08).
+- Sounds out of combat at the right moments: running out at 15 s and dropped at 0 for Battle
+  Shout; `/leboof soundlog` names the addon behind each sound (13e60b4, 2026-11-08).
 
 ## Problems
 

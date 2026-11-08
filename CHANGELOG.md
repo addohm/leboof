@@ -6,6 +6,8 @@ All notable changes to leboof. The format follows
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-08
+
 ### Fixed
 
 - The warning glow now shows on top-row buffs in combat at the warning time. It used to rely on

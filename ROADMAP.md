@@ -7,6 +7,7 @@ change.
 
 - Standard docs (2026-11-07).
 - The icon (2026-11-08).
+- **1.0.1 released (2026-11-08):** the top row's warning glow at the warning time, in combat.
 - **1.0.0 released (2026-11-08).**
 - The options window and the minimap button (2026-11-08).
 - Profiles (2026-11-08).

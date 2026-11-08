@@ -133,6 +133,11 @@ addon menu by the minimap.
 
 ## Release notes
 
+### 1.0.1
+
+The warning glow now shows on your keep-up buffs in combat, from your warning time on. Before, it
+only showed for buffs with a refresh window, which most buffs (Battle Shout, say) don't have.
+
 ### 1.0.0
 
 The first release. Your buffs in combat through Blizzard's aura containers: a keep-up row with a
