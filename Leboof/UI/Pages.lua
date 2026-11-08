@@ -97,7 +97,8 @@ local function TrackedRow(parent)
 			font = "GameFontHighlight", controlX = TRACK_X, boxWidth = TRACK_BOX,
 			tooltip = function() return EntryTooltip(ref.entry) end,
 			sync = function(r)
-				local changed = ns.db.modes[ref.entry.key] and "  |cff999999(changed)|r" or ""
+				local key = ref.entry.key
+				local changed = (ns.db.modes[key] or ns.db.fx[key]) and "  |cff999999(changed)|r" or ""
 				r.label:SetText(Icon(ref.entry) .. ref.entry.label .. changed)
 			end,
 		})
@@ -109,8 +110,52 @@ local function TrackedRow(parent)
 		ns.RemoveBuff(ref.entry)
 		ns.Window.Refresh()
 	end)
-	row.remove, row.ref = remove, ref
+	-- The buff's own animations and sounds, in a menu.
+	local gear = CreateFrame("Button", nil, row)
+	gear:SetSize(20, 20)
+	gear:SetPoint("LEFT", remove, "RIGHT", 6, 0)
+	gear:SetNormalTexture("Interface\\Buttons\\UI-OptionsButton")
+	gear:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+	gear:SetScript("OnClick", function(self)
+		MenuUtil.CreateContextMenu(self, function(_, root) ns.BuildFxMenu(ref.entry, root) end)
+	end)
+	gear:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine("Animations and sounds for " .. ref.entry.label)
+		GameTooltip:Show()
+	end)
+	gear:SetScript("OnLeave", GameTooltip_Hide)
+	row.remove, row.gear, row.ref = remove, gear, ref
 	return row
+end
+
+-- A buff's own animation and sound choices: a submenu per setting, "Default (...)" first.
+function ns.BuildFxMenu(e, root)
+	local Fx = ns.Fx
+	local keep = ns.Mode(e) == "keep"
+	root:CreateTitle(e.label)
+	local function Choice(text, field, list)
+		local sub = root:CreateButton(text)
+		sub:CreateRadio("Default (" .. Fx.Label(list, Fx.Default(e, field)) .. ")",
+			function() return not (ns.db.fx[e.key] and ns.db.fx[e.key][field] ~= nil) end,
+			function() Fx.Set(e, field, nil) end)
+		for _, v in ipairs(list) do
+			sub:CreateRadio(v[2],
+				function() return ns.db.fx[e.key] ~= nil and ns.db.fx[e.key][field] == v[1] end,
+				function()
+					Fx.Set(e, field, v[1])
+					if list == Fx.SOUNDS then Fx.Play(v[1]) end
+				end)
+		end
+	end
+	Choice("When it appears", "gained", Fx.GAINED)
+	Choice("Glow near the end", "expiring", Fx.ONOFF)
+	if keep then Choice("Pulse while missing", "missing", Fx.ONOFF) end
+	Choice("Sound when it appears (out of combat)", "sGained", Fx.SOUNDS)
+	Choice("Sound when it drops (out of combat)", "sLost", Fx.SOUNDS)
+	Choice("Sound when it's running out (out of combat)", "sExpiring", Fx.SOUNDS)
+	if keep then Choice("Sound entering combat without it", "sCombat", Fx.SOUNDS) end
+	if not e.enchant then Choice("Sound before your cast runs out (in combat)", "sCast", Fx.SOUNDS) end
 end
 
 local function CurrentRow(parent)
@@ -284,6 +329,67 @@ Page({
 		end))
 	end,
 	defaults = function() ns.ResetLayout() end,
+})
+
+-- Effects: the default animations and sounds (a buff's own choices are in its ⚙ menu).
+local function EffectGet(field)
+	return function() return ns.db.effects[field] end
+end
+
+local function EffectSet(field)
+	return function(v)
+		ns.db.effects[field] = v
+		ns.Refresh()
+	end
+end
+
+-- Both, for the last argument of a call.
+local function EffectSetting(field)
+	return EffectGet(field), EffectSet(field)
+end
+
+Page({
+	id = "effects",
+	label = "Effects",
+	note = "Defaults for every buff; the gear next to a tracked buff sets its own. In combat the game hides when buffs change, so sounds there only come from your own casts or Blizzard's Cooldown Manager.",
+	fill = function(stack)
+		local Fx = ns.Fx
+		stack:Add(UI.OptionHeading(stack.inner, "Animations (in combat too)"))
+		stack:Add(UI.OptionSelect(stack.inner, "When a buff appears", Fx.GAINED, EffectSetting("gained")))
+		stack:Add(UI.OptionSelect(stack.inner, "Glow near the end", Fx.ONOFF, EffectGet("expiring"), EffectSet("expiring"), nil,
+			{ tooltip = { "Glow near the end", "A pulsing gold edge in the game's refresh window: the last part of a buff, where recasting it keeps some of the time left. Buffs without one don't glow." } }))
+		stack:Add(UI.OptionSelect(stack.inner, "Pulse the red copy while missing", Fx.ONOFF, EffectSetting("missing")))
+
+		stack:Add(UI.OptionHeading(stack.inner, "Sounds out of combat: buffs to keep up"))
+		stack:Add(UI.OptionSound(stack.inner, "When one drops", EffectSetting("keepLost")))
+		stack:Add(UI.OptionSound(stack.inner, "When one is running out", EffectGet("keepExpiring"), EffectSet("keepExpiring"),
+			{ "When one is running out", "When its time left goes under its warning time (the time left turns red then)." }))
+		stack:Add(UI.OptionSound(stack.inner, "Entering combat without one", EffectGet("combatMissing"), EffectSet("combatMissing"),
+			{ "Entering combat without one", "From what Leboof saw just before the fight." }))
+		stack:Add(UI.OptionCheck(stack.inner, "Also list the missing ones in chat", EffectSetting("combatChat")))
+
+		stack:Add(UI.OptionHeading(stack.inner, "Sounds out of combat: buffs while up"))
+		stack:Add(UI.OptionSound(stack.inner, "When one appears", EffectSetting("upGained")))
+		stack:Add(UI.OptionSound(stack.inner, "When one drops", EffectSetting("upLost")))
+
+		stack:Add(UI.OptionHeading(stack.inner, "Sounds in combat"))
+		stack:Add(UI.OptionSound(stack.inner, "Before a buff you cast runs out", EffectGet("cast"), EffectSet("cast"),
+			{ "Before a buff you cast runs out", "Timed from your cast, with the duration Leboof last saw out of combat. It's a guess: it still plays if the buff was dispelled, its charges used, or it was cast on someone else." }))
+		stack:Add(UI.OptionSelect(stack.inner, "How long before", Fx.LEADS, EffectSetting("castLead")))
+		stack:Add(UI.OptionText(stack.inner, function()
+			local available, reason = Fx.CooldownManager()
+			if available then
+				return "Blizzard's Cooldown Manager is on. It can play a sound in combat when a buff it tracks is applied or removed: open it, pick the buff, and add an alert."
+			end
+			return "Blizzard's Cooldown Manager isn't available here (" .. tostring(reason or "no reason given") .. "). It's the only way the game plays a sound in combat when a buff is applied or removed."
+		end, 44))
+		stack:Add(UI.OptionButton(stack.inner, "Blizzard's Cooldown Manager", "Open it", function() Fx.OpenCooldownManager() end))
+	end,
+	defaults = function()
+		wipe(ns.db.effects)
+		ns.CopyDefaults(ns.db.effects, ns.DEFAULTS.effects)
+		wipe(ns.db.fx)
+	end,
 })
 
 Page({

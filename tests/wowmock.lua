@@ -41,6 +41,23 @@ local function NewFrame(kind, name)
 	function f:RegisterEvent(e) self.events[e] = true end
 	function f:RegisterUnitEvent(e) self.events[e] = true end
 	function f:CreateTexture() return Permissive({}) end
+	function f:CreateAnimationGroup()
+		local g = Permissive({ animations = {}, playing = false })
+		function g:CreateAnimation(kind)
+			local a = Permissive({ kind = kind })
+			table.insert(self.animations, a)
+			return a
+		end
+		function g:Play() self.playing = true end
+		function g:Stop() self.playing = false end
+		function g:IsPlaying() return self.playing end
+		return g
+	end
+	-- Aura buttons record the animations handed to them.
+	f.shownAnims, f.pandemicAnims, f.pandemicRegions = {}, {}, {}
+	function f:AddAuraShownAnimation(g) table.insert(self.shownAnims, g) end
+	function f:AddPandemicActiveAnimation(g) table.insert(self.pandemicAnims, g) end
+	function f:AddPandemicRegion(r) table.insert(self.pandemicRegions, r) end
 	function f:CreateFontString()
 		local fs = Permissive({})
 		function fs:SetText(t) self.text = t end
@@ -125,6 +142,11 @@ end
 -- Runs a dropdown's menu generator into a plain table: { buttons = { { text, items = { checkbox } } } },
 -- each checkbox { text, isSelected, setSelected }.
 function M.Menu(dropdown)
+	return M.RunMenu(function(root) dropdown.generator(dropdown, root) end)
+end
+
+-- Runs a menu generator(root) into the same kind of table; radios are kept with the checkboxes.
+function M.RunMenu(generate)
 	local function Description()
 		local d = { buttons = {}, items = {} }
 		function d:CreateButton(text)
@@ -138,11 +160,12 @@ function M.Menu(dropdown)
 			table.insert(self.items, item)
 			return item
 		end
-		function d:CreateTitle() end
+		d.CreateRadio = d.CreateCheckbox
+		function d:CreateTitle(text) self.title = text end
 		return d
 	end
 	local root = Description()
-	dropdown.generator(dropdown, root)
+	generate(root)
 	return root
 end
 
@@ -188,8 +211,55 @@ C_UnitAuras = { GetAuraDataByIndex = function(unit, i, filter)
 	if M.combat then error("aura data is secret") end
 	return M.buffs[i]
 end }
--- Timers run at once.
-C_Timer = { After = function(_, fn) fn() end }
+-- A clock the tests move (WM.Advance). C_Timer.After runs at once; NewTimer and NewTicker wait
+-- for WM.Advance.
+M.now = 1000
+function GetTime() return M.now end
+M.timers = {}
+C_Timer = {
+	After = function(_, fn) fn() end,
+	NewTimer = function(seconds, fn)
+		local t = { at = M.now + seconds, fn = fn }
+		function t:Cancel() self.cancelled = true end
+		table.insert(M.timers, t)
+		return t
+	end,
+	NewTicker = function(seconds, fn)
+		local t = { at = M.now + seconds, every = seconds, fn = fn }
+		function t:Cancel() self.cancelled = true end
+		table.insert(M.timers, t)
+		return t
+	end,
+}
+function M.Advance(seconds)
+	local target = M.now + seconds
+	while true do
+		local next
+		for _, t in ipairs(M.timers) do
+			if not t.cancelled and t.at <= target and (not next or t.at < next.at) then next = t end
+		end
+		if not next then break end
+		M.now = next.at
+		if next.every then next.at = next.at + next.every else next.cancelled = true end
+		next.fn()
+	end
+	M.now = target
+end
+-- Sounds played, by sound kit ID; SOUNDKIT maps each name to a made-up ID.
+M.sounds = {}
+SOUNDKIT = setmetatable({}, { __index = function(_, name) return "kit:" .. name end })
+function PlaySound(id) table.insert(M.sounds, id) end
+function M.Played(name)
+	for _, id in ipairs(M.sounds) do if id == "kit:" .. name then return true end end
+	return false
+end
+M.enchant = {}
+function GetWeaponEnchantInfo()
+	local e = M.enchant
+	return e.main ~= nil, e.main, 0, 0, e.off ~= nil, e.off, 0, 0
+end
+C_CooldownViewer = { IsCooldownViewerAvailable = function() return false, "Turned off" end }
+MenuUtil = { CreateContextMenu = function(owner, generator) M.contextMenu = { owner = owner, generator = generator } end }
 C_SpellBook = { IsSpellKnown = function(id) return M.known[id] == true end }
 C_Spell = { GetSpellTexture = function(id) return 100000 + id end }
 C_CurveUtil = { CreateColorCurve = function()

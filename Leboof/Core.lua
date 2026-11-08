@@ -11,6 +11,13 @@ local DEFAULTS = {
 	locked = true,                      -- unlocked: the anchor can be dragged and shows a frame
 	modes = {},                         -- key -> "keep" / "up" / "off", only where changed
 	custom = {},                        -- buffs the player added (Custom.lua)
+	effects = {                         -- animation and sound defaults (Effects.lua)
+		gained = "pop", expiring = "on", missing = "on",
+		keepLost = "RAID_WARNING", keepExpiring = "MAP_PING", combatMissing = "RAID_WARNING", combatChat = true,
+		upGained = "none", upLost = "none",
+		cast = "none", castLead = 5,
+	},
+	fx = {},                            -- key -> a buff's own animation and sound choices
 	window = {},                        -- the options window: pos, size, tab
 	minimap = { angle = 250, hide = false }, -- clear of Nothing Wasted (200) and Ticky (225)
 }
@@ -109,6 +116,8 @@ function ns.Refresh(quiet)
 	end
 	pending = false
 	ns.Layout()
+	-- What's tracked may have changed: take the buffs that are up as the new starting point.
+	if ns.Fx then ns.Fx.Update(true) end
 end
 
 function ns.SetLocked(locked)

@@ -122,6 +122,21 @@ function UI.OptionEdit(parent, label, get, set, tooltip)
 	return row
 end
 
+-- A sound picker (ns.Fx.SOUNDS) with a Test button that plays the one chosen.
+function UI.OptionSound(parent, label, get, set, tooltip)
+	local row = UI.OptionSelect(parent, label, ns.Fx.SOUNDS, get, function(v)
+		set(v)
+		ns.Fx.Play(v)
+	end, { tooltip = tooltip, boxWidth = 130 })
+	local test = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+	test:SetSize(50, 22)
+	test:SetPoint("LEFT", row.right + 4, 0)
+	test:SetText("Test")
+	test:SetScript("OnClick", function() ns.Fx.Play(get()) end)
+	row.test = test
+	return row
+end
+
 -- buttonText may be a function, read at each Sync.
 function UI.OptionButton(parent, label, buttonText, onClick, tooltip)
 	local row = OptionRow(parent, label, nil, tooltip)

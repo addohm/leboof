@@ -8,6 +8,7 @@
 --                 the button hides and the copy shows through. No secret is read for this.
 --                 Weapon enchants go at the end of the row, one small container each.
 --   row 2 (up):   an aura group per warn time; the container lays the icons out and closes gaps.
+-- Each button gets the animations chosen for its buff (AddAnimations; Effects.lua has the settings).
 local _, ns = ...
 
 local anchor, mover
@@ -15,7 +16,7 @@ local keepContainer, upContainer
 local slots = {}       -- key -> slot button (keep row)
 local enchants = {}    -- key -> { container = , button = }
 local holders = {}     -- key -> our placeholder frame (keep row)
-local upGroups = {}    -- warn seconds -> group key (up row)
+local upGroups = {}    -- group key -> true, for every up-row group made
 
 local TEXCOORD = { 0.07, 0.93, 0.07, 0.93 }
 local QUESTION = "Interface\\Icons\\INV_Misc_QuestionMark"
@@ -29,9 +30,61 @@ local function WarnCurve(warn)
 	return curve
 end
 
+local GLOW = { 1, 0.82, 0 }
+
+-- Animations the game plays itself (Effects.lua). gained: "pop" (the icon grows in) or "flash"
+-- (a white flash) when the buff appears. expiring "on": a pulsing gold edge in the game's refresh
+-- window near the end of the buff (the pandemic window).
+local function AddAnimations(button, gained, expiring)
+	if gained == "pop" then
+		local group = button:CreateAnimationGroup()
+		local scale = group:CreateAnimation("Scale")
+		scale:SetScaleFrom(1.6, 1.6)
+		scale:SetScaleTo(1, 1)
+		scale:SetDuration(0.25)
+		scale:SetSmoothing("OUT")
+		button:AddAuraShownAnimation(group)
+	elseif gained == "flash" then
+		local flash = button:CreateTexture(nil, "OVERLAY", nil, 7)
+		flash:SetAllPoints()
+		flash:SetColorTexture(1, 1, 1, 1)
+		flash:SetBlendMode("ADD")
+		flash:SetAlpha(0)
+		local group = button:CreateAnimationGroup()
+		local fade = group:CreateAnimation("Alpha")
+		fade:SetTarget(flash)
+		fade:SetFromAlpha(0.9)
+		fade:SetToAlpha(0)
+		fade:SetDuration(0.5)
+		button:AddAuraShownAnimation(group)
+	end
+
+	if expiring == "on" then
+		local group = button:CreateAnimationGroup()
+		group:SetLooping("BOUNCE")
+		local edges = {
+			{ "TOPLEFT", -3, 3, "TOPRIGHT", 3, 1 }, { "BOTTOMLEFT", -3, -1, "BOTTOMRIGHT", 3, -3 },
+			{ "TOPLEFT", -3, 3, "BOTTOMLEFT", -1, -3 }, { "TOPRIGHT", 1, 3, "BOTTOMRIGHT", 3, -3 },
+		}
+		for _, p in ipairs(edges) do
+			local edge = button:CreateTexture(nil, "OVERLAY", nil, 6)
+			edge:SetPoint(p[1], p[2], p[3])
+			edge:SetPoint(p[4], p[5], p[6])
+			edge:SetColorTexture(GLOW[1], GLOW[2], GLOW[3], 1)
+			button:AddPandemicRegion(edge)
+			local pulse = group:CreateAnimation("Alpha")
+			pulse:SetTarget(edge)
+			pulse:SetFromAlpha(1)
+			pulse:SetToAlpha(0.2)
+			pulse:SetDuration(0.5)
+		end
+		button:AddPandemicActiveAnimation(group)
+	end
+end
+
 -- Returns the initializeFrame callback that builds a Blizzard aura button's parts. It runs once,
 -- when the game creates the button, before the button is closed to addons.
-local function ButtonStyler(warn, swipe)
+local function ButtonStyler(warn, swipe, gained, expiring)
 	return function(button)
 		local size = ns.db.size
 		button:SetSize(size, size)
@@ -66,7 +119,15 @@ local function ButtonStyler(warn, swipe)
 		local count = button:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
 		count:SetPoint("TOPRIGHT", -1, -1)
 		button:SetApplicationCount(count)
+
+		AddAnimations(button, gained, expiring)
 	end
+end
+
+-- Which animations a buff's button has. A button's animations are fixed when the game creates it,
+-- so each combination gets its own slot, group or container (they're switched, never removed).
+local function AnimKey(e)
+	return ns.Fx.Get(e, "gained") .. ":" .. ns.Fx.Get(e, "expiring")
 end
 
 local function NewContainer()
@@ -143,7 +204,19 @@ local function Holder(e)
 		h.icon:SetDesaturated(true)
 		h.icon:SetVertexColor(1, 0.4, 0.4)
 		h:SetAlpha(0.8)
+		-- The pulse only shows while the buff is missing: Blizzard's button covers it otherwise.
+		h.pulse = h:CreateAnimationGroup()
+		h.pulse:SetLooping("BOUNCE")
+		local fade = h.pulse:CreateAnimation("Alpha")
+		fade:SetFromAlpha(1)
+		fade:SetToAlpha(0.35)
+		fade:SetDuration(0.7)
 		holders[e.key] = h
+	end
+	if ns.Fx.Get(e, "missing") == "on" then
+		if not h.pulse:IsPlaying() then h.pulse:Play() end
+	else
+		h.pulse:Stop()
 	end
 	local texture = e.icon -- an added buff: the icon it was seen with
 	if not texture and e.enchant then
@@ -155,27 +228,28 @@ local function Holder(e)
 	return h
 end
 
-local function Slot(e)
-	local button = slots[e.key]
+-- slots and enchants are keyed "<buff key>/<animations>".
+local function Slot(e, key)
+	local button = slots[key]
 	if not button then
-		button = keepContainer:AddAuraSlot(e.key, "HELPFUL", {
+		button = keepContainer:AddAuraSlot(key, "HELPFUL", {
 			candidateFilters = { includeSpellIDs = e.ids },
-			initializeFrame = ButtonStyler(e.warn, false),
+			initializeFrame = ButtonStyler(e.warn, false, ns.Fx.Get(e, "gained"), ns.Fx.Get(e, "expiring")),
 		})
-		slots[e.key] = button
+		slots[key] = button
 	end
 	return button
 end
 
-local function Enchant(e)
-	local en = enchants[e.key]
+local function Enchant(e, key)
+	local en = enchants[key]
 	if not en then
-		en = { container = NewContainer() }
-		en.button = en.container:AddItemEnchantment(AuraContainerItemEnchantmentSlot[e.enchant], {
-			initializeFrame = ButtonStyler(e.warn, false),
+		en = { container = NewContainer(), slot = AuraContainerItemEnchantmentSlot[e.enchant] }
+		en.button = en.container:AddItemEnchantment(en.slot, {
+			initializeFrame = ButtonStyler(e.warn, false, ns.Fx.Get(e, "gained"), ns.Fx.Get(e, "expiring")),
 			hidePermanent = true,
 		})
-		enchants[e.key] = en
+		enchants[key] = en
 	end
 	return en
 end
@@ -196,6 +270,7 @@ local function Layout()
 
 	-- Row 1: keep. Buffs first, then weapon enchants.
 	local entries = ns.Entries()
+	local wanted = {} -- the slot and enchant keys in use; the rest are switched off below
 	local x = 0
 	for pass = 1, 2 do
 		for _, e in ipairs(entries) do
@@ -206,35 +281,39 @@ local function Layout()
 					local h = Holder(e)
 					Place(h, x, 0, size)
 					h:SetShown(mode == "keep")
+					local key = e.key .. "/" .. AnimKey(e)
+					wanted[key] = true
 					if e.enchant then
-						local en = Enchant(e)
+						local en = Enchant(e, key)
 						en.container:ClearAllPoints()
 						en.container:SetPoint("TOPLEFT", anchor, "TOPLEFT", x, 0)
 						en.button:SetSize(size, size)
-						en.container:SetItemEnchantmentEnabled(AuraContainerItemEnchantmentSlot[e.enchant], true)
+						en.container:SetItemEnchantmentEnabled(en.slot, true)
 					else
-						local button = Slot(e)
+						local button = Slot(e, key)
 						-- Added buffs learn more IDs, so the filter is set again each time.
-						keepContainer:SetAuraSlotCandidateFilters(e.key, { includeSpellIDs = e.ids })
+						keepContainer:SetAuraSlotCandidateFilters(key, { includeSpellIDs = e.ids })
 						Place(button, x, 0, size)
-						keepContainer:SetAuraSlotEnabled(e.key, true)
+						keepContainer:SetAuraSlotEnabled(key, true)
 					end
 					x = x + size + gap
-				else
-					if holders[e.key] then holders[e.key]:Hide() end
-					if slots[e.key] then keepContainer:SetAuraSlotEnabled(e.key, false) end
-					if enchants[e.key] then
-						enchants[e.key].container:SetItemEnchantmentEnabled(AuraContainerItemEnchantmentSlot[e.enchant], false)
-					end
+				elseif holders[e.key] then
+					holders[e.key]:Hide()
 				end
 			end
 		end
 	end
-	-- Places of buffs that were removed (added buffs, or another profile's) go too.
-	local present = {}
-	for _, e in ipairs(entries) do present[e.key] = true end
+	-- Everything not placed this time goes: buffs off or removed, another profile's, or the
+	-- buttons of a buff whose animations changed.
 	for key in pairs(slots) do
-		if not present[key] then keepContainer:SetAuraSlotEnabled(key, false) end
+		if not wanted[key] then keepContainer:SetAuraSlotEnabled(key, false) end
+	end
+	for key, en in pairs(enchants) do
+		if not wanted[key] then en.container:SetItemEnchantmentEnabled(en.slot, false) end
+	end
+	local present = {}
+	for _, e in ipairs(entries) do
+		if ns.Mode(e) == "keep" or (e.enchant and ns.Mode(e) == "up") then present[e.key] = true end
 	end
 	for key, h in pairs(holders) do
 		if not present[key] then h:Hide() end
@@ -242,38 +321,48 @@ local function Layout()
 	local keepWidth = x > 0 and (x - gap) or 0
 	local upY = keepWidth > 0 and -(size + gap) or 0
 
-	-- Row 2: up. One aura group per warn time, shortest first, so procs sit on the left.
-	local byWarn = {}
+	-- Row 2: up. One aura group per warn time and animations ("warn<w>/<animations>"), shortest
+	-- warn first, so procs sit on the left.
+	local groups = {}
 	for _, e in ipairs(entries) do
 		if not e.enchant and ns.Mode(e) == "up" then
 			local w = e.warn or 0
-			byWarn[w] = byWarn[w] or {}
-			for id in pairs(e.ids) do byWarn[w][id] = true end
+			local key = "warn" .. w .. "/" .. AnimKey(e)
+			local g = groups[key]
+			if not g then
+				g = { ids = {}, warn = w, gained = ns.Fx.Get(e, "gained"), expiring = ns.Fx.Get(e, "expiring") }
+				groups[key] = g
+			end
+			for id in pairs(e.ids) do g.ids[id] = true end
 		end
 	end
-	for w in pairs(byWarn) do
-		if not upGroups[w] then
-			local key = "warn" .. w
+	local order = {}
+	for key in pairs(groups) do order[#order + 1] = key end
+	table.sort(order, function(a, b)
+		if groups[a].warn ~= groups[b].warn then return groups[a].warn < groups[b].warn end
+		return a < b
+	end)
+	for i, key in ipairs(order) do
+		local g = groups[key]
+		if not upGroups[key] then
 			upContainer:AddAuraGroup(key, "HELPFUL", {
-				candidateFilters = { includeSpellIDs = byWarn[w] },
-				initializeFrame = ButtonStyler(w, true),
+				candidateFilters = { includeSpellIDs = g.ids },
+				initializeFrame = ButtonStyler(g.warn, true, g.gained, g.expiring),
 				sortMethod = AuraContainerSortMethod.Expiration,
 			})
-			upGroups[w] = key
+			upGroups[key] = true
+		end
+		upContainer:SetAuraGroupCandidateFilters(key, { includeSpellIDs = g.ids })
+		upContainer:SetAuraGroupLayout(key, {
+			elementSpacing = gap, groupSpacing = gap,
+			elementWidth = size, elementHeight = size, layoutIndex = i,
+		})
+		for n = 1, upContainer:GetAuraGroupFrameCount(key) do
+			upContainer:GetAuraGroupFrame(key, n):SetSize(size, size)
 		end
 	end
-	for w, key in pairs(upGroups) do
-		if byWarn[w] then
-			upContainer:SetAuraGroupCandidateFilters(key, { includeSpellIDs = byWarn[w] })
-			upContainer:SetAuraGroupLayout(key, {
-				elementSpacing = gap, groupSpacing = gap,
-				elementWidth = size, elementHeight = size, layoutIndex = w,
-			})
-			for i = 1, upContainer:GetAuraGroupFrameCount(key) do
-				upContainer:GetAuraGroupFrame(key, i):SetSize(size, size)
-			end
-		end
-		upContainer:SetAuraGroupEnabled(key, byWarn[w] ~= nil)
+	for key in pairs(upGroups) do
+		upContainer:SetAuraGroupEnabled(key, groups[key] ~= nil)
 	end
 	upContainer:ClearAllPoints()
 	upContainer:SetPoint("TOPLEFT", anchor, "TOPLEFT", 0, upY)

@@ -66,7 +66,7 @@ function ns.EntryForSpell(spellID)
 end
 
 -- The buffs on the player now, readable only out of combat. Returns a list of
--- { spellId, name, icon, duration }, or nil and the reason.
+-- { spellId, name, icon, duration, expirationTime }, or nil and the reason.
 function ns.ReadBuffs()
 	if InCombatLockdown() then return nil, "Your buffs can only be read out of combat." end
 	local list = {}
@@ -75,7 +75,11 @@ function ns.ReadBuffs()
 			local a = C_UnitAuras.GetAuraDataByIndex("player", i, "HELPFUL")
 			if a == nil then break end
 			if not Secret(a) and not Secret(a.spellId) and not Secret(a.name) and a.spellId then
-				list[#list + 1] = { spellId = a.spellId, name = a.name, icon = a.icon, duration = a.duration }
+				list[#list + 1] = {
+					spellId = a.spellId, name = a.name, icon = a.icon,
+					duration = not Secret(a.duration) and a.duration or nil,
+					expirationTime = not Secret(a.expirationTime) and a.expirationTime or nil,
+				}
 			end
 		end
 	end)

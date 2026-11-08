@@ -29,6 +29,14 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
     buff, say), it's listed under "Add from the buffs on you now"; Add puts it in Tracked and on
     screen, and it shows in combat too, inside a dungeon as well. In combat the list says it
     can't read your buffs. Debuffs never appear in that list.
+1h. Effects: a buff appearing pops; switch to Flash on the Effects tab and it flashes. Near the
+    end of a buff (Shadow Word: Pain, Renew, Battle Shout) a gold edge pulses, if Forever gives
+    buffs a refresh window; say which ones glow. A missing top-row buff's red copy pulses. Out of
+    combat: let Battle Shout run low (map ping at 15 s), then drop (raid warning). Pull with it
+    missing: a raid warning and "missing: Battle Shout" in chat. Turn on "Before a buff you cast
+    runs out", see Battle Shout once out of combat, then recast it in combat: the sound comes 5 s
+    before it ends. The ⚙ menu on a tracked buff changes just that buff. The Effects tab says
+    whether Blizzard's Cooldown Manager is available; note what it says.
 2. The icons appear a little below the middle of the screen. `/leboof unlock` shows a blue box to
    drag; `/leboof lock` hides it; the place is kept after `/reload`.
 3. Keep row: with the class buff missing (e.g. Battle Shout, Inner Fire), a dimmed red copy shows.

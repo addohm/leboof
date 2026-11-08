@@ -6,6 +6,23 @@ local function Printed(pattern)
 end
 local function Keep() return WM.containers[1] end
 local function Up() return WM.containers[2] end
+-- A buff's keep-row slot ("<key>/<animations>"): the enabled one, else any.
+local function KeepSlot(key)
+	local found
+	for k, slot in pairs(Keep().slots) do
+		if k:sub(1, #key + 1) == key .. "/" then
+			if slot.enabled then return slot end
+			found = slot
+		end
+	end
+	return found
+end
+-- The enabled up-row group for a warn time ("warn<w>/<animations>").
+local function UpGroup(w)
+	for k, g in pairs(Up().groups) do
+		if g.enabled and k:sub(1, #("warn" .. w) + 1) == "warn" .. w .. "/" then return g end
+	end
+end
 
 -- A warrior who knows Battle Shout logs in, with settings saved by 0.1.0 (per character, the
 -- window and minimap button account-wide): they move into a profile named after the character.
@@ -20,13 +37,13 @@ Check(ns.db.modes.thorns == "off" and ns.db.minimap.angle == 10 and ns.db.window
 Check(LeboofCharDB == nil, "the old per-character settings weren't cleared")
 Check(ns.built, "display not built: " .. table.concat(WM.printed, " | "))
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
-Check(Keep().slots.battleshout and Keep().slots.battleshout.enabled, "Battle Shout should be in the keep row")
-Check(Keep().slots.battleshout.filters.includeSpellIDs[25289], "Battle Shout should include its top rank")
-Check(not Keep().slots.innerfire, "a warrior has no Inner Fire place")
+Check(KeepSlot("battleshout") and KeepSlot("battleshout").enabled, "Battle Shout should be in the keep row")
+Check(KeepSlot("battleshout").filters.includeSpellIDs[25289], "Battle Shout should include its top rank")
+Check(not KeepSlot("innerfire"), "a warrior has no Inner Fire place")
 local groups = 0
 for _, g in pairs(Up().groups) do if g.enabled then groups = groups + 1 end end
 Check(groups > 0, "the up row should have groups")
-Check(Up().groups.warn3 and Up().groups.warn3.filters.includeSpellIDs[12966], "Flurry should be in the 3s group")
+Check(UpGroup(3) and UpGroup(3).filters.includeSpellIDs[12966], "Flurry should be in the 3s group")
 
 -- Defaults: the class's own buffs on, everything else off.
 local function M(key) return ns.DefaultMode(ns.byKey[key]) end
@@ -45,9 +62,9 @@ WM.known[10938] = nil
 
 -- Moving Fort to keep adds a place; turning it off disables it again.
 WM.Slash("fort keep")
-Check(Keep().slots.fort and Keep().slots.fort.enabled, "fort keep didn't add a place")
+Check(KeepSlot("fort") and KeepSlot("fort").enabled, "fort keep didn't add a place")
 WM.Slash("fort off")
-Check(not Keep().slots.fort.enabled, "fort off didn't disable the place")
+Check(not KeepSlot("fort").enabled, "fort off didn't disable the place")
 Check(ns.Mode(ns.byKey.fort) == "off" and ns.db.modes.fort == nil, "off is a warrior's default for fort, so nothing is saved")
 WM.Slash("battleshout off")
 Check(ns.db.modes.battleshout == "off", "a change from the default wasn't saved")
@@ -58,11 +75,11 @@ Check(ns.db.modes.fort == nil, "fort default should clear the saved mode")
 -- Changes in combat wait for it to end.
 WM.combat = true
 WM.Slash("battleshout up")
-Check(Keep().slots.battleshout.enabled, "changed in combat")
+Check(KeepSlot("battleshout").enabled, "changed in combat")
 Check(Printed("when combat ends"), "no combat message")
 WM.combat = false
 WM.Fire("PLAYER_REGEN_ENABLED")
-Check(not Keep().slots.battleshout.enabled, "not applied after combat")
+Check(not KeepSlot("battleshout").enabled, "not applied after combat")
 
 -- Size, unlock, list, reset, help, a bad command: no errors.
 WM.Slash("size 40")
@@ -100,7 +117,7 @@ Check(shout, "no Battle Shout row")
 shout.next.scripts.OnClick()
 Check(ns.db.modes.battleshout == "up", "the arrow didn't change Battle Shout to While up")
 Check(shout.label.text:find("(changed)", 1, true), "a changed mode isn't marked")
-Check(not Keep().slots.battleshout.enabled, "the change didn't reach the icons")
+Check(not KeepSlot("battleshout").enabled, "the change didn't reach the icons")
 shout.prev.scripts.OnClick()
 Check(ns.db.modes.battleshout == nil, "back to the default should clear the saved mode")
 for _, id in ipairs({ "layout", "general", "buffs" }) do
@@ -131,10 +148,10 @@ Check(P.New("Shared"), "New failed")
 Check(P.Current() == "Shared" and ns.db.size == 32, "the new profile isn't in use with defaults")
 Check(not P.New("Shared") and not P.New("   "), "a duplicate or empty name was accepted")
 ns.SetMode(ns.byKey.fort, "keep")
-Check(Keep().slots.fort.enabled, "fort keep in Shared didn't reach the icons")
+Check(KeepSlot("fort").enabled, "fort keep in Shared didn't reach the icons")
 Check(P.Switch("Tester - Realm"), "Switch failed")
-Check(not Keep().slots.fort.enabled and ns.db.modes.fort == nil, "profiles aren't separate")
-Check(P.CopyFrom("Shared") and ns.db.modes.fort == "keep" and Keep().slots.fort.enabled, "CopyFrom didn't copy")
+Check(not KeepSlot("fort").enabled and ns.db.modes.fort == nil, "profiles aren't separate")
+Check(P.CopyFrom("Shared") and ns.db.modes.fort == "keep" and KeepSlot("fort").enabled, "CopyFrom didn't copy")
 Check(not P.CopyFrom("Tester - Realm"), "copied a profile onto itself")
 Check(not P.Delete("Tester - Realm"), "deleted the profile in use")
 Check(P.Rename("Main") and P.Current() == "Main", "Rename failed")
@@ -200,7 +217,7 @@ Check(ns.Mode(ns.byKey.fort) == "up" and ns.db.custom.c10938 == nil, "Adding For
 CurrentRowFor(999001).button.scripts.OnClick()
 local juju = ns.db.custom.c999001
 Check(juju and juju.name == "Juju Power" and juju.warn == 120, "Juju Power wasn't added")
-Check(Up().groups.warn120.filters.includeSpellIDs[999001], "the added buff isn't in the up row")
+Check(UpGroup(120).filters.includeSpellIDs[999001], "the added buff isn't in the up row")
 Check(not CurrentRowFor(999001) and TrackedRowFor("c999001"), "the added buff should move to Tracked")
 Check(not ns.AddBuff({ spellId = 999001, name = "Juju Power" }), "added the same buff twice")
 
@@ -211,12 +228,12 @@ WM.Fire("UNIT_AURA", "player")
 Check(not juju.ids[999002], "learned in combat")
 WM.combat = false
 WM.Fire("UNIT_AURA", "player")
-Check(juju.ids[999002] and Up().groups.warn120.filters.includeSpellIDs[999002], "the new rank wasn't learned")
+Check(juju.ids[999002] and UpGroup(120).filters.includeSpellIDs[999002], "the new rank wasn't learned")
 
 ns.SetMode(ns.Entry("c999001"), "keep")
-Check(Keep().slots.c999001 and Keep().slots.c999001.enabled and Keep().slots.c999001.filters.includeSpellIDs[999002], "keep for an added buff")
+Check(KeepSlot("c999001") and KeepSlot("c999001").enabled and KeepSlot("c999001").filters.includeSpellIDs[999002], "keep for an added buff")
 TrackedRowFor("c999001").remove.scripts.OnClick()
-Check(ns.db.custom.c999001 == nil and ns.db.modes.c999001 == nil and not Keep().slots.c999001.enabled, "Remove didn't delete the added buff")
+Check(ns.db.custom.c999001 == nil and ns.db.modes.c999001 == nil and not KeepSlot("c999001").enabled, "Remove didn't delete the added buff")
 
 -- Leboof's buffs: a checklist dropdown, a submenu per section; ticking tracks, unticking removes.
 local checklist
@@ -248,4 +265,95 @@ WM.combat = false
 -- Added buffs belong to the profile.
 ns.AddBuff({ spellId = 999003, name = "Winterfall Firewater", icon = 1, duration = 1200 })
 Check(ns.Profiles.New("Clean") and next(ns.db.custom) == nil, "a new profile has the other profile's buffs")
+Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
+
+-- Animations: the buttons get the chosen ones; changing them switches to other buttons.
+WM.combat = false
+local bs = KeepSlot("battleshout")
+Check(bs and bs.enabled and #bs.button.shownAnims == 1 and #bs.button.pandemicAnims == 1 and #bs.button.pandemicRegions == 4,
+	"Battle Shout's button should pop when it appears and glow near the end")
+ns.Fx.Set(ns.byKey.battleshout, "gained", "flash")
+ns.Fx.Set(ns.byKey.battleshout, "expiring", "off")
+local bs2 = KeepSlot("battleshout")
+Check(bs2 ~= bs and bs2.enabled and not bs.enabled, "changing the animations should switch buttons")
+Check(#bs2.button.shownAnims == 1 and #bs2.button.pandemicAnims == 0, "flash and no glow")
+ns.Fx.Set(ns.byKey.battleshout, "gained", nil)
+ns.Fx.Set(ns.byKey.battleshout, "expiring", nil)
+Check(bs.enabled and not bs2.enabled and ns.db.fx.battleshout == nil, "back to the defaults")
+Check(UpGroup(3) and #UpGroup(3).frames[1].shownAnims == 1, "up-row buttons should pop too")
+
+-- Sounds out of combat: gained (none for keep), running out, drops; entering combat without it.
+WM.sounds = {}
+WM.buffs = { { spellId = 25289, name = "Battle Shout", icon = 1, duration = 120, expirationTime = WM.now + 120 } }
+WM.Fire("UNIT_AURA", "player")
+Check(#WM.sounds == 0, "a keep-up buff appearing is quiet by default")
+WM.Advance(100)
+Check(#WM.sounds == 0, "running-out sound too early")
+WM.Advance(8)
+Check(WM.Played("MAP_PING"), "no running-out sound under the warning time")
+WM.Advance(3)
+Check(#WM.sounds == 1, "the running-out sound should play once")
+WM.buffs = {}
+WM.Fire("UNIT_AURA", "player")
+Check(WM.Played("RAID_WARNING"), "no sound when it dropped")
+WM.sounds = {}
+WM.printed = {}
+WM.combat = true
+WM.Fire("PLAYER_REGEN_DISABLED")
+Check(WM.Played("RAID_WARNING") and Printed("missing: Battle Shout"), "no warning entering combat without Battle Shout")
+
+-- In combat: a sound before your own cast runs out (duration from the earlier look: 120 s).
+ns.db.effects.cast = "ALARM_CLOCK_WARNING_3"
+WM.sounds = {}
+WM.Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 25289)
+WM.Advance(110)
+Check(#WM.sounds == 0, "the cast sound came too early")
+WM.Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 25289) -- recast: starts again
+WM.Advance(110)
+Check(#WM.sounds == 0, "a recast didn't restart the timer")
+WM.Advance(6)
+Check(WM.Played("ALARM_CLOCK_WARNING_3"), "no sound before the cast ran out")
+WM.sounds = {}
+WM.Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 12345) -- not a tracked buff
+WM.Advance(200)
+Check(#WM.sounds == 0, "a sound for a spell that isn't tracked")
+
+-- After combat: what changed during the fight isn't announced.
+WM.sounds = {}
+WM.buffs = { { spellId = 25289, name = "Battle Shout", icon = 1, duration = 120, expirationTime = WM.now + 120 } }
+WM.combat = false
+WM.Fire("PLAYER_REGEN_ENABLED")
+Check(#WM.sounds == 0, "a change during combat was announced afterwards")
+ns.db.effects.cast = "none"
+
+-- A buff's own choices: the gear menu.
+local fortRow
+ns.SetMode(ns.byKey.fort, "keep")
+for _, row in ipairs(BuffsRows()) do
+	if row.ref and row.ref.entry and row.ref.entry.key == "fort" then fortRow = row end
+end
+Check(fortRow and fortRow.gear, "no gear button on a tracked buff")
+fortRow.gear.scripts.OnClick(fortRow.gear)
+local fxMenu = WM.RunMenu(function(root) WM.contextMenu.generator(fortRow.gear, root) end)
+Check(fxMenu.title == "Power Word: Fortitude" and #fxMenu.buttons == 8, "the gear menu should have a submenu per setting")
+local lost = fxMenu.buttons[5]
+Check(lost.text:find("drops") and lost.items[1].text:find("Default (Raid warning)", 1, true) and lost.items[1].isSelected(), "Default first, selected")
+lost.items[#lost.items].setSelected()
+Check(ns.Fx.Get(ns.byKey.fort, "sLost") == "MAP_PING" and WM.Played("MAP_PING"), "picking a sound should set and play it")
+Check(fortRow.label.text:find("(changed)", 1, true), "a buff with its own effects should be marked")
+lost.items[1].setSelected()
+Check(ns.db.fx.fort == nil, "Default should clear the buff's own choice")
+
+-- The Effects tab builds; a sound picker sets and plays its sound.
+ns.Window.Select("effects")
+local dropsRow
+for _, row in ipairs(ns.Window.CurrentPanel().stack.rows) do
+	if row.test and row.label.text == "When one drops" and not dropsRow then dropsRow = row end
+end
+Check(dropsRow, "no sound picker on the Effects tab")
+WM.sounds = {}
+dropsRow.next.scripts.OnClick()
+Check(ns.db.effects.keepLost == "READY_CHECK" and WM.Played("READY_CHECK"), "the picker didn't set and play the next sound")
+dropsRow.test.scripts.OnClick()
+Check(#WM.sounds == 2, "Test didn't play it")
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))

@@ -38,7 +38,7 @@ straight from this repo on Windows, see [DEPLOY.md](DEPLOY.md) (`tools\install_f
 ## Usage
 
 **The options window** opens with `/leboof` (or `/lbf`), the minimap button, or the game's addon
-menu by the minimap. It has four tabs:
+menu by the minimap. It has five tabs:
 
 - **Buffs:** add and remove what's tracked.
   - **Leboof's buffs ▾:** a checklist of the built-in buffs, with a submenu per section (class and
@@ -52,6 +52,8 @@ menu by the minimap. It has four tabs:
     below). Added buffs go in the profile.
 - **Layout:** icon size, the space between icons, Unlock/Lock to drag the icons, and back to the
   default place.
+- **Effects:** the default animations and sounds (see below). Each tracked buff's ⚙ button on
+  the Buffs tab sets its own.
 - **General:** show or hide the minimap button, the version, and how Leboof works.
 - **Profiles:** which profile this character uses, a new profile, copy settings from another
   profile, rename, delete, or reset every setting to the defaults.
@@ -92,10 +94,36 @@ A buff you add starts with the one spell ID it was seen with. When Leboof later 
 the same name out of combat (another rank, a group version), it adds that ID too. Its warning time
 is a tenth of its duration, from 3 seconds to 2 minutes.
 
+## Animations and sounds
+
+**Animations** play in combat too, because the game plays them itself on its own buttons:
+
+- **When a buff appears:** a pop (the icon grows in) or a white flash.
+- **Glow near the end:** a pulsing gold edge in the game's refresh window, the last part of a buff
+  where recasting keeps some of the time left. Buffs without one don't glow.
+- **Pulse while missing:** the red copy in the top row pulses.
+
+**Sounds** need to know when something happened, and in combat the game hides that. So:
+
+- **Out of combat**, Leboof reads your buffs: a sound when a buff appears, drops, or runs low
+  (under its warning time), with separate defaults for the two rows.
+- **Entering combat** with a "keep up" buff missing: a warning sound, and the missing ones listed
+  in chat, from what Leboof saw just before the fight.
+- **In combat**, a sound a few seconds before a buff *you cast* should run out, timed from your
+  cast with the duration last seen out of combat. It's a guess: it still plays if the buff was
+  dispelled, its charges used, or it went on someone else. Off by default.
+- **Blizzard's Cooldown Manager** is the only way the game plays a sound in combat when a buff is
+  applied or removed. The Effects tab says whether Forever has it on and opens it; the alerts are
+  set there, not in Leboof.
+
+Every sound picker has a Test button, and picking a sound plays it.
+
 ## What it can't do
 
-The game decides what's visible in combat, and the addon never learns it. So nothing can react to
-a buff: no sounds, glows or "missing" logic beyond the visual layering above.
+The game decides what's visible in combat, and the addon never learns it. So nothing in Leboof
+can react to a buff changing in combat: no logic, and no sounds except the cast timer and
+Blizzard's Cooldown Manager above. The animations and the "missing" look are the game's own
+display, layered.
 
 ## Development
 

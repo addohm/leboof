@@ -16,6 +16,13 @@ All notable changes to leboof. The format follows
 
 ### Added
 
+- Animations and sounds (an Effects tab for the defaults, a ⚙ menu per tracked buff for its
+  own): a pop or flash when a buff appears, a pulsing glow near its end (the game's refresh
+  window) and a pulsing red copy while missing, all played by the game in combat too. Sounds out
+  of combat when a buff appears, drops or runs low; a warning entering combat with a "keep up" buff
+  missing; a sound before a buff you cast runs out, timed from the cast; and a check for
+  Blizzard's Cooldown Manager, whose alerts are the only in-combat sounds the game allows for buffs
+  being applied or removed (2026-11-08).
 - The Buffs tab's "Leboof's buffs" checklist: a dropdown with a submenu per section, ticked for
   what's tracked; tick to add, untick to remove. It replaces the one-at-a-time picker (2026-11-08).
 - Adding and removing buffs: the Buffs tab lists what's tracked, each with Remove, and adds from

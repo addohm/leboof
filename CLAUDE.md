@@ -25,6 +25,11 @@ off the table.
   - `Core.lua`: the defaults (`ns.DEFAULTS`), modes, events, `/leboof`.
   - `Custom.lua`: buffs the player adds (`ns.db.custom`), `ns.Entries()`, reading the player's buffs
     out of combat, learning other IDs of added buffs by name.
+  - `Effects.lua`: animation and sound settings (`ns.db.effects` defaults, `ns.db.fx[key]` a
+    buff's own; `ns.Fx.Get(e, field)` resolves them), sounds out of combat (from `ns.ReadBuffs()`),
+    the warning on entering combat, the sound timed from your own casts
+    (`UNIT_SPELLCAST_SUCCEEDED`, durations learned per character in `LeboofDB.durations`), and the
+    Cooldown Manager check.
   - `Profiles.lua`: profiles. `LeboofDB.profiles[name]` holds every setting (modes, size, gap,
     icon position, `window`, `minimap`); `LeboofDB.chars["Name - Realm"]` is the profile each
     character uses; `ns.db` is the one in use. New, switch, copy, rename, delete, reset. It also
@@ -78,7 +83,13 @@ off the table.
   secret (`DenyTaintedAccessWhenAurasAreSecret`). Changes go through `ns.Refresh()`, which waits
   for `PLAYER_REGEN_ENABLED`. Button parts are built in `initializeFrame`.
 - Container slots and groups can't be removed: create each once, then enable, disable or
-  re-filter it.
+  re-filter it. A button's animations are fixed when the game creates it (`initializeFrame`), so
+  slots, groups and enchant containers are keyed by buff (or warn time) *and* animations
+  (`"<key>/<gained>:<expiring>"`); changing a buff's animations switches to another button.
+- Animations go through the button's own methods (`AddAuraShownAnimation`,
+  `AddPandemicRegion`, `AddPandemicActiveAnimation`): the game plays them. Nothing may detect a
+  button showing (no scripts on its children); in combat only casts and Blizzard's Cooldown
+  Manager can make a sound.
 - Check API against Blizzard's UI source, `forever` branch:
   https://github.com/Gethe/wow-ui-source/tree/forever. Prefer `C_*` functions; many old globals
   are gone.

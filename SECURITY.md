@@ -14,7 +14,8 @@ secrets.
 ## What the addon can access
 
 It runs inside the WoW client with the normal addon permissions. Out of combat it reads the
-buffs on your own character, to offer them on the Buffs tab and learn their ranks. It never calls
+buffs on your own character, to offer them on the Buffs tab, learn their ranks and play its
+out-of-combat sounds; it also sees your own spell casts, for the cast-timed sound. It never calls
 protected functions; it only creates frames and hands spell IDs to Blizzard's aura containers.
 It saves its settings in `LeboofDB`: the profiles (modes, size, positions, the minimap button) and
 which profile each character uses, by character name and realm.
