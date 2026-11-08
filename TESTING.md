@@ -5,6 +5,8 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
 
 ## To check (0.1.0)
 
+0. After installing this build, fully restart the game (the `.toc` changed). The AddOns list and
+   the addon compartment show Leboof's icon: gold chevrons on dark teal.
 1. `/leboof` prints the help with a build number, and no Lua errors on login.
 2. The icons appear a little below the middle of the screen. `/leboof unlock` shows a blue box to
    drag; `/leboof lock` hides it; the place is kept after `/reload`.

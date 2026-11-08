@@ -1,2 +1,4 @@
 # Windows batch files need CRLF line endings to run reliably.
 *.cmd text eol=crlf
+*.tga binary
+*.png binary

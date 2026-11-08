@@ -23,6 +23,10 @@ off the table.
   - `Buffs.lua`: the catalogue: each buff's key, spell names, default mode per class, warn time.
   - `Core.lua`: per-character settings (`LeboofCharDB`), modes, events, `/leboof`.
   - `Display.lua`: the anchor, the containers, the keep-row placeholders, the up-row groups.
+  - `Media/Icon.tga`: the in-game icon (TOC `IconTexture`: AddOns list, addon compartment),
+    128 px 32-bit TGA, drawn by `art/make_logo.py`. Never edit by hand.
+- `art/`: `make_logo.py` (Pillow; run `python3 art/make_logo.py`) and the icon PNGs it draws
+  (512, 256, 128 px) for listings.
 - `tools/gen_data.py`: fetches Forever's SpellName table from wago.tools and writes `Data.lua`.
 - `tools/install_forever.cmd`: pulls, copies the addon into the Windows client, stamps the build
   and packs `Leboof-<version>.zip` on the desktop. Keep it CRLF (`.gitattributes`).

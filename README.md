@@ -54,6 +54,7 @@ a buff: no sounds, glows or "missing" logic beyond the visual layering above.
 python3 -m venv .venv && .venv/bin/pip install lupa   # once
 .venv/bin/python tests/run_tests.py                   # syntax, TOC, globals, scenarios
 python3 tools/gen_data.py                             # after changing names in Buffs.lua
+python3 art/make_logo.py                              # redraw the icon (needs Pillow)
 ```
 
 ## Docs

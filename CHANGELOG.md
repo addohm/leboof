@@ -8,6 +8,8 @@ All notable changes to leboof. The format follows
 
 ### Added
 
+- An icon for the AddOns list and the addon compartment: two gold chevrons on dark teal with a
+  red "missing" pip, drawn by `art/make_logo.py` (2026-11-08).
 - Leboof 0.1.0, the first build: your buffs in combat through Blizzard's aura containers, with no
   aura data read. A keep row (a fixed place per buff, a dimmed red copy when it's missing, weapon
   enchants at the end) and an up row (procs and other buffs while they're up), class defaults for
