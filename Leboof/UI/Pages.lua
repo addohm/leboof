@@ -7,6 +7,7 @@ local MODE_NAMES = { keep = "Keep up", up = "While up", off = "Off" }
 
 local SIZES = {}
 for _, n in ipairs({ 20, 24, 28, 32, 36, 40, 44, 48, 56, 64 }) do SIZES[#SIZES + 1] = { n, n .. " px" } end
+local GROWS = { { "center", "Center" }, { "left", "Left" }, { "right", "Right" } }
 local GAPS = {}
 for _, n in ipairs({ 0, 1, 2, 3, 4, 6, 8, 10, 12 }) do GAPS[#GAPS + 1] = { n, n .. " px" } end
 
@@ -325,6 +326,10 @@ Page({
 		stack:Add(UI.OptionSelect(stack.inner, "Space between icons and rows", GAPS,
 			function() return ns.db.gap end,
 			function(v) ns.db.gap = v; ns.Refresh() end))
+		stack:Add(UI.OptionSelect(stack.inner, "Grow from", GROWS,
+			function() return ns.db.grow end,
+			function(v) ns.db.grow = v; ns.Refresh() end,
+			{ tooltip = { "Grow from", "Center: the rows stay centred on their place and grow both ways. Left: they start at the left and grow to the right. Right: the other way." } }))
 		stack:Add(UI.OptionHeading(stack.inner, "Position"))
 		stack:Add(UI.OptionButton(stack.inner, "Move the icons",
 			function() return ns.db.locked and "Unlock" or "Lock" end,

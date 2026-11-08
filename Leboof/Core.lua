@@ -8,6 +8,7 @@ local DEFAULTS = {
 	point = "CENTER", x = 0, y = -180, -- the anchor's position, relative to UIParent
 	size = 32,                          -- icon size
 	gap = 4,                            -- space between icons and between the two rows
+	grow = "center",                    -- the rows grow from the anchor: "center", "left" or "right"
 	locked = true,                      -- unlocked: the anchor can be dragged and shows a frame
 	modes = {},                         -- key -> "keep" / "up" / "off", only where changed
 	custom = {},                        -- buffs the player added (Custom.lua)

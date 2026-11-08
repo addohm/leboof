@@ -268,10 +268,18 @@ local function Layout()
 	anchor:ClearAllPoints()
 	anchor:SetPoint(db.point, UIParent, db.point, db.x, db.y)
 
-	-- Row 1: keep. Buffs first, then weapon enchants.
+	-- Row 1: keep. Buffs first, then weapon enchants. The row grows from the anchor: to the right
+	-- ("left"), both ways ("center") or to the left ("right").
 	local entries = ns.Entries()
 	local wanted = {} -- the slot and enchant keys in use; the rest are switched off below
-	local x = 0
+	local count = 0
+	for _, e in ipairs(entries) do
+		local mode = ns.Mode(e)
+		if mode == "keep" or (e.enchant and mode == "up") then count = count + 1 end
+	end
+	local keepWidth = count > 0 and (count * (size + gap) - gap) or 0
+	local grow = db.grow
+	local x = grow == "center" and -keepWidth / 2 or grow == "right" and -keepWidth or 0
 	for pass = 1, 2 do
 		for _, e in ipairs(entries) do
 			if (pass == 1) == (e.enchant == nil) then
@@ -318,7 +326,6 @@ local function Layout()
 	for key, h in pairs(holders) do
 		if not present[key] then h:Hide() end
 	end
-	local keepWidth = x > 0 and (x - gap) or 0
 	local upY = keepWidth > 0 and -(size + gap) or 0
 
 	-- Row 2: up. One aura group per warn time and animations ("warn<w>/<animations>"), shortest
@@ -364,13 +371,18 @@ local function Layout()
 	for key in pairs(upGroups) do
 		upContainer:SetAuraGroupEnabled(key, groups[key] ~= nil)
 	end
+	-- The container sizes itself to its icons, so anchoring it by its top middle (or corner) is
+	-- enough for the up row to grow the same way as the keep row.
+	local GROW_POINTS = { left = "TOPLEFT", center = "TOP", right = "TOPRIGHT" }
 	upContainer:ClearAllPoints()
-	upContainer:SetPoint("TOPLEFT", anchor, "TOPLEFT", 0, upY)
+	upContainer:SetPoint(GROW_POINTS[grow] or "TOP", anchor, "TOPLEFT", 0, upY)
 
 	-- The mover covers the keep row and one up row.
+	local moverWidth = math.max(keepWidth, size * 6 + gap * 5)
+	local moverX = grow == "center" and -moverWidth / 2 or grow == "right" and -moverWidth or 0
 	mover:ClearAllPoints()
-	mover:SetPoint("TOPLEFT", anchor, "TOPLEFT", -2, 2)
-	mover:SetSize(math.max(keepWidth, size * 6 + gap * 5) + 4, -upY + size + 4)
+	mover:SetPoint("TOPLEFT", anchor, "TOPLEFT", moverX - 2, 2)
+	mover:SetSize(moverWidth + 4, -upY + size + 4)
 	mover:SetShown(not db.locked)
 end
 

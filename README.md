@@ -51,8 +51,9 @@ menu by the minimap. It has five tabs:
   - **Add from the buffs on you now:** your current buffs (out of combat), each with **Add**. This
     is the only way to add a buff of your own, and it's what keeps it to buffs that can work (see
     below). Added buffs go in the profile.
-- **Layout:** icon size, the space between icons, Unlock/Lock to drag the icons, and back to the
-  default place.
+- **Layout:** icon size, the space between icons, which way the rows grow (from the center, the
+  default, or from the left or right), Unlock/Lock to drag the icons, and back to the default
+  place.
 - **Effects:** the default animations and sounds (see below). Each tracked buff's ⚙ button on
   the Buffs tab sets its own.
 - **General:** show or hide the minimap button, the version, and how Leboof works.

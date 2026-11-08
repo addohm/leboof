@@ -14,7 +14,8 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
 1b. Buffs tab: the tracked buffs with icons under their headings; the arrows (or clicking the
     box) switch Keep up / While up, the icons change at once, and changed ones say "(changed)".
     Hover shows the default. Defaults puts them all back (and removes added buffs).
-1c. Layout tab: icon size and spacing change the icons; Unlock shows the blue box, Lock hides it.
+1c. Layout tab: icon size and spacing change the icons; both rows are centred on their place, and
+    stay centred as second-row icons come and go (Grow from: Center); Left and Right grow one way; Unlock shows the blue box, Lock hides it.
 1d. General tab: untick the minimap button and it goes; tick it and it's back.
 1e. Profiles tab: it says this character's profile ("Name - Realm"). Make a new one: settings go
     back to defaults; switch back and yours return. On a second character, pick the first one's

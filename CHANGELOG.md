@@ -27,6 +27,8 @@ All notable changes to leboof. The format follows
 
 ### Added
 
+- Grow from (Layout tab): both rows grow from the center by default, staying centred on their
+  place as icons come and go; Left and Right grow one way (2026-11-08).
 - Animations and sounds (an Effects tab for the defaults, a ⚙ menu per tracked buff for its
   own): a pop or flash when a buff appears, a pulsing glow near its end (the game's refresh
   window) and a pulsing red copy while missing, all played by the game in combat too. Sounds out

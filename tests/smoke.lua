@@ -361,3 +361,23 @@ Check(ns.db.effects.keepLost == "READY_CHECK" and WM.Played("READY_CHECK"), "the
 dropsRow.test.scripts.OnClick()
 Check(#WM.sounds == 2, "Test didn't play it")
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
+
+-- Growing: centred by default, else from the left or the right.
+WM.combat = false
+local function FirstX(slot) return slot.button.points[1][4] end
+ns.ResetModes()
+ns.Refresh()
+local keepCount = 0
+for _, e in ipairs(ns.Entries()) do if ns.Mode(e) == "keep" then keepCount = keepCount + 1 end end
+Check(ns.db.grow == "center", "rows should grow from the centre by default")
+local width = keepCount * (ns.db.size + ns.db.gap) - ns.db.gap
+Check(FirstX(KeepSlot("battleshout")) == -width / 2, "the keep row isn't centred")
+Check(Up().points[1][1] == "TOP", "the up row isn't centred")
+ns.db.grow = "left"
+ns.Refresh()
+Check(FirstX(KeepSlot("battleshout")) == 0 and Up().points[1][1] == "TOPLEFT", "grow from the left")
+ns.db.grow = "right"
+ns.Refresh()
+Check(FirstX(KeepSlot("battleshout")) == -width and Up().points[1][1] == "TOPRIGHT", "grow from the right")
+ns.db.grow = "center"
+ns.Refresh()
