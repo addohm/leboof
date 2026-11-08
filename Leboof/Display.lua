@@ -38,20 +38,16 @@ local function AddGlow(button, glow, color, size)
 	for _, group in ipairs(built.groups) do button:AddPandemicActiveAnimation(group) end
 end
 
--- The keep row's expired glow lives in a band this wide around the red copy. Blizzard's buttons
--- there get a dark border just as wide, which covers the band while the buff is up.
-local BAND = 3
-
 -- Returns the initializeFrame callback that builds a Blizzard aura button's parts. It runs once,
--- when the game creates the button, before the button is closed to addons. border: its width.
-local function ButtonStyler(warn, swipe, glow, color, border)
+-- when the game creates the button, before the button is closed to addons.
+local function ButtonStyler(warn, swipe, glow, color)
 	return function(button)
 		local size = ns.db.size
 		button:SetSize(size, size)
 
 		local edge = button:CreateTexture(nil, "BACKGROUND")
-		edge:SetPoint("TOPLEFT", -border, border)
-		edge:SetPoint("BOTTOMRIGHT", border, -border)
+		edge:SetPoint("TOPLEFT", -1, 1)
+		edge:SetPoint("BOTTOMRIGHT", 1, -1)
 		edge:SetColorTexture(0, 0, 0, 1)
 
 		local icon = button:CreateTexture(nil, "ARTWORK")
@@ -91,10 +87,10 @@ local function AnimKey(e)
 	return Fx.Get(e, "expiring") .. ":" .. Fx.Get(e, "expiringColor") .. ":" .. ns.db.size
 end
 
--- upRow: the second row's buttons, with a cooldown swipe and a thin border (no expired glow there).
+-- upRow: the second row's buttons, with a cooldown swipe.
 local function Styler(e, warn, upRow)
 	local Fx = ns.Fx
-	return ButtonStyler(warn, upRow, Fx.Get(e, "expiring"), Fx.Get(e, "expiringColor"), upRow and 1 or BAND)
+	return ButtonStyler(warn, upRow, Fx.Get(e, "expiring"), Fx.Get(e, "expiringColor"))
 end
 
 local function NewContainer()
@@ -171,14 +167,8 @@ local function Holder(e)
 		h.icon:SetDesaturated(true)
 		h.icon:SetVertexColor(1, 0.4, 0.4)
 		h:SetAlpha(0.8)
-		-- The expired glow: around the red copy like the warning glow, but trimmed to a band
-		-- BAND wide, which Blizzard's button (with its border) covers while the buff is up.
-		h.band = CreateFrame("Frame", nil, h)
-		h.band:SetPoint("TOPLEFT", -BAND, BAND)
-		h.band:SetPoint("BOTTOMRIGHT", BAND, -BAND)
 		holders[e.key] = h
 	end
-	ns.Glow.Show(h.band, ns.Fx.Get(e, "missing"), ns.Fx.Get(e, "missingColor"), ns.db.size, true)
 	local texture = e.icon -- an added buff: the icon it was seen with
 	if not texture and e.enchant then
 		texture = GetInventoryItemTexture("player", e.enchant == "MainHand" and INVSLOT_MAINHAND or INVSLOT_OFFHAND)
@@ -187,6 +177,84 @@ local function Holder(e)
 	end
 	h.icon:SetTexture(texture or QUESTION)
 	return h
+end
+
+-- The expired glow. Blizzard's button covers the red copy while the buff is up, but a glow reaches
+-- past the icon, so it needs hiding some other way. Each keep-row buff gets its own container
+-- holding only that buff, with invisible buttons. A container sizes itself to its buttons: 1 px
+-- wide while the buff is missing, `span` + 1 while it's up. The glow sits in a clipping frame
+-- stretched from the container's right edge to the far side of the glow's area, so it's full
+-- size while the buff is missing and nothing while it's up. The game does the sizing (the size
+-- is secret); Blizzard allows anchoring our frames to a container when they're made with
+-- DisableUntrustedLayoutScriptsTemplate.
+local presence = {} -- buff key -> { container, clip, host, slot (enchants) }
+
+local function Margin(size)
+	return math.ceil(size * 0.25) + 3 -- how far any glow style reaches past the icon
+end
+
+local function Invisible(button)
+	button:SetSize(1, 1)
+	button:EnableMouse(false)
+end
+
+local function Presence(e)
+	local p = presence[e.key]
+	if not p then
+		p = { container = NewContainer() }
+		if e.enchant then
+			p.slot = AuraContainerItemEnchantmentSlot[e.enchant]
+			p.container:AddItemEnchantment(p.slot, { initializeFrame = Invisible, hidePermanent = true })
+		else
+			p.container:AddAuraGroup("buff", "HELPFUL", {
+				candidateFilters = { includeSpellIDs = e.ids },
+				maxFrameCount = 1,
+				initializeFrame = Invisible,
+			})
+		end
+		p.clip = CreateFrame("Frame", nil, anchor, "DisableUntrustedLayoutScriptsTemplate")
+		p.clip:SetClipsChildren(true)
+		p.clip:SetFrameLevel(anchor:GetFrameLevel() + 2)
+		p.host = CreateFrame("Frame", nil, p.clip)
+		presence[e.key] = p
+	end
+	return p
+end
+
+-- Places the expired glow for a keep-row buff whose icon is at x.
+local function PlaceExpired(e, x, size)
+	local p = Presence(e)
+	local margin = Margin(size)
+	local span = size + 2 * margin
+	if e.enchant then
+		p.container:SetItemEnchantmentLayout({ elementWidth = span + 1, elementHeight = 1 })
+		p.container:SetItemEnchantmentEnabled(p.slot, true)
+	else
+		p.container:SetAuraGroupCandidateFilters("buff", { includeSpellIDs = e.ids })
+		p.container:SetAuraGroupLayout("buff", { elementWidth = span + 1, elementHeight = 1 })
+		p.container:SetAuraGroupEnabled("buff", true)
+	end
+	p.container:ClearAllPoints()
+	p.container:SetPoint("TOPLEFT", anchor, "TOPLEFT", x - margin - 1, margin)
+	p.clip:ClearAllPoints()
+	p.clip:SetPoint("TOPLEFT", p.container, "TOPRIGHT")
+	p.clip:SetPoint("BOTTOMRIGHT", anchor, "TOPLEFT", x + size + margin, -size - margin)
+	p.clip:Show()
+	p.host:ClearAllPoints()
+	p.host:SetPoint("TOPLEFT", anchor, "TOPLEFT", x, 0)
+	p.host:SetSize(size, size)
+	ns.Glow.Show(p.host, ns.Fx.Get(e, "missing"), ns.Fx.Get(e, "missingColor"), size)
+end
+
+local function HideExpired(key)
+	local p = presence[key]
+	if not p then return end
+	p.clip:Hide()
+	if p.slot then
+		p.container:SetItemEnchantmentEnabled(p.slot, false)
+	else
+		p.container:SetAuraGroupEnabled("buff", false)
+	end
 end
 
 -- slots and enchants are keyed "<buff key>/<animations>".
@@ -238,10 +306,8 @@ local function Layout()
 		local mode = ns.Mode(e)
 		if mode == "keep" or (e.enchant and mode == "up") then count = count + 1 end
 	end
-	-- The keep row's borders are BAND wide (the second row's, 1), so its icons sit further apart
-	-- to keep the same gap between borders.
-	local step = size + gap + 2 * (BAND - 1)
-	local keepWidth = count > 0 and (count * step - (step - size)) or 0
+	local step = size + gap
+	local keepWidth = count > 0 and (count * step - gap) or 0
 	local grow = db.grow
 	local x = grow == "center" and -keepWidth / 2 or grow == "right" and -keepWidth or 0
 	for pass = 1, 2 do
@@ -253,6 +319,7 @@ local function Layout()
 					local h = Holder(e)
 					Place(h, x, 0, size)
 					h:SetShown(mode == "keep")
+					if mode == "keep" then PlaceExpired(e, x, size) else HideExpired(e.key) end
 					local key = e.key .. "/" .. AnimKey(e)
 					wanted[key] = true
 					if e.enchant then
@@ -289,6 +356,10 @@ local function Layout()
 	end
 	for key, h in pairs(holders) do
 		if not present[key] then h:Hide() end
+	end
+	for key in pairs(presence) do
+		local e = ns.Entry(key)
+		if not e or ns.Mode(e) ~= "keep" then HideExpired(key) end
 	end
 	local upY = keepWidth > 0 and -(size + gap) or 0
 

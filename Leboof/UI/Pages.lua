@@ -375,7 +375,7 @@ Page({
 			{ tooltip = { "Warning glow", "Shown in the game's refresh window: the last part of a buff, where recasting it keeps some of the time left. The game shows it, so it works in combat. Buffs without a refresh window don't get it." } }))
 		stack:Add(UI.OptionSelect(stack.inner, "Warning glow colour", ns.Glow.COLORS, EffectSetting("expiringColor")))
 		stack:Add(UI.OptionSelect(stack.inner, "Expired glow (top row, while missing)", ns.Glow.STYLES, EffectGet("missing"), EffectSet("missing"),
-			{ tooltip = { "Expired glow", "Around the red copy of a missing top-row buff, within 3 px of it: the top row's 3 px icon border covers that while the buff is up. Bigger styles are trimmed there." } }))
+			{ tooltip = { "Expired glow", "Around the red copy of a missing top-row buff, the same size as the warning glow. It's gone the moment the buff is back." } }))
 		stack:Add(UI.OptionSelect(stack.inner, "Expired glow colour", ns.Glow.COLORS, EffectSetting("missingColor")))
 
 		stack:Add(UI.OptionHeading(stack.inner, "Sounds out of combat: buffs to keep up"))

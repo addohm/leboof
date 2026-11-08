@@ -369,7 +369,7 @@ ns.Refresh()
 local keepCount = 0
 for _, e in ipairs(ns.Entries()) do if ns.Mode(e) == "keep" then keepCount = keepCount + 1 end end
 Check(ns.db.grow == "center", "rows should grow from the centre by default")
-local step = ns.db.size + ns.db.gap + 4 -- the keep row's 3 px borders
+local step = ns.db.size + ns.db.gap
 local width = keepCount * step - (step - ns.db.size)
 Check(FirstX(KeepSlot("battleshout")) == -width / 2, "the keep row isn't centred")
 Check(Up().points[1][1] == "TOP", "the up row isn't centred")
@@ -406,4 +406,34 @@ ns.db.fx.battleshout = nil
 ns.db.effects.expiring, ns.db.effects.expiringColor = "pixel", "gold"
 ns.db.effects.missing = "classic"
 ns.Refresh()
+Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
+
+-- The expired glow: full size in a clipping frame stretched from the right edge of a container
+-- holding only that buff (1 px wide while it's missing, the glow's span + 1 while it's up).
+local function PresenceFor(spellId)
+	for _, c in ipairs(WM.containers) do
+		local g = c.groups.buff
+		if g and g.enabled and g.filters.includeSpellIDs[spellId] then return c, g end
+	end
+end
+local pc, pg = PresenceFor(25289)
+Check(pc and pg.layout and pg.layout.elementWidth == ns.db.size + 2 * (math.ceil(ns.db.size * 0.25) + 3) + 1,
+	"Battle Shout should have a presence container as wide as the glow's span + 1")
+local clip
+for _, f in ipairs(WM.frames) do
+	if f.points[1] and f.points[1][2] == pc and f.points[1][1] == "TOPLEFT" and f.points[1][3] == "TOPRIGHT" then clip = f end
+end
+Check(clip and clip.shown, "no clipping frame on the presence container's right edge")
+ns.SetMode(ns.byKey.battleshout, "up")
+Check(not pg.enabled and not clip.shown, "a buff moved out of the top row should lose its expired glow")
+ns.SetMode(ns.byKey.battleshout, "default")
+Check(pg.enabled and clip.shown, "and get it back")
+ns.SetMode(ns.byKey.mainhand, "keep")
+local enchantPresence
+for _, c in ipairs(WM.containers) do
+	if c.enchants[0] and c.enchants[0].button.w == 1 then enchantPresence = c end
+end
+Check(enchantPresence and enchantPresence.enchants[0].enabled, "a kept weapon enchant should have a presence container too")
+ns.SetMode(ns.byKey.mainhand, "default")
+Check(not enchantPresence.enchants[0].enabled, "the enchant's presence container should be switched off with it")
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))

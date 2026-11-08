@@ -249,24 +249,15 @@ function Glow.SetActive(built, on)
 end
 
 -- Keeps one active glow per style/colour/size on one of our frames, making them as needed.
--- trim: the glow goes round an icon `size` big in the middle of `owner`, and is cut off at
--- owner's edges (for the red copy's band).
-function Glow.Show(owner, style, color, size, trim)
+function Glow.Show(owner, style, color, size)
 	owner.glows = owner.glows or {}
-	local key = style .. ":" .. tostring(color) .. ":" .. size .. (trim and ":trim" or "")
+	local key = style .. ":" .. tostring(color) .. ":" .. size
 	for k, built in pairs(owner.glows) do
 		if k ~= key then Glow.SetActive(built, false) end
 	end
 	if style == "none" then return end
 	if not owner.glows[key] then
-		local host = owner
-		if trim then
-			owner:SetClipsChildren(true)
-			host = CreateFrame("Frame", nil, owner)
-			host:SetSize(size, size)
-			host:SetPoint("CENTER", owner, "CENTER")
-		end
-		owner.glows[key] = Glow.Build(host, style, color, size)
+		owner.glows[key] = Glow.Build(owner, style, color, size)
 	end
 	Glow.SetActive(owner.glows[key], true)
 end

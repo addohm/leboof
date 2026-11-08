@@ -26,9 +26,7 @@ off the table.
   - `Custom.lua`: buffs the player adds (`ns.db.custom`), `ns.Entries()`, reading the player's buffs
     out of combat, learning other IDs of added buffs by name.
   - `Glow.lua`: the glow styles, built from textures and Alpha/Translation/Rotation/FlipBook
-    animations only (`Glow.Build`); `Glow.Show` keeps one active on our own frames (`trim` cuts it
-    off at the frame's edges: the red copy's 3 px band, which the keep row's 3 px button border
-    covers while the buff is up).
+    animations only (`Glow.Build`); `Glow.Show` keeps one active on our own frames.
   - `Effects.lua`: animation and sound settings (`ns.db.effects` defaults, `ns.db.fx[key]` a
     buff's own; `ns.Fx.Get(e, field)` resolves them), sounds out of combat (from `ns.ReadBuffs()`),
     the warning on entering combat, the sound timed from your own casts
@@ -90,6 +88,13 @@ off the table.
   re-filter it. A button's warning glow is fixed when the game creates it (`initializeFrame`), so
   slots, groups and enchant containers are keyed by buff (or warn time) *and* glow
   (`"<key>/<style>:<colour>:<size>"`); changing a buff's glow switches to another button.
+- **The expired glow is hidden by layout, not by reading anything.** Each keep-row buff has its
+  own "presence" container holding only that buff (invisible 1 px buttons, element width = the
+  glow's span + 1). Empty, a container is 1 px wide; with the buff, span + 1. The glow's clipping
+  frame (made with `DisableUntrustedLayoutScriptsTemplate`, which Blizzard requires for frames
+  anchored to a container) runs from the container's right edge to a fixed point, so it's full
+  size while the buff is missing and zero while it's up. The game does the sizing with secret
+  values; Leboof never learns it. `Display.lua`: `Presence`, `PlaceExpired`.
 - **Keep it simple:** icons appear and disappear, with a warning glow and an expired glow, and
   nothing else animates (the owner, 2026-11-08: no growing, shrinking or fading). The warning glow
   goes through the button's own `AddPandemicRegion` / `AddPandemicActiveAnimation`: the game shows
