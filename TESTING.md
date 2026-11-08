@@ -3,7 +3,7 @@
 What to check after installing a build (`tools\install_forever.cmd`, then `/reload`). Note the
 build `/leboof` shows. Results go in Confirmed or Problems below.
 
-## To check (0.1.0)
+## To check (1.0.0)
 
 0. After installing this build, fully restart the game (the `.toc` changed). The AddOns list and
    the addon compartment show Leboof's icon: gold chevrons on dark teal.

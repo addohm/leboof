@@ -2,3 +2,4 @@
 *.cmd text eol=crlf
 *.tga binary
 *.png binary
+*.zip binary

@@ -6,78 +6,41 @@ All notable changes to leboof. The format follows
 
 ## [Unreleased]
 
-### Changed
+## [1.0.0] - 2026-11-08
 
-- One running-out sound that works in and out of combat: out of combat from the buff's timer, in
-  combat timed from your own cast. It replaces "Before a buff you cast runs out", which also
-  played out of combat and doubled up. The warning time (when it plays and the time turns red) is
-  now a setting: each buff's own by default, or 3 s to 10 min, on the Effects tab or per buff
-  (2026-11-08).
-- Profiles and characters go by first and last name ("Brenna Ashford"), without the realm. Profiles
-  named "Name - Realm" by an earlier build are renamed at the next login (2026-11-08).
-- The expired glow is as big as the warning glow, right at the icon's edge. Each top-row buff has
-  an invisible container holding only that buff; the glow is drawn in a frame stretched from that
-  container's edge, which the game squeezes to nothing while the buff is up (2026-11-08).
-- The buff list checked against WoW: Forever (2026-11-08):
-  - Removed Spirit of Zandalar: Zul'Gurub isn't in Forever.
-  - Added warrior Shield Block, Shield Wall, Last Stand, Retaliation, Reckless Swings and Gore
-    Drinker; priest Spirit Tap, Inspiration, Dark Inspiration, Divine Aegis, Prayer of Mending and
-    the racials (Shadowguard, Touch of Weakness, Elune's Grace, Feedback, Dark Sacrifice); druid
-    Dash, Frenzied Regeneration, Nature's Swiftness, Nature's Grace, Eclipse, Leader of the Pack,
-    Moonkin Aura and Wild Growth. On by default for their class.
-  - Added the world buffs Traces of Silithyst and Sayge's Dark Fortune (off by default).
-  - Divine Spirit is trained by every priest in Forever, so it's in the top row for priests.
-  - World buffs and racials say where they come from in their tooltips; Rallying Cry (Onyxia, from
-    Dec 9) and Warchief's Blessing (Upper Blackrock Spire may not be in Forever) are marked.
-- Defaults: each class sees only its own buffs (self-buffs, procs, cooldowns, shields, HoTs).
-  Buffs from other classes, world buffs and weapon enchants start off (2026-11-08).
-- `/leboof` opens the options window; `/leboof help` lists the commands (2026-11-08).
-- `tools/install_forever.cmd` installs into the live client (`_forever_`) by default, not the
-  beta (2026-11-08).
+The first release, for WoW: Forever.
 
 ### Added
 
-- `/leboof soundlog`: logs every sound any addon plays (including Blizzard's Cooldown Manager
-  alerts and text-to-speech) with the time, the sound's name and the addon that played it; Leboof's
-  own say why. `show` opens it ready to copy, and it's saved with the settings (2026-11-08).
-- Glow styles and colours for the warning glow (near the end of a buff) and the expired glow (on a
-  missing buff's red copy): Pulse, Pixel glow, Action button glow, Auto-cast shine, GCD, Modern WoW
-  glow and Classic WoW glow, in eleven colours or your class colour, with sample icons on the
-  Effects tab and per buff in its gear menu. Defaults: a gold pixel glow for the warning, a red
-  pixel glow for expired (2026-11-08).
-- Grow from (Layout tab): both rows grow from the center by default, staying centred on their
-  place as icons come and go; Left and Right grow one way (2026-11-08).
-- Glows and sounds (an Effects tab for the defaults, a ⚙ menu per tracked buff for its own): a
-  glow near the end of a buff (the game's refresh window) and on a missing buff's red copy, shown
-  by the game in combat too; icons themselves just appear and disappear. Sounds out
-  of combat when a buff appears, drops or runs low; a warning entering combat with a "keep up" buff
-  missing; a sound before a buff you cast runs out, timed from the cast; and a check for
-  Blizzard's Cooldown Manager, whose alerts are the only in-combat sounds the game allows for buffs
-  being applied or removed (2026-11-08).
-- The Buffs tab's "Leboof's buffs" checklist: a dropdown with a submenu per section, ticked for
-  what's tracked; tick to add, untick to remove. It replaces the one-at-a-time picker (2026-11-08).
-- Adding and removing buffs: the Buffs tab lists what's tracked, each with Remove, and adds from
-  Leboof's list or from the buffs on you now (out of combat). Only buffs on you can be added,
-  since those are the only ones the game's containers can show; nothing is typed in. An added
-  buff learns its other ranks by name when Leboof sees them out of combat (2026-11-08).
-- Profiles: every setting is in a profile, and each character starts with its own. The new
-  Profiles tab switches profiles (to share one between characters), makes a new one, copies from
-  another, renames, deletes and resets; `/leboof profile` shows the one in use. Settings saved by
-  0.1.0 move into the character's profile (2026-11-08).
-- An options window like Nothing Wasted's (`/leboof`, the minimap button or the addon menu): a
-  Buffs tab with a Keep up / While up / Off picker for every buff, a Layout tab (size, spacing,
-  moving the icons) and a General tab, each with Defaults (2026-11-08).
-- A minimap button with the Leboof icon: click for the window, right-click to unlock or lock the
-  icons, drag to move it; `/leboof minimap` shows or hides it (2026-11-08).
-- An icon for the AddOns list and the addon compartment: two gold chevrons on dark teal with a
-  red "missing" pip, drawn by `art/make_logo.py` (2026-11-08).
-- Leboof 0.1.0, the first build: your buffs in combat through Blizzard's aura containers, with no
-  aura data read. A keep row (a fixed place per buff, a dimmed red copy when it's missing, weapon
-  enchants at the end) and an up row (procs and other buffs while they're up), class defaults for
-  warrior, priest and druid, and `/leboof` commands (2026-11-07).
-- `tools/install_forever.cmd`: pulls, installs into the Windows client with a build stamp, and
-  packs the zip on the desktop, like Nothing Wasted's (2026-11-07).
-- `tools/gen_data.py` (spell IDs from wago.tools) and headless tests (2026-11-07).
-- Standard docs: README, CLAUDE, CHANGELOG, DEPLOY, SECURITY and ROADMAP (2026-11-07).
-- Filled the docs with what's known so far; open questions are marked TODO
-  (2026-11-07).
+- Your buffs in combat, where the game hides aura data from addons: Leboof tells Blizzard's aura
+  containers which buffs to show, and the game fills the icons itself. The icons never read aura
+  data.
+- Two rows, growing from the centre (or from the left or right):
+  - **Keep up:** a fixed place per buff, with a dimmed red copy while it's missing. Weapon
+    enchants (oils, sharpening stones) at the end.
+  - **While up:** procs, cooldowns and other buffs, only while they're on you; gaps close.
+- Defaults per class (warrior, priest, druid): your own class's buffs on, everything else off. The
+  buff list is checked against Forever: its new and changed class buffs and talents, the priest
+  racials, and the world buffs it has, with notes on where they come from.
+- **Leboof's buffs** checklist (a submenu per section) to add and remove built-in buffs, and
+  **Add from the buffs on you now** for your own: only buffs on you can be tracked, so nothing is
+  typed in. Added buffs learn their other ranks by name out of combat.
+- Glows that work in combat: a **warning glow** near the end of a buff (the game's refresh
+  window) and an **expired glow** round a missing buff's red copy, as big as the warning glow and
+  gone the moment the buff is back. Styles: Pulse, Pixel glow, Action button glow, Auto-cast
+  shine, GCD, Modern WoW glow, Classic WoW glow; eleven colours or your class colour. Icons
+  themselves just appear and disappear.
+- Sounds: **running out** at the warning time (out of combat from the buff's timer, in combat
+  timed from your own cast, never twice for one cast); a buff appearing or dropping (out of
+  combat); and a warning on entering combat with a keep-up buff missing. The **warning time** is
+  yours to set (each buff's own by default, or 3 s to 10 min), and turns the timer red at the same
+  moment. A pointer to Blizzard's Cooldown Manager, whose alerts are the only in-combat sounds the
+  game allows for buffs being applied or removed.
+- An options window in Nothing Wasted's style (Buffs, Layout, Effects, General, Profiles), a
+  per-buff gear menu for its own glows, sounds and warning time, a minimap button and the addon
+  compartment entry.
+- Profiles: every setting in a profile, one per character by default ("First Last"), shareable
+  between characters, with copy, rename, delete and reset.
+- `/leboof soundlog`: logs every sound any addon plays and which addon played it, ready to copy.
+- `tools\install_forever.cmd` (Windows): pull, install into the client with a build stamp, and
+  pack the zip on the desktop; `tools/make_release.py` builds the release zip.

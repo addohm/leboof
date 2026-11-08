@@ -24,8 +24,9 @@ To install by hand instead, copy the `Leboof` folder (not the repo root) into
 2. Commit and push.
 3. On Windows, run `tools\install_forever.cmd`, then `/reload` (or restart the game if it says so).
 4. For a release: bump `## Version` in `Leboof/Leboof.toc`, move the CHANGELOG's Unreleased
-   entries under the new version, commit, tag (`git tag v0.1.0`) and push. The install script's
-   desktop zip is the release package.
+   entries under the new version, and commit. Then `python3 tools/make_release.py` writes
+   `release/Leboof-<version>.zip` from the committed `Leboof/` folder (it refuses if `Leboof/` has
+   uncommitted changes); commit the zip, tag (`git tag v1.0.0`) and push with `--tags`.
 
 ## The install script
 

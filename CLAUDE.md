@@ -53,6 +53,8 @@ off the table.
     128 px 32-bit TGA, drawn by `art/make_logo.py`. Never edit by hand.
 - `art/`: `make_logo.py` (Pillow; run `python3 art/make_logo.py`) and the icon PNGs it draws
   (512, 256, 128 px) for listings.
+- `release/`: `Leboof-<version>.zip` release packages, built by `tools/make_release.py` from the
+  committed `Leboof/` folder; committed with each release.
 - `tools/gen_data.py`: fetches Forever's SpellName table from wago.tools and writes `Data.lua`.
 - `tools/install_forever.cmd`: pulls, copies the addon into the Windows client, stamps the build
   and packs `Leboof-<version>.zip` on the desktop. Keep it CRLF (`.gitattributes`).

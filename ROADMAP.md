@@ -7,6 +7,7 @@ change.
 
 - Standard docs (2026-11-07).
 - The icon (2026-11-08).
+- **1.0.0 released (2026-11-08).**
 - The options window and the minimap button (2026-11-08).
 - Profiles (2026-11-08).
 - Adding and removing buffs, limited to buffs on you (2026-11-08).
@@ -16,11 +17,9 @@ change.
 
 ## Next
 
-1. First in-game run (TESTING.md): do the containers accept the player's buffs in combat, does the
-   missing look work, and do the defaults suit each of your characters?
-2. Decide the open design points: which buffs belong in each row, the layout (one row each, or
-   groups placed separately), and whether in-combat sounds matter beyond the cast timer (that would mean checking
-   whether Forever turns on the Cooldown Manager and its alerts).
+1. Finish the in-game checks in TESTING.md (glow styles, the expired glow hiding in combat, which
+   buffs get a refresh window) and fix what turns up.
+2. Publishing: where public releases go (CurseForge, Wago, GitHub Releases), and the listing.
 
 ## Ideas
 
