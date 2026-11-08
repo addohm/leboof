@@ -10,6 +10,7 @@ local DEFAULTS = {
 	gap = 4,                            -- space between icons and between the two rows
 	locked = true,                      -- unlocked: the anchor can be dragged and shows a frame
 	modes = {},                         -- key -> "keep" / "up" / "off", only where changed
+	custom = {},                        -- buffs the player added (Custom.lua)
 	window = {},                        -- the options window: pos, size, tab
 	minimap = { angle = 250, hide = false }, -- clear of Nothing Wasted (200) and Ticky (225)
 }
@@ -66,6 +67,7 @@ local function Knows(e)
 end
 
 function ns.DefaultMode(e)
+	if e.custom then return "up" end
 	local _, class = UnitClass("player")
 	local mode = (e.class and e.class[class]) or e.other or "off"
 	if mode == "keep" and not e.enchant and e.class and e.class[class] == "keep" and not Knows(e) then
@@ -137,7 +139,7 @@ end)
 
 local function ListBuffs()
 	local rows = { keep = {}, up = {}, off = {} }
-	for _, e in ipairs(ns.Catalogue) do
+	for _, e in ipairs(ns.Entries()) do
 		local mode = ns.Mode(e)
 		local text = e.key .. (ns.db.modes[e.key] and "*" or "")
 		table.insert(rows[mode], text)
@@ -191,8 +193,8 @@ SlashCmdList.LEBOOF = function(msg)
 		ns.ResetLayout()
 		ns.Refresh()
 		ns.Print("reset.")
-	elseif ns.byKey[cmd] then
-		local e = ns.byKey[cmd]
+	elseif ns.Entry(cmd) then
+		local e = ns.Entry(cmd)
 		if arg ~= "default" and not ns.MODES[arg or ""] then
 			ns.Print(e.label .. " is " .. ns.Mode(e) .. ". Use keep, up, off or default.")
 			return

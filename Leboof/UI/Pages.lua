@@ -1,13 +1,8 @@
--- Leboof: the options window's tabs: Buffs (a mode for every buff), Layout (size, spacing,
--- moving the icons) and General (minimap button, about).
+-- Leboof: the options window's tabs: Buffs (what's tracked, adding and removing), Layout (size,
+-- spacing, moving the icons), General (minimap button, about) and Profiles.
 local _, ns = ...
 local UI = ns.UI
 
-local MODE_CHOICES = {
-	{ "keep", "Keep up" },
-	{ "up", "While up" },
-	{ "off", "Off" },
-}
 local MODE_NAMES = { keep = "Keep up", up = "While up", off = "Off" }
 
 local SIZES = {}
@@ -21,10 +16,33 @@ local ENCHANT_ICONS = {
 }
 
 local function Icon(e)
-	local texture = e.enchant and ENCHANT_ICONS[e.enchant] or (e.idList and e.idList[1] and C_Spell.GetSpellTexture(e.idList[1]))
+	local texture = e.icon or (e.enchant and ENCHANT_ICONS[e.enchant])
+		or (e.idList and e.idList[1] and C_Spell.GetSpellTexture(e.idList[1]))
 	return "|T" .. tostring(texture or "Interface\\Icons\\INV_Misc_QuestionMark") .. ":20:20:0:0:64:64:5:59:5:59|t  "
 end
 
+-- Prints a failure's reason, and shows the change.
+local function Report(ok, err)
+	if not ok and err then ns.Print(err) end
+	ns.Window.Refresh()
+	return ok
+end
+
+-- The value picked in a picker whose choices change: kept while it's still a choice.
+local function Picker(choices)
+	local picked
+	local function get()
+		local list = choices()
+		for _, v in ipairs(list) do
+			if v[1] == picked then return picked end
+		end
+		picked = list[1] and list[1][1]
+		return picked
+	end
+	return get, function(v) picked = v end
+end
+
+-- def: { id, label, note, fill(stack, panel), refresh(panel) (default: sync the rows), defaults }
 local function Page(def)
 	ns.Window.AddPage({
 		id = def.id,
@@ -43,46 +61,175 @@ local function Page(def)
 			holder:SetPoint("TOPLEFT", 0, top)
 			holder:SetPoint("BOTTOMRIGHT")
 			panel.stack = UI.Stack(holder)
-			def.fill(panel.stack)
+			def.fill(panel.stack, panel)
 		end,
-		refresh = function(panel) panel.stack:Sync() end,
+		refresh = def.refresh or function(panel) panel.stack:Sync() end,
 		defaults = def.defaults,
 	})
 end
 
--- Buffs: a picker per buff, under its section's heading. A changed mode is marked.
+-- Buffs: what's tracked (with Keep up / While up and Remove), then two ways to add one: from
+-- Leboof's own list, or from the buffs on you now (see Custom.lua for why only those). The list
+-- is rebuilt on each refresh from pooled rows.
+local TRACK_CHOICES = { { "keep", "Keep up" }, { "up", "While up" } }
+local TRACK_X, TRACK_BOX = 250, 100
+
+local function Tracked(e) return ns.Mode(e) ~= "off" end
+
+local function EntryTooltip(e)
+	local lines = { e.label }
+	if e.custom then
+		lines[#lines + 1] = "Added by you. Spell IDs seen: " .. #e.idList .. " (more ranks are added when Leboof sees them out of combat)."
+	elseif e.names and #e.names > 1 then
+		lines[#lines + 1] = "Counts: " .. table.concat(e.names, ", ")
+	end
+	lines[#lines + 1] = "Default for you: " .. MODE_NAMES[ns.DefaultMode(e)]
+	if e.warn and e.warn > 0 then lines[#lines + 1] = "Time left turns red under " .. e.warn .. " s" end
+	return lines
+end
+
+local function TrackedRow(parent)
+	local ref = {}
+	local row = UI.OptionSelect(parent, "", TRACK_CHOICES,
+		function() return ns.Mode(ref.entry) end,
+		function(mode) ns.SetMode(ref.entry, mode) end,
+		{
+			font = "GameFontHighlight", controlX = TRACK_X, boxWidth = TRACK_BOX,
+			tooltip = function() return EntryTooltip(ref.entry) end,
+			sync = function(r)
+				local changed = ns.db.modes[ref.entry.key] and "  |cff999999(changed)|r" or ""
+				r.label:SetText(Icon(ref.entry) .. ref.entry.label .. changed)
+			end,
+		})
+	local remove = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+	remove:SetSize(76, 22)
+	remove:SetPoint("LEFT", row.right + 6, 0)
+	remove:SetText("Remove")
+	remove:SetScript("OnClick", function()
+		ns.RemoveBuff(ref.entry)
+		ns.Window.Refresh()
+	end)
+	row.remove, row.ref = remove, ref
+	return row
+end
+
+local function CurrentRow(parent)
+	local ref = {}
+	local row = UI.OptionButton(parent, "", "Add", function()
+		Report(ns.AddBuff(ref.buff))
+	end, function()
+		local b = ref.buff
+		local lines = { b.name }
+		local e = ns.EntryForSpell(b.spellId)
+		if e then
+			lines[#lines + 1] = "In Leboof's list: Add switches it on, with every rank."
+		else
+			lines[#lines + 1] = "Adds it as your own buff (spell ID " .. b.spellId .. ")."
+		end
+		return lines
+	end)
+	row.label:SetFontObject("GameFontHighlight")
+	row.ref = ref
+	return row
+end
+
+local function Duration(seconds)
+	if not seconds or seconds <= 0 then return "no time limit" end
+	if seconds >= 3600 then return math.floor(seconds / 3600 + 0.5) .. " h" end
+	if seconds >= 60 then return math.floor(seconds / 60 + 0.5) .. " min" end
+	return math.floor(seconds + 0.5) .. " s"
+end
+
+local function UntrackedBuiltins()
+	local list = {}
+	for _, e in ipairs(ns.Catalogue) do
+		if not Tracked(e) then list[#list + 1] = { e.key, e.label } end
+	end
+	return list
+end
+
 Page({
 	id = "buffs",
 	label = "Buffs",
 	note = "Keep up: a fixed place in the top row, a dimmed red copy while it's missing. While up: the second row, only while it's on you. Changes made in combat apply when combat ends.",
-	fill = function(stack)
-		local section
-		for _, e in ipairs(ns.Catalogue) do
-			if e.section ~= section then
-				section = e.section
-				stack:Add(UI.OptionHeading(stack.inner, section))
-			end
-			local icon = Icon(e)
-			stack:Add(UI.OptionSelect(stack.inner, icon .. e.label, MODE_CHOICES,
-				function() return ns.Mode(e) end,
-				function(mode) ns.SetMode(e, mode) end,
-				{
-					font = "GameFontHighlight",
-					tooltip = function()
-						local lines = { e.label }
-						if e.names and #e.names > 1 then lines[#lines + 1] = "Counts: " .. table.concat(e.names, ", ") end
-						lines[#lines + 1] = "Default for you: " .. MODE_NAMES[ns.DefaultMode(e)]
-						if e.warn and e.warn > 0 then lines[#lines + 1] = "Time left turns red under " .. e.warn .. " s" end
-						return lines
-					end,
-					sync = function(row)
-						local changed = ns.db.modes[e.key] and "  |cff999999(changed)|r" or ""
-						row.label:SetText(icon .. e.label .. changed)
-					end,
-				}))
-		end
+	fill = function(stack, panel)
+		local p = { tracked = {}, sections = {}, current = {} }
+		panel.parts = p
+		p.headTracked = UI.OptionHeading(stack.inner, "Tracked")
+		p.noneTracked = UI.OptionText(stack.inner, "Nothing is tracked. Add buffs below.", 24)
+
+		p.headBuiltin = UI.OptionHeading(stack.inner, "Add from Leboof's list")
+		local getPick, setPick = Picker(UntrackedBuiltins)
+		p.builtinPick = UI.OptionSelect(stack.inner, "Buff", UntrackedBuiltins, getPick, setPick,
+			{ tooltip = { "Leboof's list", "Buffs known to work, with every rank and group version." } })
+		p.builtinAdd = UI.OptionButton(stack.inner, "", "Add", function()
+			local e = getPick() and ns.Entry(getPick())
+			if not e then return end
+			local mode = ns.DefaultMode(e)
+			ns.SetMode(e, mode ~= "off" and mode or "up")
+			ns.Window.Refresh()
+		end)
+
+		p.headCurrent = UI.OptionHeading(stack.inner, "Add from the buffs on you now")
+		p.currentNote = UI.OptionText(stack.inner, function() return p.noteText end, 44)
 	end,
-	defaults = function() ns.ResetModes() end,
+	refresh = function(panel)
+		local stack, p = panel.stack, panel.parts
+		stack:Reset()
+
+		stack:Add(p.headTracked)
+		local n, section = 0, nil
+		for _, e in ipairs(ns.Entries()) do
+			if Tracked(e) then
+				if e.section ~= section then
+					section = e.section
+					p.sections[section] = p.sections[section] or UI.OptionText(stack.inner, "|cffffd100" .. section .. "|r", 22)
+					stack:Add(p.sections[section])
+				end
+				n = n + 1
+				p.tracked[n] = p.tracked[n] or TrackedRow(stack.inner)
+				p.tracked[n].ref.entry = e
+				stack:Add(p.tracked[n])
+			end
+		end
+		if n == 0 then stack:Add(p.noneTracked) end
+
+		stack:Add(p.headBuiltin)
+		if #UntrackedBuiltins() > 0 then
+			stack:Add(p.builtinPick)
+			stack:Add(p.builtinAdd)
+		end
+
+		stack:Add(p.headCurrent)
+		local buffs, why = ns.ReadBuffs()
+		local shown, seen = 0, {}
+		for _, b in ipairs(buffs or {}) do
+			local e = ns.EntryForSpell(b.spellId)
+			if not seen[b.spellId] and not (e and Tracked(e)) then
+				seen[b.spellId] = true
+				shown = shown + 1
+				local row = p.current[shown] or CurrentRow(stack.inner)
+				p.current[shown] = row
+				row.ref.buff = b
+				row.label:SetText("|T" .. tostring(b.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
+					.. ":20:20:0:0:64:64:5:59:5:59|t  " .. b.name .. "  |cff999999" .. Duration(b.duration) .. "|r")
+				stack:Add(row)
+			end
+		end
+		if not buffs then
+			p.noteText = why
+		elseif shown == 0 then
+			p.noteText = "Nothing new on you right now. Get the buff (cast it, or ask for it), then come back to this tab."
+		else
+			p.noteText = "Only buffs on you can be tracked, so they're picked from here: debuffs, buffs on others and abilities that leave no buff can't be shown this way."
+		end
+		stack:Add(p.currentNote)
+		stack:Sync()
+	end,
+	defaults = function()
+		ns.ResetModes()
+		wipe(ns.db.custom)
+	end,
 })
 
 Page({
@@ -119,7 +266,7 @@ Page({
 		stack:Add(UI.OptionHeading(stack.inner, "About"))
 		stack:Add(UI.OptionText(stack.inner, function()
 			return "Leboof " .. ns.Version() .. "\n\n"
-				.. "Leboof never reads aura data. In combat the game hides it from addons, so Leboof "
+				.. "Leboof's icons never read aura data. In combat the game hides it from addons, so Leboof "
 				.. "tells Blizzard's aura containers which of your buffs to show, and the game fills the "
 				.. "icons itself. That's also why nothing can react to a buff (no sounds or glows), and why "
 				.. "changes wait until combat ends.\n\n"
@@ -132,12 +279,6 @@ Page({
 -- Profiles: which profile this character uses, new ones, copying, renaming, deleting, resetting.
 local Profiles = ns.Profiles
 
-local function Report(ok, err)
-	if not ok and err then ns.Print(err) end
-	ns.Window.Refresh()
-	return ok
-end
-
 local function ProfileChoices(skipCurrent)
 	return function()
 		local list = {}
@@ -146,20 +287,6 @@ local function ProfileChoices(skipCurrent)
 		end
 		return list
 	end
-end
-
--- The profile picked in a "from" or "delete" picker: kept while it still exists.
-local function Picker(choices)
-	local picked
-	local function get()
-		local list = choices()
-		for _, v in ipairs(list) do
-			if v[1] == picked then return picked end
-		end
-		picked = list[1] and list[1][1]
-		return picked
-	end
-	return get, function(v) picked = v end
 end
 
 StaticPopupDialogs.LEBOOF_PROFILE = {

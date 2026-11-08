@@ -14,6 +14,10 @@ All notable changes to leboof. The format follows
 
 ### Added
 
+- Adding and removing buffs: the Buffs tab lists what's tracked, each with Remove, and adds from
+  Leboof's list or from the buffs on you now (out of combat). Only buffs on you can be added,
+  since those are the only ones the game's containers can show; nothing is typed in. An added
+  buff learns its other ranks by name when Leboof sees them out of combat (2026-11-08).
 - Profiles: every setting is in a profile, and each character starts with its own. The new
   Profiles tab switches profiles (to share one between characters), makes a new one, copies from
   another, renames, deletes and resets; `/leboof profile` shows the one in use. Settings saved by

@@ -20,13 +20,13 @@ local function Tooltip(frame, lines)
 	frame:SetScript("OnLeave", GameTooltip_Hide)
 end
 
-local function OptionRow(parent, label, font, tooltip)
+local function OptionRow(parent, label, font, tooltip, controlX)
 	local row = CreateFrame("Frame", nil, parent)
 	row:SetHeight(ROW_HEIGHT)
 	row:EnableMouse(tooltip ~= nil)
 	row.label = row:CreateFontString(nil, "OVERLAY", font or "GameFontNormal")
 	row.label:SetPoint("LEFT", LABEL_X, 0)
-	row.label:SetWidth(CONTROL_X - LABEL_X - 12)
+	row.label:SetWidth((controlX or CONTROL_X) - LABEL_X - 12)
 	row.label:SetJustifyH("LEFT")
 	row.label:SetText(label)
 	row.Sync = function() end
@@ -47,10 +47,12 @@ end
 
 -- A value picker with arrows on each side: values is a list of { value, label }, or a function
 -- returning one (read each time, for lists that change). `opts` may give the label font, a tooltip
--- (a list of lines, or a function returning one) and sync(row), run after each Sync.
+-- (a list of lines, or a function returning one), sync(row) run after each Sync, and controlX and
+-- boxWidth to make room for more controls on the right (row.right is where the next one can go).
 function UI.OptionSelect(parent, label, choices, get, set, opts)
 	opts = opts or {}
-	local row = OptionRow(parent, label, opts.font, opts.tooltip)
+	local cx, bw = opts.controlX or CONTROL_X, opts.boxWidth or 150
+	local row = OptionRow(parent, label, opts.font, opts.tooltip, cx)
 	local function Values()
 		return type(choices) == "function" and choices() or choices
 	end
@@ -76,13 +78,14 @@ function UI.OptionSelect(parent, label, choices, get, set, opts)
 		b:SetScript("OnClick", function() Step(dir) end)
 		return b
 	end
-	row.prev = Arrow(-1, CONTROL_X)
+	row.prev = Arrow(-1, cx)
 	local box = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-	box:SetSize(150, 24)
-	box:SetPoint("LEFT", CONTROL_X + 30, 0)
+	box:SetSize(bw, 24)
+	box:SetPoint("LEFT", cx + 30, 0)
 	box:SetScript("OnClick", function() Step(1) end)
 	row.box = box
-	row.next = Arrow(1, CONTROL_X + 184)
+	row.next = Arrow(1, cx + 34 + bw)
+	row.right = cx + 66 + bw
 	row.Sync = function()
 		local values = Values()
 		local cur = get()
@@ -172,15 +175,23 @@ function UI.Stack(parent)
 	local stack = { rows = {}, inner = inner, height = 0 }
 	function stack:Add(row)
 		row:SetParent(inner)
+		row:ClearAllPoints()
 		row:SetPoint("TOPLEFT", 0, -self.height)
 		row:SetPoint("RIGHT", inner, "RIGHT")
 		self.height = self.height + row:GetHeight()
 		inner:SetHeight(self.height)
 		self.rows[#self.rows + 1] = row
+		row:Show()
 		return row
 	end
 	function stack:Sync()
 		for _, row in ipairs(self.rows) do row:Sync() end
+	end
+	-- Takes every row out (hidden), for pages that rebuild their list: Add them again in order.
+	function stack:Reset()
+		for _, row in ipairs(self.rows) do row:Hide() end
+		self.rows, self.height = {}, 0
+		inner:SetHeight(1)
 	end
 	return stack
 end

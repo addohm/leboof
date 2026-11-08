@@ -5,8 +5,8 @@ local _, ns = ...
 local Window = {}
 ns.Window = Window
 
-local WIDTH, HEIGHT = 560, 480
-local MIN_W, MIN_H, MAX_W, MAX_H = 500, 320, 1200, 1000
+local WIDTH, HEIGHT = 600, 500
+local MIN_W, MIN_H, MAX_W, MAX_H = 560, 340, 1200, 1000
 local TABS_Y = -36
 local TAB_HEIGHT = 24
 local GOLD = { 1, 0.82, 0 }

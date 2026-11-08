@@ -149,3 +149,76 @@ LeboofDB.chars["Tester - Realm"] = "Gone"
 P.Init()
 Check(P.Current() == "Tester - Realm" and ns.db == LeboofDB.profiles["Tester - Realm"], "no fallback profile")
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
+
+-- Adding and removing buffs.
+local function BuffsRows()
+	ns.Window.Show()
+	ns.Window.Select("buffs")
+	return ns.Window.CurrentPanel().stack.rows
+end
+local function CurrentRowFor(spellId)
+	for _, row in ipairs(BuffsRows()) do
+		if row.ref and row.ref.buff and row.ref.buff.spellId == spellId then return row end
+	end
+end
+local function TrackedRowFor(key)
+	for _, row in ipairs(BuffsRows()) do
+		if row.ref and row.ref.entry and row.ref.entry.key == key then return row end
+	end
+end
+
+WM.combat = false
+WM.buffs = {
+	{ spellId = 999001, name = "Juju Power", icon = 5555, duration = 1800 },
+	{ spellId = 10938, name = "Power Word: Fortitude", icon = 135987, duration = 1800 },
+}
+Check(TrackedRowFor("fort") and not CurrentRowFor(10938), "a tracked buff shouldn't be offered again")
+TrackedRowFor("fort").remove.scripts.OnClick()
+Check(ns.Mode(ns.byKey.fort) == "off" and CurrentRowFor(10938), "Remove didn't turn Fortitude off")
+CurrentRowFor(10938).button.scripts.OnClick()
+Check(ns.Mode(ns.byKey.fort) == "up" and ns.db.custom.c10938 == nil, "Adding Fortitude should switch the built-in on")
+
+CurrentRowFor(999001).button.scripts.OnClick()
+local juju = ns.db.custom.c999001
+Check(juju and juju.name == "Juju Power" and juju.warn == 120, "Juju Power wasn't added")
+Check(Up().groups.warn120.filters.includeSpellIDs[999001], "the added buff isn't in the up row")
+Check(not CurrentRowFor(999001) and TrackedRowFor("c999001"), "the added buff should move to Tracked")
+Check(not ns.AddBuff({ spellId = 999001, name = "Juju Power" }), "added the same buff twice")
+
+-- Another rank seen out of combat is learned; not in combat.
+table.insert(WM.buffs, { spellId = 999002, name = "Juju Power", icon = 5555, duration = 1800 })
+WM.combat = true
+WM.Fire("UNIT_AURA", "player")
+Check(not juju.ids[999002], "learned in combat")
+WM.combat = false
+WM.Fire("UNIT_AURA", "player")
+Check(juju.ids[999002] and Up().groups.warn120.filters.includeSpellIDs[999002], "the new rank wasn't learned")
+
+ns.SetMode(ns.Entry("c999001"), "keep")
+Check(Keep().slots.c999001 and Keep().slots.c999001.enabled and Keep().slots.c999001.filters.includeSpellIDs[999002], "keep for an added buff")
+TrackedRowFor("c999001").remove.scripts.OnClick()
+Check(ns.db.custom.c999001 == nil and ns.db.modes.c999001 == nil and not Keep().slots.c999001.enabled, "Remove didn't delete the added buff")
+
+-- Leboof's list: Add switches the picked buff on.
+local builtinAdd
+for _, row in ipairs(BuffsRows()) do
+	if row.button and row.button.text == "Add" and not row.ref then builtinAdd = row end
+end
+Check(builtinAdd, "no Add button for Leboof's list")
+local before = 0
+for _, e in ipairs(ns.Entries()) do if ns.Mode(e) ~= "off" then before = before + 1 end end
+builtinAdd.button.scripts.OnClick()
+local after = 0
+for _, e in ipairs(ns.Entries()) do if ns.Mode(e) ~= "off" then after = after + 1 end end
+Check(after == before + 1, "Add from Leboof's list didn't add one")
+
+-- In combat the buffs can't be read: the tab says so instead of failing.
+WM.combat = true
+BuffsRows()
+Check(ns.ReadBuffs() == nil, "read buffs in combat")
+WM.combat = false
+
+-- Added buffs belong to the profile.
+ns.AddBuff({ spellId = 999003, name = "Winterfall Firewater", icon = 1, duration = 1200 })
+Check(ns.Profiles.New("Clean") and next(ns.db.custom) == nil, "a new profile has the other profile's buffs")
+Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))

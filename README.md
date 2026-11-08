@@ -1,9 +1,9 @@
 # leboof
 
 Leboof is a World of Warcraft addon for **WoW: Forever** (Interface 16001) that shows your own
-buffs in combat, where the game hides aura data from addons. It doesn't read any aura data:
-Blizzard's aura containers fill the icons themselves. Leboof only says which buffs to show and
-where to put them.
+buffs in combat, where the game hides aura data from addons. The icons don't read any aura data:
+Blizzard's aura containers fill them themselves. Leboof only says which buffs to show and where to
+put them. (Out of combat it reads your buffs for one thing: the list you add buffs from.)
 
 The source lives at `github.com/addohm/leboof`. Status: first build (0.1.0), not yet tried in
 game.
@@ -36,9 +36,14 @@ straight from this repo on Windows, see [DEPLOY.md](DEPLOY.md) (`tools\install_f
 **The options window** opens with `/leboof` (or `/lbf`), the minimap button, or the game's addon
 menu by the minimap. It has four tabs:
 
-- **Buffs:** every buff Leboof knows, under headings (class and group buffs, procs and cooldowns,
-  world buffs, weapon enchants), each with its icon and a picker: Keep up, While up or Off.
-  Changed ones are marked; hover one for its default and warning time.
+- **Buffs:** add and remove what's tracked.
+  - **Tracked:** the buffs shown, under their headings, each with Keep up / While up and
+    **Remove**. Changed ones are marked; hover one for its default and warning time.
+  - **Add from Leboof's list:** the built-in buffs you're not tracking. They're known to work,
+    with every rank and group version.
+  - **Add from the buffs on you now:** your current buffs (out of combat), each with **Add**. This
+    is the only way to add a buff of your own, and it's what keeps it to buffs that can work (see
+    below). Added buffs go in the profile.
 - **Layout:** icon size, the space between icons, Unlock/Lock to drag the icons, and back to the
   default place.
 - **General:** show or hide the minimap button, the version, and how Leboof works.
@@ -68,6 +73,18 @@ then shows on both. `/leboof profile` shows the one in use.
 
 Changes made in combat apply when combat ends: the game won't
 let addons touch the icons while auras are secret.
+
+## What it can track
+
+Blizzard's containers only match a spell ID for **buffs on you**, and only the buff's own ID. So
+Leboof can't show debuffs, buffs on other players or your target, abilities that leave no buff,
+or hidden passive talents. That's why you add your own buffs by picking them while they're on you:
+anything on that list is a buff the game shows on you, with the exact ID the container will see.
+Names and IDs can't be typed in, since Leboof couldn't check them.
+
+A buff you add starts with the one spell ID it was seen with. When Leboof later sees a buff with
+the same name out of combat (another rank, a group version), it adds that ID too. Its warning time
+is a tenth of its duration, from 3 seconds to 2 minutes.
 
 ## What it can't do
 

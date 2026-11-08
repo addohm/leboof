@@ -39,6 +39,7 @@ local function NewFrame(kind, name)
 	function f:SetFrameLevel(l) self.level = l end
 	function f:SetScript(event, fn) self.scripts[event] = fn end
 	function f:RegisterEvent(e) self.events[e] = true end
+	function f:RegisterUnitEvent(e) self.events[e] = true end
 	function f:CreateTexture() return Permissive({}) end
 	function f:CreateFontString()
 		local fs = Permissive({})
@@ -67,6 +68,10 @@ local function NewContainer()
 		local b = NewButton(options.initializeFrame)
 		self.slots[key] = { button = b, filters = options.candidateFilters, enabled = true }
 		return b
+	end
+	function c:SetAuraSlotCandidateFilters(key, filters)
+		assert(self.slots[key], "aura slot '" .. key .. "' was not found with this key.")
+		self.slots[key].filters = filters
 	end
 	function c:SetAuraSlotEnabled(key, enabled)
 		assert(self.slots[key], "aura slot '" .. key .. "' was not found with this key.")
@@ -149,6 +154,15 @@ C_AddOns = {
 	LoadAddOn = function() return true end,
 	GetAddOnMetadata = function(_, field) if field == "Version" then return "0.0.0" end end,
 }
+-- The player's buffs (WM.buffs), readable out of combat only, as on Forever.
+M.buffs = {}
+C_UnitAuras = { GetAuraDataByIndex = function(unit, i, filter)
+	assert(unit == "player" and filter == "HELPFUL")
+	if M.combat then error("aura data is secret") end
+	return M.buffs[i]
+end }
+-- Timers run at once.
+C_Timer = { After = function(_, fn) fn() end }
 C_SpellBook = { IsSpellKnown = function(id) return M.known[id] == true end }
 C_Spell = { GetSpellTexture = function(id) return 100000 + id end }
 C_CurveUtil = { CreateColorCurve = function()

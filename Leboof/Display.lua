@@ -145,10 +145,10 @@ local function Holder(e)
 		h:SetAlpha(0.8)
 		holders[e.key] = h
 	end
-	local texture
-	if e.enchant then
+	local texture = e.icon -- an added buff: the icon it was seen with
+	if not texture and e.enchant then
 		texture = GetInventoryItemTexture("player", e.enchant == "MainHand" and INVSLOT_MAINHAND or INVSLOT_OFFHAND)
-	elseif e.idList and e.idList[1] then
+	elseif not texture and e.idList and e.idList[1] then
 		texture = C_Spell.GetSpellTexture(e.idList[1])
 	end
 	h.icon:SetTexture(texture or QUESTION)
@@ -195,9 +195,10 @@ local function Layout()
 	anchor:SetPoint(db.point, UIParent, db.point, db.x, db.y)
 
 	-- Row 1: keep. Buffs first, then weapon enchants.
+	local entries = ns.Entries()
 	local x = 0
 	for pass = 1, 2 do
-		for _, e in ipairs(ns.Catalogue) do
+		for _, e in ipairs(entries) do
 			if (pass == 1) == (e.enchant == nil) then
 				local mode = ns.Mode(e)
 				local placed = mode == "keep" or (e.enchant and mode == "up")
@@ -213,6 +214,8 @@ local function Layout()
 						en.container:SetItemEnchantmentEnabled(AuraContainerItemEnchantmentSlot[e.enchant], true)
 					else
 						local button = Slot(e)
+						-- Added buffs learn more IDs, so the filter is set again each time.
+						keepContainer:SetAuraSlotCandidateFilters(e.key, { includeSpellIDs = e.ids })
 						Place(button, x, 0, size)
 						keepContainer:SetAuraSlotEnabled(e.key, true)
 					end
@@ -227,12 +230,21 @@ local function Layout()
 			end
 		end
 	end
+	-- Places of buffs that were removed (added buffs, or another profile's) go too.
+	local present = {}
+	for _, e in ipairs(entries) do present[e.key] = true end
+	for key in pairs(slots) do
+		if not present[key] then keepContainer:SetAuraSlotEnabled(key, false) end
+	end
+	for key, h in pairs(holders) do
+		if not present[key] then h:Hide() end
+	end
 	local keepWidth = x > 0 and (x - gap) or 0
 	local upY = keepWidth > 0 and -(size + gap) or 0
 
 	-- Row 2: up. One aura group per warn time, shortest first, so procs sit on the left.
 	local byWarn = {}
-	for _, e in ipairs(ns.Catalogue) do
+	for _, e in ipairs(entries) do
 		if not e.enchant and ns.Mode(e) == "up" then
 			local w = e.warn or 0
 			byWarn[w] = byWarn[w] or {}

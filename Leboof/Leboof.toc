@@ -13,6 +13,7 @@ Data.lua
 Buffs.lua
 Core.lua
 Profiles.lua
+Custom.lua
 Display.lua
 
 UI\Widgets.lua
