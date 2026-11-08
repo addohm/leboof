@@ -120,7 +120,20 @@ local function Durations()
 	return all[me]
 end
 
+local learned = false -- a duration was learned or changed in the last read
+
+-- A buff's full duration, as last seen out of combat (the longest of its spell IDs); nil if never.
+function Fx.Duration(e)
+	local durations, best = Durations(), nil
+	for _, id in ipairs(e.idList or {}) do
+		local d = durations[id]
+		if d and (not best or d > best) then best = d end
+	end
+	return best
+end
+
 local function ReadState()
+	learned = false
 	local buffs = ns.ReadBuffs()
 	if not buffs then return nil end
 	local now = GetTime()
@@ -132,7 +145,10 @@ local function ReadState()
 			local exp = (b.expirationTime and b.expirationTime > 0) and b.expirationTime or 0
 			found[e.key] = math.max(found[e.key] or 0, exp)
 		end
-		if b.duration and b.duration > 0 then durations[b.spellId] = b.duration end
+		if b.duration and b.duration > 0 and durations[b.spellId] ~= b.duration then
+			durations[b.spellId] = b.duration
+			learned = true
+		end
 	end
 	-- Weapon enchants.
 	local ok, hasMain, mainMs, _, _, hasOff, offMs = pcall(GetWeaponEnchantInfo)
@@ -161,6 +177,11 @@ function Fx.Update(quiet)
 	if not new then return end
 	if state and not quiet then Compare(state, new) end
 	state = new
+	-- A new or changed duration retimes the keep row's warning glows: rebuild after this read.
+	if learned then
+		learned = false
+		C_Timer.After(0, function() ns.Refresh(true) end)
+	end
 end
 
 local castPlayed = {} -- key -> when the cast it was played for in combat should end

@@ -31,9 +31,10 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
     buff, say), it's listed under "Add from the buffs on you now"; Add puts it in Tracked and on
     screen, and it shows in combat too, inside a dungeon as well. In combat the list says it
     can't read your buffs. Debuffs never appear in that list.
-1h. Effects: icons just appear and disappear (no growing, shrinking or fading). Near the end of a
-    buff (Shadow Word: Pain, Renew, Battle Shout) the gold warning glow shows, if Forever gives
-    buffs a refresh window; say which ones glow. A missing top-row buff's red copy has a red
+1h. Effects: icons just appear and disappear (no growing, shrinking or fading). Top row: after
+    seeing Battle Shout once out of combat, recast it and fight: the warning glow appears at the
+    warning time (15 s, or what you set), in combat, and only then. Second row: near the end of a
+    proc or HoT the glow shows if Forever gives it a refresh window; say which ones glow. A missing top-row buff's red copy has a red
     glow, and the copy itself stays still. Out of
     combat: let Battle Shout run low (map ping at 15 s), then drop (raid warning). Pull with it
     missing: a raid warning and "missing: Battle Shout" in chat. Recast Battle Shout in combat

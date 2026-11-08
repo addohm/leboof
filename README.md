@@ -104,8 +104,12 @@ is a tenth of its duration, from 3 seconds to 2 minutes.
 Icons simply appear and disappear. The two **glows** work in combat too, because the game shows
 them itself on its own buttons:
 
-- **Warning glow:** in the game's refresh window, the last part of a buff where recasting keeps
-  some of the time left. Buffs without one don't glow.
+- **Warning glow:** top-row buffs glow from the **warning time** (see Sounds below), in combat
+  too. The game drives an invisible bar from the buff's time left, and the glow is revealed as the
+  bar crosses the warning time (see CLAUDE.md for how). It needs the buff's full duration, which
+  Leboof learns the first time it sees the buff out of combat; until then, and in the second row,
+  the glow shows in the game's refresh window instead (the end of a buff where recasting keeps
+  some of the time left; buffs without one don't glow).
 - **Expired glow:** around the red copy of a missing top-row buff, the same size as the warning
   glow. It's hidden the moment the buff is back: the game itself squeezes the frame it's drawn in
   to nothing (see CLAUDE.md for how).

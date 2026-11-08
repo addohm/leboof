@@ -375,7 +375,7 @@ Page({
 		stack:Add(UI.OptionHeading(stack.inner, "Glows (in combat too)"))
 		stack:Add(UI.GlowPreview(stack.inner))
 		stack:Add(UI.OptionSelect(stack.inner, "Warning glow (near the end)", ns.Glow.STYLES, EffectGet("expiring"), EffectSet("expiring"),
-			{ tooltip = { "Warning glow", "Shown in the game's refresh window: the last part of a buff, where recasting it keeps some of the time left. The game shows it, so it works in combat. Buffs without a refresh window don't get it." } }))
+			{ tooltip = { "Warning glow", "Top row: from the warning time on, in combat too (once Leboof has seen the buff out of combat and knows how long it lasts). Second row: in the game's refresh window, the last part of a buff where recasting keeps some of the time left; buffs without one don't glow there." } }))
 		stack:Add(UI.OptionSelect(stack.inner, "Warning glow colour", ns.Glow.COLORS, EffectSetting("expiringColor")))
 		stack:Add(UI.OptionSelect(stack.inner, "Expired glow (top row, while missing)", ns.Glow.STYLES, EffectGet("missing"), EffectSet("missing"),
 			{ tooltip = { "Expired glow", "Around the red copy of a missing top-row buff, the same size as the warning glow. It's gone the moment the buff is back." } }))

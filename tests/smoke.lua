@@ -437,7 +437,7 @@ end
 ns.db.effects.expiring = "modern"
 ns.db.effects.expiringColor = "blue"
 ns.Refresh()
-Check(#KeepSlot("battleshout").button.pandemicRegions == 1, "the modern glow is one flipbook texture")
+Check(#UpGroup(3).frames[1].pandemicRegions == 1, "the modern glow is one flipbook texture")
 ns.db.fx.battleshout = { expiring = "on", missing = "off" }
 Check(ns.Fx.Get(ns.byKey.battleshout, "expiring") == "pulse" and ns.Fx.Get(ns.byKey.battleshout, "missing") == "none", "old on/off values")
 ns.db.fx.battleshout = nil
@@ -527,3 +527,36 @@ PlaySound(8960)
 Check(#LeboofDB.soundlog.entries == n, "logged while off")
 WM.Slash("soundlog clear")
 Check(#LeboofDB.soundlog.entries == 0, "clear didn't clear")
+
+-- The keep row's warning glow is timed from the buff's duration: an invisible bar the game drives
+-- from the time left, and the glow in a window from the bar's fill end to its far end.
+WM.combat = false
+ns.db.effects.warn = "auto"
+ns.SetMode(ns.byKey.battleshout, "default")
+WM.buffs = { { spellId = 25289, name = "Battle Shout", icon = 1, duration = 180, expirationTime = WM.now + 180 } }
+WM.Fire("UNIT_AURA", "player")
+local timed = KeepSlot("battleshout")
+local b = timed and timed.button
+Check(b and b.durationBar and #b.pandemicRegions == 0, "Battle Shout's warning glow should be timed by a bar, not the refresh window")
+local bar, size = b.durationBar, ns.db.size
+local margin = math.ceil(size * 0.25) + 3
+local span = size + 2 * margin
+local k = math.min(span / 0.5, 100000 / 180)
+Check(bar.max == 180 and math.abs(bar.w - k * 180) < 0.01, "the bar should span the buff's 180 s")
+Check(math.abs(bar.points[1][4] - (-margin - k * 15)) < 0.01, "the fill's end should reach the glow's area at the 15 s warning")
+Check(b.durationBarOptions.direction == Enum.StatusBarTimerDirection.RemainingTime, "the bar should follow the time left")
+local window
+for _, f in ipairs(WM.frames) do
+	if f.points[1] and f.points[1][2] == bar.fill then window = f end
+end
+Check(window and window.points[2][2] == bar, "the glow's window should run from the fill's end to the bar's end")
+ns.db.effects.warn = 30
+ns.Refresh()
+local retimed = KeepSlot("battleshout")
+Check(retimed ~= timed and math.abs(retimed.button.durationBar.points[1][4] - (-margin - k * 30)) < 0.01, "a new warning time should retime it")
+ns.db.effects.warn = "auto"
+-- A buff never seen out of combat falls back to the refresh-window glow.
+ns.SetMode(ns.byKey.innerfire, "keep")
+Check(KeepSlot("innerfire") and not KeepSlot("innerfire").button.durationBar and #KeepSlot("innerfire").button.pandemicRegions > 0, "no duration yet: the refresh-window glow")
+ns.SetMode(ns.byKey.innerfire, "default")
+Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))

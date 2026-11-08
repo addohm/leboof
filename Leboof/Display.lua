@@ -32,15 +32,62 @@ end
 
 -- The warning glow (Glow.lua, any style and colour): the game shows it in its refresh window near
 -- the end of the buff (the pandemic window), in combat too.
+local function Margin(size)
+	return math.ceil(size * 0.25) + 3 -- how far any glow style reaches past the icon
+end
+
+-- The refresh-window glow: the game shows it in its pandemic window. Only auras with a refresh
+-- window get one, so this is for the second row (and buffs whose duration isn't known yet).
 local function AddGlow(button, glow, color, size)
 	local built = ns.Glow.Build(button, glow, color, size)
 	for _, region in ipairs(built.regions) do button:AddPandemicRegion(region) end
 	for _, group in ipairs(built.groups) do button:AddPandemicActiveAnimation(group) end
 end
 
+-- The keep row's warning glow, at the warning time, in combat too. The game drives an invisible
+-- bar from the buff's time left (SetDurationBar, RemainingTime): its fill shrinks k px a second.
+-- The bar is placed so that the fill's end crosses the glow's area as the time left goes from
+-- warn + T to warn (T = span / k: a fraction of a second, a few for hour-long buffs). The glow
+-- sits in a frame running from the fill's end to the bar's end, inside a frame clipped to the
+-- glow's area: so it's nothing above the warning time and the whole glow under it. As with the
+-- expired glow, the game does the sizing with secret values and Leboof never learns them.
+-- total: the buff's full duration (learned out of combat). False if it can't be timed.
+local function AddTimedGlow(button, glow, color, size, warn, total)
+	if glow == "none" or not total or warn <= 0 or total - warn < 2 then return false end
+	local margin = Margin(size)
+	local span = size + 2 * margin
+	local k = math.min(span / 0.5, 100000 / total) -- px per second; caps the bar near 100000 px
+	local bar = CreateFrame("StatusBar", nil, button)
+	bar:SetStatusBarTexture("Interface\\Buttons\\WHITE8X8")
+	bar:SetStatusBarColor(1, 1, 1, 0)
+	bar:SetMinMaxValues(0, total)
+	bar:SetSize(k * total, 1)
+	bar:SetPoint("LEFT", button, "LEFT", -margin - k * warn, 0)
+	button:SetDurationBar(bar, {
+		direction = Enum.StatusBarTimerDirection.RemainingTime,
+		interpolation = Enum.StatusBarInterpolation.Immediate,
+	})
+	local area = CreateFrame("Frame", nil, button)
+	area:SetPoint("TOPLEFT", button, "TOPLEFT", -margin, margin)
+	area:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", margin, -margin)
+	area:SetClipsChildren(true)
+	local window = CreateFrame("Frame", nil, area, "DisableUntrustedLayoutScriptsTemplate")
+	window:SetHeight(span)
+	window:SetPoint("LEFT", bar:GetStatusBarTexture(), "RIGHT")
+	window:SetPoint("RIGHT", bar, "RIGHT", 1, 0)
+	window:SetClipsChildren(true)
+	local host = CreateFrame("Frame", nil, window)
+	host:SetAllPoints(button)
+	local built = ns.Glow.Build(host, glow, color, size)
+	-- Its animations start with the buff; the clipping keeps them out of sight until the warning.
+	for _, group in ipairs(built.groups) do button:AddAuraShownAnimation(group) end
+	return true
+end
+
 -- Returns the initializeFrame callback that builds a Blizzard aura button's parts. It runs once,
 -- when the game creates the button, before the button is closed to addons.
-local function ButtonStyler(warn, swipe, glow, color)
+-- total: for the keep row, the buff's full duration, to time the warning glow; else nil.
+local function ButtonStyler(warn, swipe, glow, color, total)
 	return function(button)
 		local size = ns.db.size
 		button:SetSize(size, size)
@@ -76,7 +123,7 @@ local function ButtonStyler(warn, swipe, glow, color)
 		count:SetPoint("TOPRIGHT", -1, -1)
 		button:SetApplicationCount(count)
 
-		AddGlow(button, glow, color, size)
+		if not AddTimedGlow(button, glow, color, size, warn, total) then AddGlow(button, glow, color, size) end
 	end
 end
 
@@ -90,7 +137,8 @@ end
 -- upRow: the second row's buttons, with a cooldown swipe.
 local function Styler(e, warn, upRow)
 	local Fx = ns.Fx
-	return ButtonStyler(warn, upRow, Fx.Get(e, "expiring"), Fx.Get(e, "expiringColor"))
+	local total = not upRow and not e.enchant and Fx.Duration(e) or nil
+	return ButtonStyler(warn, upRow, Fx.Get(e, "expiring"), Fx.Get(e, "expiringColor"), total)
 end
 
 local function NewContainer()
@@ -188,10 +236,6 @@ end
 -- is secret); Blizzard allows anchoring our frames to a container when they're made with
 -- DisableUntrustedLayoutScriptsTemplate.
 local presence = {} -- buff key -> { container, clip, host, slot (enchants) }
-
-local function Margin(size)
-	return math.ceil(size * 0.25) + 3 -- how far any glow style reaches past the icon
-end
 
 local function Invisible(button)
 	button:SetSize(1, 1)
@@ -320,7 +364,8 @@ local function Layout()
 					Place(h, x, 0, size)
 					h:SetShown(mode == "keep")
 					if mode == "keep" then PlaceExpired(e, x, size) else HideExpired(e.key) end
-					local key = e.key .. "/" .. AnimKey(e)
+					-- The keep row's warning glow is timed from the buff's duration: part of the key.
+					local key = e.key .. "/" .. AnimKey(e) .. ":" .. (e.enchant and 0 or ns.Fx.Duration(e) or 0)
 					wanted[key] = true
 					if e.enchant then
 						local en = Enchant(e, key)

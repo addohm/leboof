@@ -6,6 +6,14 @@ All notable changes to leboof. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The warning glow now shows on top-row buffs in combat at the warning time. It used to rely on
+  the game's refresh window, which buffs like Battle Shout don't have, so it never showed for
+  them. The game drives an invisible bar from the buff's time left, and the glow appears as the
+  bar crosses the warning time. It needs the buff's duration, learned the first time Leboof sees
+  it out of combat (2026-11-08).
+
 ### Added
 
 - The listing banner (`art/leboof-banner.png`), a 400 px avatar icon and `LISTING.md`, the

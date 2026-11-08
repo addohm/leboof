@@ -60,7 +60,8 @@ them itself. So the icons, timers and glows keep working in every fight.
 
 #### Glows that work in combat
 
-- **Warning glow** near the end of a buff, in the game's refresh window.
+- **Warning glow** from your warning time on (for the keep-up row; the second row uses the
+  game's refresh window).
 - **Expired glow** around a missing buff's red copy, the same size as the warning glow, and gone
   the moment the buff is back.
 - Seven styles: Pulse, Pixel glow, Action button glow, Auto-cast shine, GCD, Modern WoW glow and

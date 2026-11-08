@@ -58,6 +58,12 @@ local function NewFrame(kind, name)
 	function f:AddAuraShownAnimation(g) table.insert(self.shownAnims, g) end
 	function f:AddPandemicActiveAnimation(g) table.insert(self.pandemicAnims, g) end
 	function f:AddPandemicRegion(r) table.insert(self.pandemicRegions, r) end
+	function f:SetDurationBar(bar, options) self.durationBar, self.durationBarOptions = bar, options end
+	function f:SetMinMaxValues(lo, hi) self.min, self.max = lo, hi end
+	function f:GetStatusBarTexture()
+		self.fill = self.fill or Permissive({ isFill = true })
+		return self.fill
+	end
 	function f:CreateFontString()
 		local fs = Permissive({})
 		function fs:SetText(t) self.text = t end
@@ -197,6 +203,8 @@ SlashCmdList = {}
 Enum = {
 	LuaCurveType = { Linear = 0, Step = 1 },
 	DurationTextBindingProperty = { RemainingDuration = 0 },
+	StatusBarTimerDirection = { ElapsedTime = 0, RemainingTime = 1 },
+	StatusBarInterpolation = { Immediate = 0, ExponentialEaseOut = 1 },
 }
 AuraContainerSortMethod = { Default = 0, Expiration = 4 }
 AuraContainerItemEnchantmentSlot = { MainHand = 0, OffHand = 1, Ranged = 2 }

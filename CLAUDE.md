@@ -100,6 +100,15 @@ off the table.
   re-filter it. A button's warning glow is fixed when the game creates it (`initializeFrame`), so
   slots, groups and enchant containers are keyed by buff (or warn time) *and* glow
   (`"<key>/<style>:<colour>:<size>"`); changing a buff's glow switches to another button.
+- **The keep row's warning glow is timed by layout too.** The game's own warning-glow hook (the
+  pandemic window) only exists for auras with a refresh window, which most buffs lack. So each
+  keep-row button gets an invisible StatusBar the game drives from the time left
+  (`SetDurationBar`, RemainingTime; range 0..duration), k px per second wide, placed so its fill's
+  end crosses the glow's area between warn + T and warn. The glow sits in a window from the fill's
+  end to the bar's end (`DisableUntrustedLayoutScriptsTemplate`, clips), inside a frame clipped to
+  the glow's area. It needs the buff's duration (`Fx.Duration`, learned out of combat; a new one
+  rebuilds the buttons), so the slot key includes it; without one, and in the second row, the
+  pandemic glow is used. `Display.lua`: `AddTimedGlow`.
 - **The expired glow is hidden by layout, not by reading anything.** Each keep-row buff has its
   own "presence" container holding only that buff (invisible 1 px buttons, element width = the
   glow's span + 1). Empty, a container is 1 px wide; with the buff, span + 1. The glow's clipping
