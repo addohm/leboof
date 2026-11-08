@@ -1,6 +1,5 @@
--- Leboof: settings, modes and events. The icons' settings are per character (LeboofCharDB), since
--- the buffs worth watching depend on the class; the options window and the minimap button are
--- account-wide (LeboofDB).
+-- Leboof: settings, modes and events. All settings live in a profile (Profiles.lua); ns.db is the
+-- profile the character uses, by default its own.
 local ADDON, ns = ...
 
 ns.ICON = "Interface\\AddOns\\Leboof\\Media\\Icon" -- art/make_logo.py
@@ -11,12 +10,10 @@ local DEFAULTS = {
 	gap = 4,                            -- space between icons and between the two rows
 	locked = true,                      -- unlocked: the anchor can be dragged and shows a frame
 	modes = {},                         -- key -> "keep" / "up" / "off", only where changed
-}
-
-local ACCOUNT_DEFAULTS = {
-	window = {},                        -- pos, size, tab
+	window = {},                        -- the options window: pos, size, tab
 	minimap = { angle = 250, hide = false }, -- clear of Nothing Wasted (200) and Ticky (225)
 }
+ns.DEFAULTS = DEFAULTS
 
 ns.MODES = { keep = true, up = true, off = true }
 
@@ -30,6 +27,7 @@ local function CopyDefaults(dst, src)
 	end
 	return dst
 end
+ns.CopyDefaults = CopyDefaults
 
 function ns.Print(msg)
 	print("|cff66ccffLeboof|r: " .. msg)
@@ -123,10 +121,7 @@ events:RegisterEvent("PLAYER_REGEN_ENABLED")
 events:RegisterEvent("SPELLS_CHANGED")
 events:SetScript("OnEvent", function(_, event, arg)
 	if event == "ADDON_LOADED" and arg == ADDON then
-		LeboofCharDB = CopyDefaults(LeboofCharDB or {}, DEFAULTS)
-		ns.db = LeboofCharDB
-		LeboofDB = CopyDefaults(LeboofDB or {}, ACCOUNT_DEFAULTS)
-		ns.acct = LeboofDB
+		ns.Profiles.Init()
 	elseif event == "PLAYER_LOGIN" then
 		ns.Refresh(true)
 		ns.Minimap.Init()
@@ -161,6 +156,7 @@ local function Help()
 	ns.Print("/leboof unlock | lock - move the icons")
 	ns.Print("/leboof size <16-64> | gap <0-20>")
 	ns.Print("/leboof minimap - show or hide the minimap button")
+	ns.Print("/leboof profile - the profile in use and the others (the Profiles tab manages them)")
 	ns.Print("/leboof reset - default modes, size and position")
 end
 
@@ -177,7 +173,9 @@ SlashCmdList.LEBOOF = function(msg)
 	elseif cmd == "unlock" or cmd == "lock" then
 		ns.SetLocked(cmd == "lock")
 	elseif cmd == "minimap" then
-		ns.Minimap.SetShown(ns.acct.minimap.hide)
+		ns.Minimap.SetShown(ns.db.minimap.hide)
+	elseif cmd == "profile" then
+		ns.Print("profile: " .. ns.Profiles.Current() .. ". All: " .. table.concat(ns.Profiles.Names(), ", "))
 	elseif cmd == "size" or cmd == "gap" then
 		local n = tonumber(arg)
 		local lo, hi = 16, 64

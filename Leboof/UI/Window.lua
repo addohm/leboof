@@ -49,7 +49,7 @@ end
 function Window.Select(id)
 	if not pages[id] then id = pageOrder[1].id end
 	current = id
-	ns.acct.window.tab = id
+	ns.db.window.tab = id
 	for _, def in ipairs(pageOrder) do
 		StyleTab(tabButtons[def.id], def.id == id)
 		if def.id == id then
@@ -74,11 +74,11 @@ end
 
 local function SavePosition()
 	local point, _, relPoint, x, y = frame:GetPoint()
-	ns.acct.window.pos = { point, relPoint, x, y }
+	ns.db.window.pos = { point, relPoint, x, y }
 end
 
 local function SaveSize()
-	ns.acct.window.size = { math.floor(frame:GetWidth() + 0.5), math.floor(frame:GetHeight() + 0.5) }
+	ns.db.window.size = { math.floor(frame:GetWidth() + 0.5), math.floor(frame:GetHeight() + 0.5) }
 end
 
 -- The resize grip in the bottom-right corner, like the chat windows'.
@@ -101,7 +101,7 @@ end
 
 local function Build()
 	frame = CreateFrame("Frame", "LeboofFrame", UIParent, "BackdropTemplate")
-	local size = ns.acct.window.size
+	local size = ns.db.window.size
 	if size then
 		frame:SetSize(math.max(MIN_W, math.min(MAX_W, size[1])), math.max(MIN_H, math.min(MAX_H, size[2])))
 	else
@@ -125,7 +125,7 @@ local function Build()
 		self:StopMovingOrSizing()
 		SavePosition()
 	end)
-	local pos = ns.acct.window.pos
+	local pos = ns.db.window.pos
 	if pos then
 		frame:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4])
 	else
@@ -189,7 +189,7 @@ local function Build()
 
 	AddResizeGrip()
 
-	frame:SetScript("OnShow", function() Window.Select(current or ns.acct.window.tab) end)
+	frame:SetScript("OnShow", function() Window.Select(current or ns.db.window.tab) end)
 end
 
 -- The panel of the page being shown (used by the tests).

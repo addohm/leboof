@@ -51,9 +51,9 @@ folder, then `git checkout main -- Leboof` to return.
 
 ## Configuration
 
-There are no secrets or environment settings. In-game settings are saved per character in
-`WTF/Account/<account>/<realm>/<character>/SavedVariables/Leboof.lua` (the icons) and account-wide
-in `WTF/Account/<account>/SavedVariables/Leboof.lua` (the options window, the minimap button).
+There are no secrets or environment settings. In-game settings are profiles, saved in
+`WTF/Account/<account>/SavedVariables/Leboof.lua` with which profile each character uses. The
+per-character file from 0.1.0 is moved into a profile at the first login and then emptied.
 
 ## Troubleshooting
 

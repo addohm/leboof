@@ -8,7 +8,7 @@ ns.Minimap = M
 local button
 
 local function UpdatePosition()
-	local angle = math.rad(ns.acct.minimap.angle)
+	local angle = math.rad(ns.db.minimap.angle)
 	local radius = Minimap:GetWidth() / 2 + 5
 	button:ClearAllPoints()
 	button:SetPoint("CENTER", Minimap, "CENTER", math.cos(angle) * radius, math.sin(angle) * radius)
@@ -18,7 +18,7 @@ local function FollowCursor()
 	local mx, my = Minimap:GetCenter()
 	local cx, cy = GetCursorPosition()
 	local scale = Minimap:GetEffectiveScale()
-	ns.acct.minimap.angle = math.deg(math.atan2(cy / scale - my, cx / scale - mx))
+	ns.db.minimap.angle = math.deg(math.atan2(cy / scale - my, cx / scale - mx))
 	UpdatePosition()
 end
 
@@ -75,13 +75,19 @@ function Leboof_OnAddonCompartmentClick(_, mouseButton)
 end
 
 function M.SetShown(shown)
-	ns.acct.minimap.hide = not shown
+	ns.db.minimap.hide = not shown
 	if button then button:SetShown(shown) end
 	if ns.Window then ns.Window.Refresh() end
 end
 
+-- Shows the button where the current profile has it (at login, and when the profile changes).
+function M.Apply()
+	if not button then return end
+	UpdatePosition()
+	button:SetShown(not ns.db.minimap.hide)
+end
+
 function M.Init()
 	Build()
-	UpdatePosition()
-	button:SetShown(not ns.acct.minimap.hide)
+	M.Apply()
 end

@@ -45,12 +45,18 @@ function UI.OptionCheck(parent, label, get, set, tooltip)
 	return row
 end
 
--- A value picker with arrows on each side: values is a list of { value, label }. `opts` may give
--- the label font and a tooltip (a list of lines, or a function returning one).
-function UI.OptionSelect(parent, label, values, get, set, opts)
+-- A value picker with arrows on each side: values is a list of { value, label }, or a function
+-- returning one (read each time, for lists that change). `opts` may give the label font, a tooltip
+-- (a list of lines, or a function returning one) and sync(row), run after each Sync.
+function UI.OptionSelect(parent, label, choices, get, set, opts)
 	opts = opts or {}
 	local row = OptionRow(parent, label, opts.font, opts.tooltip)
+	local function Values()
+		return type(choices) == "function" and choices() or choices
+	end
 	local function Step(dir)
+		local values = Values()
+		if #values == 0 then return end
 		local cur, idx = get(), 1
 		for i, v in ipairs(values) do
 			if v[1] == cur then idx = i end
@@ -78,13 +84,37 @@ function UI.OptionSelect(parent, label, values, get, set, opts)
 	row.box = box
 	row.next = Arrow(1, CONTROL_X + 184)
 	row.Sync = function()
+		local values = Values()
 		local cur = get()
-		local text = tostring(cur)
+		local text = #values == 0 and "|cff999999none|r" or tostring(cur)
 		for _, v in ipairs(values) do
 			if v[1] == cur then text = v[2] end
 		end
 		box:SetText(text)
 		if opts.sync then opts.sync(row) end
+	end
+	return row
+end
+
+-- A text box; set(text) runs when you press Enter, and clears the box if it returns true.
+function UI.OptionEdit(parent, label, get, set, tooltip)
+	local row = OptionRow(parent, label, nil, tooltip)
+	local box = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
+	box:SetSize(174, 22)
+	box:SetPoint("LEFT", CONTROL_X + 36, 0)
+	box:SetAutoFocus(false)
+	box:SetScript("OnEnterPressed", function(self)
+		set(self:GetText() or "")
+		self:ClearFocus()
+		row.Sync()
+	end)
+	box:SetScript("OnEscapePressed", function(self)
+		self:ClearFocus()
+		row.Sync()
+	end)
+	row.box = box
+	row.Sync = function()
+		if not box:HasFocus() then box:SetText(get() or "") end
 	end
 	return row
 end

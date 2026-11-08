@@ -7,10 +7,17 @@ end
 local function Keep() return WM.containers[1] end
 local function Up() return WM.containers[2] end
 
--- A warrior who knows Battle Shout logs in.
+-- A warrior who knows Battle Shout logs in, with settings saved by 0.1.0 (per character, the
+-- window and minimap button account-wide): they move into a profile named after the character.
+LeboofCharDB = { point = "CENTER", x = 0, y = -180, size = 32, gap = 4, locked = true, modes = { thorns = "off" } }
+LeboofDB = { window = { tab = "layout" }, minimap = { angle = 10, hide = false } }
 WM.known[6673] = true
 WM.Fire("ADDON_LOADED", "Leboof")
 WM.Fire("PLAYER_LOGIN")
+Check(ns.Profiles.Current() == "Tester - Realm", "the character's profile isn't in use")
+Check(ns.db == LeboofDB.profiles["Tester - Realm"], "ns.db isn't the profile")
+Check(ns.db.modes.thorns == "off" and ns.db.minimap.angle == 10 and ns.db.window.tab == "layout", "old settings weren't moved")
+Check(LeboofCharDB == nil, "the old per-character settings weren't cleared")
 Check(ns.built, "display not built: " .. table.concat(WM.printed, " | "))
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
 Check(Keep().slots.battleshout and Keep().slots.battleshout.enabled, "Battle Shout should be in the keep row")
@@ -94,7 +101,51 @@ Check(ns.db.locked == true, "right-click didn't lock the icons")
 Leboof_OnAddonCompartmentClick(nil, "LeftButton")
 Check(ns.Window.IsShown(), "left-click didn't open the window")
 WM.Slash("minimap")
-Check(ns.acct.minimap.hide and not LeboofMinimapButton.shown, "/leboof minimap didn't hide the button")
+Check(ns.db.minimap.hide and not LeboofMinimapButton.shown, "/leboof minimap didn't hide the button")
 WM.Slash("minimap")
-Check(not ns.acct.minimap.hide and LeboofMinimapButton.shown, "/leboof minimap didn't show the button")
+Check(not ns.db.minimap.hide and LeboofMinimapButton.shown, "/leboof minimap didn't show the button")
+Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
+
+-- Profiles: new, separate, copy, rename, delete, reset, and a deleted profile at login.
+local P = ns.Profiles
+WM.Slash("reset")
+Check(P.New("Shared"), "New failed")
+Check(P.Current() == "Shared" and ns.db.size == 32, "the new profile isn't in use with defaults")
+Check(not P.New("Shared") and not P.New("   "), "a duplicate or empty name was accepted")
+ns.SetMode(ns.byKey.fort, "keep")
+Check(Keep().slots.fort.enabled, "fort keep in Shared didn't reach the icons")
+Check(P.Switch("Tester - Realm"), "Switch failed")
+Check(not Keep().slots.fort.enabled and ns.db.modes.fort == nil, "profiles aren't separate")
+Check(P.CopyFrom("Shared") and ns.db.modes.fort == "keep" and Keep().slots.fort.enabled, "CopyFrom didn't copy")
+Check(not P.CopyFrom("Tester - Realm"), "copied a profile onto itself")
+Check(not P.Delete("Tester - Realm"), "deleted the profile in use")
+Check(P.Rename("Main") and P.Current() == "Main", "Rename failed")
+Check(LeboofDB.profiles.Main == ns.db and LeboofDB.profiles["Tester - Realm"] == nil, "Rename left the old name")
+LeboofDB.chars["Alt - Realm"] = "Shared"
+Check(P.UsedBy("Shared")[1] == "Alt - Realm", "UsedBy")
+
+-- The Profiles tab: the picker switches, Delete asks first.
+ns.Window.Show()
+ns.Window.Select("profiles")
+local inUse, delete
+for _, row in ipairs(ns.Window.CurrentPanel().stack.rows) do
+	if row.label and row.label.text == "Profile in use" then inUse = row end
+	if row.button and row.button.text == "Delete it" then delete = row end
+end
+Check(inUse and delete, "the Profiles tab is missing rows")
+inUse.next.scripts.OnClick()
+Check(P.Current() == "Shared", "the picker didn't switch profiles")
+inUse.prev.scripts.OnClick()
+Check(P.Current() == "Main", "the picker didn't switch back")
+delete.button.scripts.OnClick()
+Check(LeboofDB.profiles.Shared, "Delete didn't ask first")
+WM.Accept()
+Check(LeboofDB.profiles.Shared == nil and LeboofDB.chars["Alt - Realm"] == nil, "Delete didn't delete")
+
+Check(P.Reset() and next(ns.db.modes) == nil and ns.db.minimap.angle == 250, "Reset didn't reset")
+
+-- A character whose profile was deleted elsewhere gets its own at the next login.
+LeboofDB.chars["Tester - Realm"] = "Gone"
+P.Init()
+Check(P.Current() == "Tester - Realm" and ns.db == LeboofDB.profiles["Tester - Realm"], "no fallback profile")
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))

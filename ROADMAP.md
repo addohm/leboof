@@ -8,6 +8,7 @@ change.
 - Standard docs (2026-11-07).
 - The icon (2026-11-08).
 - The options window and the minimap button (2026-11-08).
+- Profiles (2026-11-08).
 - 0.1.0, first build (2026-11-07): keep row with the missing look, up row, weapon enchants,
   class defaults for warrior, priest and druid, `/leboof` commands, the Windows install script.
 

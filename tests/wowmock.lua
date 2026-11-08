@@ -29,6 +29,8 @@ local function NewFrame(kind, name)
 	function f:GetCenter() return 0, 0 end
 	function f:GetEffectiveScale() return 1 end
 	function f:GetChecked() return self.checked end
+	function f:SetText(t) self.text = t end
+	function f:GetText() return self.text end
 	function f:SetChecked(v) self.checked = v end
 	function f:ClearAllPoints() self.points = {} end
 	function f:SetPoint(...) table.insert(self.points, { ... }) end
@@ -121,6 +123,18 @@ UISpecialFrames = {}
 tinsert = table.insert
 function wipe(t) for k in pairs(t) do t[k] = nil end return t end
 function GetCursorPosition() return 0, 0 end
+M.name, M.realm = "Tester", "Realm"
+function UnitName() return M.name end
+function GetRealmName() return M.realm end
+YES, NO = "Yes", "No"
+StaticPopupDialogs = {}
+-- The test accepts popups with WM.Accept().
+function StaticPopup_Show(which, text, _, data) M.popup = { which = which, text = text, data = data } end
+function M.Accept()
+	local p = assert(M.popup, "no popup shown")
+	M.popup = nil
+	StaticPopupDialogs[p.which].OnAccept(nil, p.data)
+end
 INVSLOT_MAINHAND, INVSLOT_OFFHAND = 16, 17
 SlashCmdList = {}
 Enum = {

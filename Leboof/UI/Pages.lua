@@ -114,7 +114,7 @@ Page({
 	label = "General",
 	fill = function(stack)
 		stack:Add(UI.OptionCheck(stack.inner, "Show the minimap button",
-			function() return not ns.acct.minimap.hide end,
+			function() return not ns.db.minimap.hide end,
 			function(v) ns.Minimap.SetShown(v) end))
 		stack:Add(UI.OptionHeading(stack.inner, "About"))
 		stack:Add(UI.OptionText(stack.inner, function()
@@ -127,4 +127,105 @@ Page({
 		end, 150))
 	end,
 	defaults = function() ns.Minimap.SetShown(true) end,
+})
+
+-- Profiles: which profile this character uses, new ones, copying, renaming, deleting, resetting.
+local Profiles = ns.Profiles
+
+local function Report(ok, err)
+	if not ok and err then ns.Print(err) end
+	ns.Window.Refresh()
+	return ok
+end
+
+local function ProfileChoices(skipCurrent)
+	return function()
+		local list = {}
+		for _, name in ipairs(Profiles.Names()) do
+			if not (skipCurrent and name == Profiles.Current()) then list[#list + 1] = { name, name } end
+		end
+		return list
+	end
+end
+
+-- The profile picked in a "from" or "delete" picker: kept while it still exists.
+local function Picker(choices)
+	local picked
+	local function get()
+		local list = choices()
+		for _, v in ipairs(list) do
+			if v[1] == picked then return picked end
+		end
+		picked = list[1] and list[1][1]
+		return picked
+	end
+	return get, function(v) picked = v end
+end
+
+StaticPopupDialogs.LEBOOF_PROFILE = {
+	text = "%s",
+	button1 = YES,
+	button2 = NO,
+	OnAccept = function(_, data) data() end,
+	timeout = 0,
+	whileDead = true,
+	hideOnEscape = true,
+}
+
+local function Confirm(text, action)
+	StaticPopup_Show("LEBOOF_PROFILE", text, nil, function() Report(action()) end)
+end
+
+Page({
+	id = "profiles",
+	label = "Profiles",
+	note = "Every setting is in a profile. Each character starts with its own; pick another to share it (say, between two warriors). Profiles are kept for all your characters.",
+	fill = function(stack)
+		stack:Add(UI.OptionHeading(stack.inner, "This character"))
+		stack:Add(UI.OptionSelect(stack.inner, "Profile in use", ProfileChoices(false),
+			function() return Profiles.Current() end,
+			function(name) Report(Profiles.Switch(name)) end))
+		stack:Add(UI.OptionText(stack.inner, function()
+			local others = {}
+			for _, char in ipairs(Profiles.UsedBy(Profiles.Current())) do
+				if char ~= Profiles.CharKey() then others[#others + 1] = char end
+			end
+			return #others > 0 and ("Also used by: " .. table.concat(others, ", ")) or "No other character uses it."
+		end, 24))
+
+		stack:Add(UI.OptionHeading(stack.inner, "New"))
+		stack:Add(UI.OptionEdit(stack.inner, "New profile (type a name, press Enter)",
+			function() return "" end,
+			function(text) return Report(Profiles.New(text)) end,
+			{ "New profile", "Starts with the default settings, and this character switches to it." }))
+
+		local fromChoices = ProfileChoices(true)
+		local getFrom, setFrom = Picker(fromChoices)
+		stack:Add(UI.OptionHeading(stack.inner, "Copy"))
+		stack:Add(UI.OptionSelect(stack.inner, "Copy settings from", fromChoices, getFrom, setFrom))
+		stack:Add(UI.OptionButton(stack.inner, "", "Copy into this profile", function()
+			local from = getFrom()
+			if not from then return ns.Print("there's no other profile to copy from.") end
+			Confirm("Replace the settings in " .. Profiles.Current() .. " with a copy of " .. from .. "?",
+				function() return Profiles.CopyFrom(from) end)
+		end))
+
+		stack:Add(UI.OptionHeading(stack.inner, "Manage"))
+		stack:Add(UI.OptionEdit(stack.inner, "Rename this profile (press Enter)",
+			function() return Profiles.Current() end,
+			function(text) return Report(Profiles.Rename(text)) end,
+			{ "Rename this profile", "Every character using it follows the new name." }))
+		local getDel, setDel = Picker(fromChoices)
+		stack:Add(UI.OptionSelect(stack.inner, "Delete a profile", fromChoices, getDel, setDel))
+		stack:Add(UI.OptionButton(stack.inner, "", "Delete it", function()
+			local name = getDel()
+			if not name then return ns.Print("there's no other profile to delete.") end
+			Confirm("Delete the profile " .. name .. "? Characters using it get a fresh profile of their own.",
+				function() return Profiles.Delete(name) end)
+		end, { "Delete a profile", "The profile in use can't be deleted: switch first." }))
+		stack:Add(UI.OptionButton(stack.inner, "Every setting in this profile", "Reset to defaults", function()
+			Confirm("Reset every setting in " .. Profiles.Current() .. " to the defaults?",
+				function() return Profiles.Reset() end)
+		end))
+	end,
 })

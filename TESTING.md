@@ -16,7 +16,11 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
     default. Defaults puts them all back.
 1c. Layout tab: icon size and spacing change the icons; Unlock shows the blue box, Lock hides it.
 1d. General tab: untick the minimap button and it goes; tick it and it's back.
-1e. Minimap button: right-click unlocks and locks the icons; drag moves it around the minimap,
+1e. Profiles tab: it says this character's profile ("Name - Realm"). Make a new one: settings go
+    back to defaults; switch back and yours return. On a second character, pick the first one's
+    profile: its buffs and layout follow, and the first character's tab says "Also used by".
+    Copy, rename, delete (asks first) and reset work. Settings from an earlier build are kept.
+1f. Minimap button: right-click unlocks and locks the icons; drag moves it around the minimap,
     clear of Nothing Wasted's and Ticky's buttons.
 2. The icons appear a little below the middle of the screen. `/leboof unlock` shows a blue box to
    drag; `/leboof lock` hides it; the place is kept after `/reload`.

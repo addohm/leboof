@@ -34,7 +34,7 @@ straight from this repo on Windows, see [DEPLOY.md](DEPLOY.md) (`tools\install_f
 ## Usage
 
 **The options window** opens with `/leboof` (or `/lbf`), the minimap button, or the game's addon
-menu by the minimap. It has three tabs:
+menu by the minimap. It has four tabs:
 
 - **Buffs:** every buff Leboof knows, under headings (class and group buffs, procs and cooldowns,
   world buffs, weapon enchants), each with its icon and a picker: Keep up, While up or Off.
@@ -42,6 +42,8 @@ menu by the minimap. It has three tabs:
 - **Layout:** icon size, the space between icons, Unlock/Lock to drag the icons, and back to the
   default place.
 - **General:** show or hide the minimap button, the version, and how Leboof works.
+- **Profiles:** which profile this character uses, a new profile, copy settings from another
+  profile, rename, delete, or reset every setting to the defaults.
 
 Each tab has a Defaults button. The window can be moved and resized, and Escape closes it.
 
@@ -56,10 +58,15 @@ move it around the minimap.
 - `/leboof unlock`, then drag the blue box; `/leboof lock` when done
 - `/leboof size 16-64`, `/leboof gap 0-20`
 - `/leboof minimap`: show or hide the minimap button
+- `/leboof profile`: the profile in use, and the others
 - `/leboof reset`: default modes, size and position
 
-The icons' settings are saved per character; the window's place and the minimap button are
-account-wide. Changes made in combat apply when combat ends: the game won't
+**Profiles:** every setting (buff modes, size, spacing, where the icons and the window are, the
+minimap button) is in a profile. Each character starts with its own, named after it ("Name -
+Realm"). Pick another character's profile to share it, say between two warriors: a change on one
+then shows on both. `/leboof profile` shows the one in use.
+
+Changes made in combat apply when combat ends: the game won't
 let addons touch the icons while auras are secret.
 
 ## What it can't do

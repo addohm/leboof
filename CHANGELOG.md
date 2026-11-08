@@ -14,6 +14,10 @@ All notable changes to leboof. The format follows
 
 ### Added
 
+- Profiles: every setting is in a profile, and each character starts with its own. The new
+  Profiles tab switches profiles (to share one between characters), makes a new one, copies from
+  another, renames, deletes and resets; `/leboof profile` shows the one in use. Settings saved by
+  0.1.0 move into the character's profile (2026-11-08).
 - An options window like Nothing Wasted's (`/leboof`, the minimap button or the addon menu): a
   Buffs tab with a Keep up / While up / Off picker for every buff, a Layout tab (size, spacing,
   moving the icons) and a General tab, each with Defaults (2026-11-08).
