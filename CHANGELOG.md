@@ -6,6 +6,11 @@ All notable changes to leboof. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- `tools/install_forever.cmd` installs into the live client (`_forever_`) by default, not the
+  beta (2026-11-08).
+
 ### Added
 
 - An icon for the AddOns list and the addon compartment: two gold chevrons on dark teal with a

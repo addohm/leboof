@@ -16,9 +16,9 @@ if not "%~1"=="--copy" (
 rem The repo is the folder above this script's tools folder, so it keeps working if the repo is
 rem renamed or moved.
 for %%i in ("%~2..") do set "REPO=%%~fi"
-rem Change WOW if your client lives elsewhere (for example the live _forever_ folder).
+rem Change WOW if your client lives elsewhere (for example the _classic_beta_ folder).
 rem Inside ( ) blocks, always quote paths: the ) in "Program Files (x86)" would end the block.
-set "WOW=C:\Program Files (x86)\World of Warcraft\_classic_beta_"
+set "WOW=C:\Program Files (x86)\World of Warcraft\_forever_"
 set "ADDON=%WOW%\Interface\AddOns\Leboof"
 
 if not exist "%REPO%\Leboof\Leboof.toc" (

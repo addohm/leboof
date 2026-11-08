@@ -10,8 +10,8 @@ On the Windows test PC:
 1. Clone the repo anywhere: `git clone https://github.com/addohm/leboof.git` (it needs your
    GitHub login if the repo is private).
 2. Open `tools\install_forever.cmd` and check `WOW` at the top: it's the client folder, by default
-   `C:\Program Files (x86)\World of Warcraft\_classic_beta_`, the same as Nothing Wasted's script.
-   Change it to `_forever_` for the live game.
+   `C:\Program Files (x86)\World of Warcraft\_forever_`, the live game. Change it to
+   `_classic_beta_` for the beta client.
 3. Run `tools\install_forever.cmd` from a terminal, then start the game. Check that Leboof is
    enabled under AddOns on the character-select screen.
 
