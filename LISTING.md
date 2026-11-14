@@ -53,8 +53,11 @@ them itself. So the icons, timers and glows keep working in every fight.
 - **Keep up:** a fixed place for each buff you should always have: Battle Shout, Inner Fire,
   Fortitude, Mark of the Wild, Omen of Clarity, your weapon oil or stone. When one is missing, a
   dimmed red copy of its icon sits in its place, so you see the gap at a glance.
+- **Only when missing:** a place that stays empty while you have the buff, and shows its red copy
+  only when it's gone.
 - **While up:** procs, cooldowns and other buffs, shown only while they're on you. The row closes
   its gaps.
+- Make icons see-through or grey while their buff is up, so the missing ones stand out.
 - Both rows grow from the centre (or from the left or right). Icons just appear and disappear: no
   bouncing, fading or growing.
 

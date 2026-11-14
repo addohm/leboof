@@ -6,6 +6,14 @@ All notable changes to leboof. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Only when missing**, a third way to show a buff: a top-row place that stays empty while the
+  buff is up and shows its red copy and expired glow only while it's missing, in combat too
+  (2026-11-14).
+- **Opacity** and **grey** while a buff is up (Effects tab, and per buff in its ⚙ menu), so missing
+  buffs stand out more; the glows keep their full strength (2026-11-14).
+
 ## [1.0.1] - 2026-11-08
 
 ### Fixed

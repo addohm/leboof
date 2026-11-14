@@ -115,7 +115,12 @@ off the table.
   frame (made with `DisableUntrustedLayoutScriptsTemplate`, which Blizzard requires for frames
   anchored to a container) runs from the container's right edge to a fixed point, so it's full
   size while the buff is missing and zero while it's up. The game does the sizing with secret
-  values; Leboof never learns it. `Display.lua`: `Presence`, `PlaceExpired`.
+  values; Leboof never learns it. `Display.lua`: `Presence`, `PlaceExpired`. "Only when missing"
+  buffs (mode `missing`) have no Blizzard button at all: their red copy sits in the same frame as
+  the expired glow (`PlaceExpired(e, x, size, true)`), so it's hidden while the buff is up.
+- A Blizzard button's look (border, icon, timer, stacks) is on a "face" child frame, so the
+  opacity and grey while up (`upAlpha`, `upGrey`, part of the button's key) leave the glows, on
+  frames above it, at full strength.
 - **Keep it simple:** icons appear and disappear, with a warning glow and an expired glow, and
   nothing else animates (the owner, 2026-11-08: no growing, shrinking or fading). The warning glow
   goes through the button's own `AddPandemicRegion` / `AddPandemicActiveAnimation`: the game shows
