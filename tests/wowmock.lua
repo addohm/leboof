@@ -145,6 +145,7 @@ function CreateFrame(kind, name, parent, template)
 		return NewContainer()
 	end
 	local f = NewFrame(kind, name)
+	f.parent = parent
 	if kind == "DropdownButton" then
 		function f:SetupMenu(generator) self.generator = generator end
 	end

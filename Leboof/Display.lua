@@ -3,19 +3,19 @@
 -- player, and the game fills the buttons itself, in combat too. Everything the addon decides
 -- (which buffs, where, how big) is set up out of combat.
 --
---   row 1 (keep): one fixed place per buff. Behind each place sits our own dimmed red copy of
---                 the icon. When the buff is up, Blizzard's button covers it; when it's missing,
---                 the button hides and the copy shows through. No secret is read for this.
+--   row 1 (keep): one fixed place per buff: Blizzard's button while the buff is up, our own dimmed
+--                 red copy while it's missing. The copy sits in a "presence" frame the game
+--                 squeezes to nothing while the buff is up (see PlaceExpired), so it's gone, not
+--                 just covered, and a see-through icon doesn't pick up its red. No secret is read.
 --                 Weapon enchants go at the end of the row, one small container each.
 --   row 2 (up):   an aura group per warn time; the container lays the icons out and closes gaps.
--- Each button gets the animations chosen for its buff (AddAnimations; Effects.lua has the settings).
+-- Each button gets the glows and look chosen for its buff (ButtonStyler; Effects.lua has the settings).
 local _, ns = ...
 
 local anchor, mover
 local keepContainer, upContainer
 local slots = {}       -- key -> slot button (keep row)
 local enchants = {}    -- key -> { container = , button = }
-local holders = {}     -- key -> our placeholder frame (keep row)
 local upGroups = {}    -- group key -> true, for every up-row group made
 
 local TEXCOORD = { 0.07, 0.93, 0.07, 0.93 }
@@ -240,17 +240,6 @@ local function RedCopy(parent)
 	return c
 end
 
--- Our own "missing" icon for a keep-row place, behind Blizzard's button.
-local function Holder(e)
-	local h = holders[e.key]
-	if not h then
-		h = RedCopy(anchor)
-		h:SetFrameLevel(anchor:GetFrameLevel() + 1)
-		holders[e.key] = h
-	end
-	h.icon:SetTexture(IconTexture(e))
-	return h
-end
 
 -- The expired glow. Blizzard's button covers the red copy while the buff is up, but a glow reaches
 -- past the icon, so it needs hiding some other way. Each keep-row buff gets its own container
@@ -260,8 +249,8 @@ end
 -- size while the buff is missing and nothing while it's up. The game does the sizing (the size
 -- is secret); Blizzard allows anchoring our frames to a container when they're made with
 -- DisableUntrustedLayoutScriptsTemplate.
--- The same frame shows the whole icon for "only when missing" buffs: their red copy sits in it
--- too, so it's hidden with the glow while the buff is up (they have no Blizzard button).
+-- The red copy sits in the same frame, so it's hidden with the glow while the buff is up. "Only when
+-- missing" buffs have nothing else; "keep up" ones also have Blizzard's button for while it's up.
 local presence = {} -- buff key -> { container, clip, host, copy, glow, slot (enchants) }
 
 local function Invisible(button)
@@ -297,8 +286,7 @@ local function Presence(e)
 	return p
 end
 
--- Places the expired glow for a keep-row buff whose icon is at x; copy: also its red copy (for
--- "only when missing" buffs).
+-- Places the red copy (copy = true) and the expired glow for a top-row buff whose icon is at x.
 local function PlaceExpired(e, x, size, copy)
 	local p = Presence(e)
 	local margin = Margin(size)
@@ -397,14 +385,12 @@ local function Layout()
 				if mode == "missing" then
 					-- Only when missing: no Blizzard button, just the red copy and the expired
 					-- glow, both in the frame the game squeezes to nothing while the buff is up.
-					if holders[e.key] then holders[e.key]:Hide() end
 					PlaceExpired(e, x, size, true)
 					x = x + step
 				elseif placed then
-					local h = Holder(e)
-					Place(h, x, 0, size)
-					h:SetShown(mode == "keep")
-					if mode == "keep" then PlaceExpired(e, x, size) else HideExpired(e.key) end
+					-- Keep up: the same, plus Blizzard's button for while it's up. (A weapon enchant
+					-- shown "up" only gets the button.)
+					if mode == "keep" then PlaceExpired(e, x, size, true) else HideExpired(e.key) end
 					-- The keep row's warning glow is timed from the buff's duration: part of the key.
 					local key = e.key .. "/" .. AnimKey(e) .. ":" .. (e.enchant and 0 or ns.Fx.Duration(e) or 0)
 					wanted[key] = true
@@ -422,8 +408,6 @@ local function Layout()
 						keepContainer:SetAuraSlotEnabled(key, true)
 					end
 					x = x + step
-				elseif holders[e.key] then
-					holders[e.key]:Hide()
 				end
 			end
 		end
@@ -435,13 +419,6 @@ local function Layout()
 	end
 	for key, en in pairs(enchants) do
 		if not wanted[key] then en.container:SetItemEnchantmentEnabled(en.slot, false) end
-	end
-	local present = {}
-	for _, e in ipairs(entries) do
-		if ns.Mode(e) == "keep" or (e.enchant and ns.Mode(e) == "up") then present[e.key] = true end
-	end
-	for key, h in pairs(holders) do
-		if not present[key] then h:Hide() end
 	end
 	for key in pairs(presence) do
 		local e = ns.Entry(key)
@@ -513,12 +490,9 @@ function ns.Layout()
 	if not ok then ns.Print("couldn't set up the icons: " .. tostring(err)) end
 end
 
--- Weapon icons for the enchant placeholders follow the equipped weapon.
+-- Weapon icons for the enchants' red copies follow the equipped weapon.
 local events = CreateFrame("Frame")
 events:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 events:SetScript("OnEvent", function()
-	if not ns.built or InCombatLockdown() then return end
-	for _, e in ipairs(ns.Catalogue) do
-		if e.enchant and holders[e.key] then Holder(e) end
-	end
+	if ns.built and not InCombatLockdown() then ns.Layout() end
 end)

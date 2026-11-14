@@ -52,7 +52,7 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
 1j. Only when missing: set Battle Shout to it. With Battle Shout up its place is empty (no icon,
     no glow); when it drops, the red copy and the expired glow appear, in combat too, and vanish
     when you recast. Opacity and grey: on the Effects tab set 50% and Grey; icons that are up
-    fade and turn grey, their warning glow stays bright, and the red copies don't change.
+    fade and turn grey with no red tint showing through, their warning glow stays bright, and the red copies don't change.
 2. The icons appear a little below the middle of the screen. `/leboof unlock` shows a blue box to
    drag; `/leboof lock` hides it; the place is kept after `/reload`.
 3. Keep row: with the class buff missing (e.g. Battle Shout, Inner Fire), a dimmed red copy shows.

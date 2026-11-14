@@ -44,7 +44,7 @@ off the table.
     character uses; `ns.db` is the one in use. New, switch, copy, rename, delete, reset. It also
     moves 0.1.0's settings (per-character `LeboofCharDB`, account `LeboofDB.window/.minimap`)
     into the character's profile once, then clears `LeboofCharDB`.
-  - `Display.lua`: the anchor, the containers, the keep-row red copies, the up-row groups, the
+  - `Display.lua`: the anchor, the containers, the up-row groups, the
     buttons' parts (`ButtonStyler`: the face, the timer, the glows), the timed warning glow
     (`AddTimedGlow`) and the presence frames for the expired glow and "only when missing"
     (`Presence`, `PlaceExpired`).
@@ -118,9 +118,10 @@ off the table.
   frame (made with `DisableUntrustedLayoutScriptsTemplate`, which Blizzard requires for frames
   anchored to a container) runs from the container's right edge to a fixed point, so it's full
   size while the buff is missing and zero while it's up. The game does the sizing with secret
-  values; Leboof never learns it. `Display.lua`: `Presence`, `PlaceExpired`. "Only when missing"
-  buffs (mode `missing`) have no Blizzard button at all: their red copy sits in the same frame as
-  the expired glow (`PlaceExpired(e, x, size, true)`), so it's hidden while the buff is up.
+  values; Leboof never learns it. `Display.lua`: `Presence`, `PlaceExpired`. The red copy sits in
+  the same frame (`PlaceExpired(e, x, size, true)`), for "keep up" and "only when missing" buffs
+  alike, so it's gone while the buff is up rather than covered by Blizzard's button (a see-through
+  icon would show its red). "Only when missing" buffs (mode `missing`) have no Blizzard button.
 - A Blizzard button's look (border, icon, timer, stacks) is on a "face" child frame, so the
   opacity and grey while up (`upAlpha`, `upGrey`, part of the button's key) leave the glows, on
   frames above it, at full strength.

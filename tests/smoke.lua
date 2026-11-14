@@ -601,3 +601,24 @@ ns.Fx.Set(ns.byKey.battleshout, "upGrey", true)
 Check(ns.Fx.Get(ns.byKey.battleshout, "upGrey") == true and ns.Fx.Get(ns.byKey.flurry, "upGrey") == false, "a buff's own grey")
 ns.Fx.Set(ns.byKey.battleshout, "upGrey", nil)
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
+
+-- Keep up: the red copy is only in the presence frame (squeezed away while the buff is up), never
+-- behind Blizzard's button, so a see-through icon doesn't show red through it.
+WM.combat = false
+ns.SetMode(ns.byKey.battleshout, "keep")
+ns.db.effects.upAlpha = 0.5
+ns.Refresh()
+Check(KeepSlot("battleshout").enabled and PresenceFor(25289), "keep up: Blizzard's button and a presence frame")
+for _, f in ipairs(WM.frames) do
+	if f.parent == LeboofAnchor and f.alpha == 0.8 and f.shown then
+		error("a red copy sits behind the buttons on the anchor")
+	end
+end
+local keptCopy = false
+for _, f in ipairs(WM.frames) do
+	if f.alpha == 0.8 and f.shown and f.parent and f.parent.parent and f.parent.parent.parent == LeboofAnchor then keptCopy = true end
+end
+Check(keptCopy, "the keep-up buff's red copy should be in its presence frame")
+ns.db.effects.upAlpha = 1
+ns.SetMode(ns.byKey.battleshout, "default")
+Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))

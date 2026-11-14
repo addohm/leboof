@@ -6,6 +6,12 @@ All notable changes to leboof. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- A see-through icon (Opacity below 100%) no longer looks red. The red copy of a top-row buff sat
+  behind its icon and showed through; it now lives in the frame the game squeezes away while the
+  buff is up, so it's gone rather than covered (2026-11-14).
+
 ## [1.1.0] - 2026-11-14
 
 ### Added
