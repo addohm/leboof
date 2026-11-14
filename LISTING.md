@@ -102,6 +102,7 @@ them itself. So the icons, timers and glows keep working in every fight.
 | `/leboof` | Open or close the options window |
 | `/leboof unlock`, `/leboof lock` | Move the icons |
 | `/leboof list` | Every buff and how it's shown |
+| `/leboof <buff> keep\|missing\|up\|off` | How one buff is shown |
 | `/leboof profile` | The profile in use |
 | `/leboof soundlog` | Log every sound and the addon that played it |
 | `/leboof help` | All commands |
@@ -135,6 +136,13 @@ addon menu by the minimap.
 ---
 
 ## Release notes
+
+### 1.1.0
+
+- **Only when missing:** a new way to show a buff. Its place stays empty while you have it, and
+  shows the red copy and its glow only once it's gone.
+- **Opacity** and **grey** while a buff is up, so the missing ones stand out more. The glows keep
+  their full strength.
 
 ### 1.0.1
 

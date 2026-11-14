@@ -27,7 +27,7 @@ off the table.
     out of combat, learning other IDs of added buffs by name.
   - `Glow.lua`: the glow styles, built from textures and Alpha/Translation/Rotation/FlipBook
     animations only (`Glow.Build`); `Glow.Show` keeps one active on our own frames.
-  - `Effects.lua`: animation and sound settings (`ns.db.effects` defaults, `ns.db.fx[key]` a
+  - `Effects.lua`: glow, icon-look and sound settings (`ns.db.effects` defaults, `ns.db.fx[key]` a
     buff's own; `ns.Fx.Get(e, field)` resolves them), sounds out of combat (from `ns.ReadBuffs()`),
     the warning on entering combat, the running-out sound (out of combat from the real timer, in
     combat timed from your own casts: `UNIT_SPELLCAST_SUCCEEDED`, durations learned per character
@@ -44,11 +44,14 @@ off the table.
     character uses; `ns.db` is the one in use. New, switch, copy, rename, delete, reset. It also
     moves 0.1.0's settings (per-character `LeboofCharDB`, account `LeboofDB.window/.minimap`)
     into the character's profile once, then clears `LeboofCharDB`.
-  - `Display.lua`: the anchor, the containers, the keep-row placeholders, the up-row groups.
+  - `Display.lua`: the anchor, the containers, the keep-row red copies, the up-row groups, the
+    buttons' parts (`ButtonStyler`: the face, the timer, the glows), the timed warning glow
+    (`AddTimedGlow`) and the presence frames for the expired glow and "only when missing"
+    (`Presence`, `PlaceExpired`).
   - `UI/Widgets.lua`: option rows (check, arrow picker, button, heading, text) and the scrolling
     `UI.Stack`, in Nothing Wasted's style. `UI/Window.lua`: the options window (tabs, Defaults,
-    resize grip; pages register with `ns.Window.AddPage`). `UI/Pages.lua`: the Buffs, Layout and
-    General tabs. `UI/Minimap.lua`: the minimap button and the addon compartment entry.
+    resize grip; pages register with `ns.Window.AddPage`). `UI/Pages.lua`: the Buffs, Layout,
+    Effects, General and Profiles tabs, and a buff's ⚙ menu (`ns.BuildFxMenu`). `UI/Minimap.lua`: the minimap button and the addon compartment entry.
   - `Media/Icon.tga`: the in-game icon (TOC `IconTexture`: AddOns list, addon compartment),
     128 px 32-bit TGA, drawn by `art/make_logo.py`. Never edit by hand.
 - `art/`: `make_logo.py` (Pillow; Inter for the banner via LEBOOF_FONT_BOLD/SEMI) and what it
@@ -122,9 +125,9 @@ off the table.
   opacity and grey while up (`upAlpha`, `upGrey`, part of the button's key) leave the glows, on
   frames above it, at full strength.
 - **Keep it simple:** icons appear and disappear, with a warning glow and an expired glow, and
-  nothing else animates (the owner, 2026-11-08: no growing, shrinking or fading). The warning glow
-  goes through the button's own `AddPandemicRegion` / `AddPandemicActiveAnimation`: the game shows
-  it. Nothing may detect a button showing (no scripts on its children); in combat only casts and
+  nothing else animates (the owner, 2026-11-08: no growing, shrinking or fading). The keep row's
+  warning glow is timed by the bar above; elsewhere it goes through the button's own
+  `AddPandemicRegion` / `AddPandemicActiveAnimation`, and the game shows it. Nothing may detect a button showing (no scripts on its children); in combat only casts and
   Blizzard's Cooldown Manager can make a sound.
 - Check API against Blizzard's UI source, `forever` branch:
   https://github.com/Gethe/wow-ui-source/tree/forever. Prefer `C_*` functions; many old globals

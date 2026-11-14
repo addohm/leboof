@@ -5,8 +5,8 @@ buffs in combat, where the game hides aura data from addons. The icons don't rea
 Blizzard's aura containers fill them themselves. Leboof only says which buffs to show and where to
 put them. (Out of combat it reads your buffs for one thing: the list you add buffs from.)
 
-The source lives at `github.com/addohm/leboof`. Status: 1.0.1, released 2026-11-08.
-Download `release/Leboof-1.0.1.zip` and unzip it into `<WoW>\_forever_\Interface\AddOns\`.
+The source lives at `github.com/addohm/leboof`. Status: 1.1.0, released 2026-11-14.
+Download `release/Leboof-1.1.0.zip` and unzip it into `<WoW>\_forever_\Interface\AddOns\`.
 
 ## What it shows
 
@@ -59,13 +59,14 @@ menu by the minimap. It has five tabs:
 - **Layout:** icon size, the space between icons, which way the rows grow (from the center, the
   default, or from the left or right), Unlock/Lock to drag the icons, and back to the default
   place.
-- **Effects:** the default animations and sounds (see below). Each tracked buff's ⚙ button on
-  the Buffs tab sets its own.
+- **Effects:** the default glows, how icons look while their buff is up (opacity, grey), the
+  warning time and the sounds (see below). Each tracked buff's ⚙ button on the Buffs tab sets
+  its own.
 - **General:** show or hide the minimap button, the version, and how Leboof works.
 - **Profiles:** which profile this character uses, a new profile, copy settings from another
   profile, rename, delete, or reset every setting to the defaults.
 
-Each tab has a Defaults button. The window can be moved and resized, and Escape closes it.
+Each tab but Profiles has a Defaults button. The window can be moved and resized, and Escape closes it.
 
 **The minimap button:** click for the window, right-click to unlock or lock the icons, drag to
 move it around the minimap.

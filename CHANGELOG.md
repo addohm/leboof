@@ -6,6 +6,8 @@ All notable changes to leboof. The format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-14
+
 ### Added
 
 - **Only when missing**, a third way to show a buff: a top-row place that stays empty while the
