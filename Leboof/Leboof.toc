@@ -2,7 +2,7 @@
 ## Title: Leboof
 ## Notes: Your buffs in combat: a fixed row for the ones to keep up (dim red when missing) and a row for procs and the rest while they're up.
 ## Author: addohm
-## Version: 1.1.0
+## Version: 1.1.1
 ## IconTexture: Interface\AddOns\Leboof\Media\Icon
 ## SavedVariables: LeboofDB
 ## SavedVariablesPerCharacter: LeboofCharDB

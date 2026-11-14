@@ -7,6 +7,7 @@ change.
 
 - Standard docs (2026-11-07).
 - The icon (2026-11-08).
+- **1.1.1 released (2026-11-14):** see-through icons no longer pick up the red copy's tint.
 - **1.1.0 released (2026-11-14):** Only when missing; opacity and grey while up.
 - **1.0.1 released (2026-11-08):** the top row's warning glow at the warning time, in combat.
 - **1.0.0 released (2026-11-08).**

@@ -6,6 +6,8 @@ All notable changes to leboof. The format follows
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-11-14
+
 ### Fixed
 
 - A see-through icon (Opacity below 100%) no longer looks red. The red copy of a top-row buff sat

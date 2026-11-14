@@ -137,6 +137,10 @@ addon menu by the minimap.
 
 ## Release notes
 
+### 1.1.1
+
+See-through icons (Opacity below 100%) no longer look red.
+
 ### 1.1.0
 
 - **Only when missing:** a new way to show a buff. Its place stays empty while you have it, and

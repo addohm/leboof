@@ -72,6 +72,8 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
 
 ## Confirmed
 
+- At reduced opacity, icons that are up show no red tint; the red copy still appears when the
+  buff drops (9dff371, 2026-11-14).
 - The expired glow shows round a missing top-row buff's red copy in combat (2026-11-08).
 - The top row's warning glow comes up at the warning time in combat (Battle Shout; f681d69,
   2026-11-08).
