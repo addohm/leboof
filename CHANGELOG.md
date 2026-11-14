@@ -6,6 +6,13 @@ All notable changes to leboof. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Faded and grey icons go back to normal at the warning time, not when the buff drops: top-row
+  icons fully, in combat too (once Leboof knows the buff's duration); second-row icons regain
+  their opacity in the game's refresh window, but stay grey. The timer brightens and turns red at
+  the warning time (2026-11-14).
+
 ## [1.1.1] - 2026-11-14
 
 ### Fixed

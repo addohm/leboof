@@ -42,7 +42,9 @@ local function NewFrame(kind, name)
 	function f:RegisterUnitEvent(e) self.events[e] = true end
 	function f:SetAlpha(a) self.alpha = a end
 	function f:CreateTexture()
-		local t = Permissive({})
+		local t = Permissive({ owner = self })
+		M.textures = M.textures or {}
+		table.insert(M.textures, t)
 		function t:SetDesaturated(v) self.desaturated = v end
 		function t:SetTexture(v) self.texture = v end
 		return t
@@ -65,6 +67,7 @@ local function NewFrame(kind, name)
 	function f:AddPandemicActiveAnimation(g) table.insert(self.pandemicAnims, g) end
 	function f:AddPandemicRegion(r) table.insert(self.pandemicRegions, r) end
 	function f:SetIcon(t) self.iconTexture = t end
+	function f:SetDurationText(fs, options) self.durationText, self.durationTextOptions = fs, options end
 	function f:SetDurationBar(bar, options) self.durationBar, self.durationBarOptions = bar, options end
 	function f:SetMinMaxValues(lo, hi) self.min, self.max = lo, hi end
 	function f:GetStatusBarTexture()

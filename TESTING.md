@@ -53,6 +53,10 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
     no glow); when it drops, the red copy and the expired glow appear, in combat too, and vanish
     when you recast. Opacity and grey: on the Effects tab set 50% and Grey; icons that are up
     fade and turn grey with no red tint showing through, their warning glow stays bright, and the red copies don't change.
+1k. Back to normal at the warning time: with Opacity 50% and Grey on, Battle Shout (seen once out
+    of combat) is faded and grey until 15 s left, then full colour and strength, in combat too; its
+    timer brightens and turns red then. A second-row proc with a refresh window regains its
+    opacity near its end but stays grey.
 2. The icons appear a little below the middle of the screen. `/leboof unlock` shows a blue box to
    drag; `/leboof lock` hides it; the place is kept after `/reload`.
 3. Keep row: with the class buff missing (e.g. Battle Shout, Inner Fire), a dimmed red copy shows.

@@ -24,7 +24,10 @@ Two rows of icons, a little below the middle of the screen by default:
 
 The time left turns red near the end, at the warning time (see below). Procs get a swipe. On the
 Effects tab you can also make icons **see-through** (100% down to 25%) or **grey** while their
-buff is up, so a missing one stands out more; the glows stay at full strength.
+buff is up, so a missing one stands out more. They go back to normal at the **warning time**, in
+combat too: top-row icons fully (once Leboof knows the buff's duration, as for the warning glow);
+second-row icons regain their opacity in the game's refresh window but stay grey. The glows
+always stay at full strength, and the timer brightens and turns red at the warning time.
 Hovering an icon shows the game's tooltip.
 
 By default you see **your own class's buffs and nothing else** (warrior, priest and druid so

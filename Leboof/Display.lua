@@ -21,14 +21,26 @@ local upGroups = {}    -- group key -> true, for every up-row group made
 local TEXCOORD = { 0.07, 0.93, 0.07, 0.93 }
 local QUESTION = "Interface\\Icons\\INV_Misc_QuestionMark"
 
--- Time-left colour: red below `warn` seconds, white above.
-local function WarnCurve(warn)
+-- Time-left colour: red below `warn` seconds, white above, at `alpha` opacity above (the icon's
+-- opacity while up) and full opacity below.
+local function WarnCurve(warn, alpha)
 	local curve = C_CurveUtil.CreateColorCurve()
 	curve:SetType(Enum.LuaCurveType.Step)
 	curve:AddPoint(0, CreateColor(1, 0.25, 0.25, 1))
-	curve:AddPoint(warn, CreateColor(1, 1, 1, 1))
+	curve:AddPoint(warn, CreateColor(1, 1, 1, alpha or 1))
 	return curve
 end
+
+local function IconTexture(e)
+	local texture = e.icon -- an added buff: the icon it was seen with
+	if not texture and e.enchant then
+		texture = GetInventoryItemTexture("player", e.enchant == "MainHand" and INVSLOT_MAINHAND or INVSLOT_OFFHAND)
+	elseif not texture and e.idList and e.idList[1] then
+		texture = C_Spell.GetSpellTexture(e.idList[1])
+	end
+	return texture or QUESTION
+end
+
 
 -- The warning glow (Glow.lua, any style and colour): the game shows it in its refresh window near
 -- the end of the buff (the pandemic window), in combat too.
@@ -47,16 +59,19 @@ local function AddGlow(button, glow, color, size)
 	for _, group in ipairs(built.groups) do button:AddPandemicActiveAnimation(group) end
 end
 
--- The keep row's warning glow, at the warning time, in combat too. The game drives an invisible
--- bar from the buff's time left (SetDurationBar, RemainingTime): its fill shrinks k px a second.
--- The bar is placed so that the fill's end crosses the glow's area as the time left goes from
--- warn + T to warn (T = span / k: a fraction of a second, a few for hour-long buffs). The glow
--- sits in a frame running from the fill's end to the bar's end, inside a frame clipped to the
--- glow's area: so it's nothing above the warning time and the whole glow under it. As with the
--- expired glow, the game does the sizing with secret values and Leboof never learns them.
--- total: the buff's full duration (learned out of combat). False if it can't be timed.
-local function AddTimedGlow(button, glow, color, size, warn, total)
-	if glow == "none" or not total or warn <= 0 or total - warn < 2 then return false end
+-- The keep row's warning, at the warning time, in combat too. The game drives an invisible bar
+-- from the buff's time left (SetDurationBar, RemainingTime): its fill shrinks k px a second. The
+-- bar is placed so that the fill's end crosses the glow's area as the time left goes from
+-- warn + T to warn (T = span / k: a fraction of a second, a few for hour-long buffs). A "window"
+-- frame runs from the fill's end to the bar's end, inside a frame clipped to the glow's area: so
+-- whatever is in it is hidden above the warning time and shown under it. In it: the warning glow,
+-- and, if the icon is faded or grey while up (reveal), the real icon at full strength, so the
+-- icon "returns to normal" at the warning time. As with the expired glow, the game does the sizing
+-- with secret values and Leboof never learns them.
+-- total: the buff's full duration (learned out of combat). Returns the window's host frame (its
+-- icon texture in host.icon when revealing), or nil if it can't be timed.
+local function AddTimedGlow(button, glow, color, size, warn, total, reveal)
+	if (glow == "none" and not reveal) or not total or warn <= 0 or total - warn < 2 then return nil end
 	local margin = Margin(size)
 	local span = size + 2 * margin
 	local k = math.min(span / 0.5, 100000 / total) -- px per second; caps the bar near 100000 px
@@ -82,26 +97,40 @@ local function AddTimedGlow(button, glow, color, size, warn, total)
 	window:SetClipsChildren(true)
 	local host = CreateFrame("Frame", nil, window)
 	host:SetAllPoints(button)
-	local built = ns.Glow.Build(host, glow, color, size)
-	-- Its animations start with the buff; the clipping keeps them out of sight until the warning.
-	for _, group in ipairs(built.groups) do button:AddAuraShownAnimation(group) end
-	return true
+	if reveal then
+		local edge = host:CreateTexture(nil, "BACKGROUND")
+		edge:SetPoint("TOPLEFT", -1, 1)
+		edge:SetPoint("BOTTOMRIGHT", 1, -1)
+		edge:SetColorTexture(0, 0, 0, 1)
+		host.icon = host:CreateTexture(nil, "ARTWORK")
+		host.icon:SetAllPoints()
+		host.icon:SetTexCoord(unpack(TEXCOORD))
+	end
+	if glow ~= "none" then
+		local built = ns.Glow.Build(host, glow, color, size)
+		-- Its animations start with the buff; the clipping keeps them out of sight until the warning.
+		for _, group in ipairs(built.groups) do button:AddAuraShownAnimation(group) end
+	end
+	return host
 end
 
 -- Returns the initializeFrame callback that builds a Blizzard aura button's parts. It runs once,
 -- when the game creates the button, before the button is closed to addons.
--- total: for the keep row, the buff's full duration, to time the warning glow; else nil.
--- alpha, grey: how the icon looks while the buff is up (its opacity, and greyed or not). They go
--- on the icon's "face" (icon, border, timer, stacks), not on the glows above it.
-local function ButtonStyler(warn, swipe, glow, color, total, alpha, grey)
+-- total: for the keep row, the buff's full duration, to time the warning; else nil.
+-- alpha, grey: how the icon looks while the buff is up (its opacity, and greyed or not), until the
+-- warning: they go on the icon's "face" (border, icon, swipe), not on the glows or the timer above.
+-- iconTexture: the buff's own icon, for the keep row's faded face (see below).
+local function ButtonStyler(warn, swipe, glow, color, total, alpha, grey, iconTexture)
 	return function(button)
 		local size = ns.db.size
+		alpha = alpha or 1
+		local faded = alpha < 1 or grey
 		button:SetSize(size, size)
 
 		local face = CreateFrame("Frame", nil, button)
 		face:SetAllPoints(button)
 		face:SetFrameLevel(button:GetFrameLevel() + 1)
-		face:SetAlpha(alpha or 1)
+		face:SetAlpha(alpha)
 
 		local edge = face:CreateTexture(nil, "BACKGROUND")
 		edge:SetPoint("TOPLEFT", -1, 1)
@@ -112,7 +141,6 @@ local function ButtonStyler(warn, swipe, glow, color, total, alpha, grey)
 		icon:SetAllPoints()
 		icon:SetTexCoord(unpack(TEXCOORD))
 		icon:SetDesaturated(grey and true or false)
-		button:SetIcon(icon)
 
 		if swipe then
 			local cooldown = CreateFrame("Cooldown", nil, face, "CooldownFrameTemplate")
@@ -123,19 +151,49 @@ local function ButtonStyler(warn, swipe, glow, color, total, alpha, grey)
 			button:SetDurationCooldown(cooldown)
 		end
 
-		local text = face:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
+		-- The warning. Keep row with a known duration: timed (the glow, and, when faded, the real
+		-- icon at full strength). Then the face shows the buff's own icon, faded, and the game fills
+		-- the revealed one (one icon per button). Otherwise: the refresh-window glow, and the face
+		-- goes back to full opacity in that window (grey can't be undone there).
+		local host = AddTimedGlow(button, glow, color, size, warn, total, faded and iconTexture ~= nil)
+		if host and host.icon then
+			icon:SetTexture(iconTexture)
+			button:SetIcon(host.icon)
+		else
+			button:SetIcon(icon)
+			if not host then
+				AddGlow(button, glow, color, size)
+				if alpha < 1 then
+					local restore = face:CreateAnimationGroup()
+					restore:SetLooping("REPEAT")
+					local full = restore:CreateAnimation("Alpha")
+					full:SetFromAlpha(1)
+					full:SetToAlpha(1)
+					full:SetDuration(1)
+					button:AddPandemicActiveAnimation(restore)
+				end
+			end
+		end
+
+		-- The timer and stacks sit above everything. The timer turns red, and back to full
+		-- opacity, at the warning time (the game applies the colour curve in combat too).
+		local top = CreateFrame("Frame", nil, button)
+		top:SetAllPoints(button)
+		top:SetFrameLevel(button:GetFrameLevel() + 6)
+		local text = top:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
 		text:SetPoint("BOTTOM", 0, 1)
 		local options
 		if warn and warn > 0 then
-			options = { textColor = { curve = WarnCurve(warn), property = Enum.DurationTextBindingProperty.RemainingDuration } }
+			options = { textColor = { curve = WarnCurve(warn, alpha), property = Enum.DurationTextBindingProperty.RemainingDuration } }
+		else
+			text:SetAlpha(alpha)
 		end
 		button:SetDurationText(text, options)
 
-		local count = face:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+		local count = top:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
 		count:SetPoint("TOPRIGHT", -1, -1)
+		count:SetAlpha(alpha)
 		button:SetApplicationCount(count)
-
-		if not AddTimedGlow(button, glow, color, size, warn, total) then AddGlow(button, glow, color, size) end
 	end
 end
 
@@ -152,7 +210,7 @@ local function Styler(e, warn, upRow)
 	local Fx = ns.Fx
 	local total = not upRow and not e.enchant and Fx.Duration(e) or nil
 	return ButtonStyler(warn, upRow, Fx.Get(e, "expiring"), Fx.Get(e, "expiringColor"), total,
-		Fx.Get(e, "upAlpha"), Fx.Get(e, "upGrey"))
+		Fx.Get(e, "upAlpha"), Fx.Get(e, "upGrey"), not upRow and IconTexture(e) or nil)
 end
 
 local function NewContainer()
@@ -214,16 +272,6 @@ local function Build()
 end
 
 -- Our own "missing" icon for a keep-row place.
-local function IconTexture(e)
-	local texture = e.icon -- an added buff: the icon it was seen with
-	if not texture and e.enchant then
-		texture = GetInventoryItemTexture("player", e.enchant == "MainHand" and INVSLOT_MAINHAND or INVSLOT_OFFHAND)
-	elseif not texture and e.idList and e.idList[1] then
-		texture = C_Spell.GetSpellTexture(e.idList[1])
-	end
-	return texture or QUESTION
-end
-
 -- A dimmed red copy of a buff's icon: the "missing" look.
 local function RedCopy(parent)
 	local c = CreateFrame("Frame", nil, parent)

@@ -592,8 +592,20 @@ for _, f in ipairs(WM.frames) do
 	if f.alpha == 0.5 then face = f end
 end
 Check(face, "the icon's face should be at 50% opacity")
-Check(faded.iconTexture and faded.iconTexture.desaturated == true, "the icon should be grey")
-Check(UpGroup(3) and true, "the second row too")
+-- Top row, duration known: the face shows the buff's own icon, grey; the game's icon is revealed
+-- at the warning time in the timed window, at full strength.
+Check(faded.durationBar and faded.iconTexture and faded.iconTexture.desaturated ~= true, "the revealed icon should be the game's, not grey")
+local greyFace = false
+for _, t in ipairs(WM.textures) do
+	if t.owner and t.owner.parent == faded and t.desaturated == true and t.texture == 100000 + ns.byKey.battleshout.idList[1] then greyFace = true end
+end
+Check(greyFace, "the face should show Battle Shout's own icon, grey")
+local curve = faded.durationTextOptions and faded.durationTextOptions.textColor.curve
+Check(curve and curve.points[2][2].a == 0.5 and curve.points[1][2].a == 1, "the timer should be faded above the warning time and full below")
+-- Second row: grey stays; opacity comes back in the refresh window (an Alpha 1 -> 1 animation on the face).
+local upButton = UpGroup(3).frames[1]
+Check(#upButton.pandemicAnims == 2, "a second-row icon should have the glow and the opacity restore")
+Check(upButton.iconTexture.desaturated == true, "a second-row icon stays grey")
 ns.db.effects.upAlpha, ns.db.effects.upGrey = 1, false
 ns.Refresh()
 Check(KeepSlot("battleshout").button ~= faded, "changing them should switch to other buttons")

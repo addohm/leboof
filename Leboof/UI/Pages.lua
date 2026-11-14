@@ -389,9 +389,9 @@ Page({
 
 		stack:Add(UI.OptionHeading(stack.inner, "Icons while the buff is up"))
 		stack:Add(UI.OptionSelect(stack.inner, "Opacity", Fx.ALPHAS, EffectGet("upAlpha"), EffectSet("upAlpha"),
-			{ tooltip = { "Opacity while up", "How see-through an icon is while its buff is on you. The glows stay at full strength." } }))
+			{ tooltip = { "Opacity while up", "How see-through an icon is while its buff is on you, until the warning time, when it goes back to full strength (top row; the second row in the game's refresh window). The glows always stay at full strength." } }))
 		stack:Add(UI.OptionCheck(stack.inner, "Grey", EffectGet("upGrey"), EffectSet("upGrey"),
-			{ "Grey while up", "Shows an icon in grey while its buff is on you, so a missing one (the red copy) stands out more." }))
+			{ "Grey while up", "Shows an icon in grey while its buff is on you, until the warning time, when it goes back to full colour (top row only: second-row icons stay grey until they drop)." }))
 
 		stack:Add(UI.OptionHeading(stack.inner, "Running out"))
 		stack:Add(UI.OptionSelect(stack.inner, "Warning time", Fx.WARNS, EffectGet("warn"), EffectSet("warn"),

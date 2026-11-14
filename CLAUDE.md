@@ -122,9 +122,14 @@ off the table.
   the same frame (`PlaceExpired(e, x, size, true)`), for "keep up" and "only when missing" buffs
   alike, so it's gone while the buff is up rather than covered by Blizzard's button (a see-through
   icon would show its red). "Only when missing" buffs (mode `missing`) have no Blizzard button.
-- A Blizzard button's look (border, icon, timer, stacks) is on a "face" child frame, so the
-  opacity and grey while up (`upAlpha`, `upGrey`, part of the button's key) leave the glows, on
-  frames above it, at full strength.
+- A Blizzard button's look is in layers: the "face" (border, icon, swipe) carries the opacity and
+  grey while up (`upAlpha`, `upGrey`, part of the button's key); the glows sit above it; the
+  timer and stacks on a "top" frame above all, the timer's colour curve (`WarnCurve(warn, alpha)`)
+  faded above the warning time and full and red below. Faded or grey icons go back to normal at
+  the warning time: in the keep row (duration known) the face shows the buff's own icon as a fixed
+  texture and the game fills the real one in the timed window (`AddTimedGlow(..., reveal)`), so
+  it's revealed at full strength; elsewhere an Alpha 1 -> 1 pandemic animation on the face restores
+  opacity in the refresh window (grey can't be undone there: one game-filled icon per button).
 - **Keep it simple:** icons appear and disappear, with a warning glow and an expired glow, and
   nothing else animates (the owner, 2026-11-08: no growing, shrinking or fading). The keep row's
   warning glow is timed by the bar above; elsewhere it goes through the button's own
