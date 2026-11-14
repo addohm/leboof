@@ -39,7 +39,10 @@ end
 -- The refresh-window glow: the game shows it in its pandemic window. Only auras with a refresh
 -- window get one, so this is for the second row (and buffs whose duration isn't known yet).
 local function AddGlow(button, glow, color, size)
-	local built = ns.Glow.Build(button, glow, color, size)
+	local holder = CreateFrame("Frame", nil, button)
+	holder:SetAllPoints(button)
+	holder:SetFrameLevel(button:GetFrameLevel() + 3) -- above the icon's face
+	local built = ns.Glow.Build(holder, glow, color, size)
 	for _, region in ipairs(built.regions) do button:AddPandemicRegion(region) end
 	for _, group in ipairs(built.groups) do button:AddPandemicActiveAnimation(group) end
 end
@@ -68,6 +71,7 @@ local function AddTimedGlow(button, glow, color, size, warn, total)
 		interpolation = Enum.StatusBarInterpolation.Immediate,
 	})
 	local area = CreateFrame("Frame", nil, button)
+	area:SetFrameLevel(button:GetFrameLevel() + 3) -- above the icon's face
 	area:SetPoint("TOPLEFT", button, "TOPLEFT", -margin, margin)
 	area:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", margin, -margin)
 	area:SetClipsChildren(true)
@@ -87,23 +91,31 @@ end
 -- Returns the initializeFrame callback that builds a Blizzard aura button's parts. It runs once,
 -- when the game creates the button, before the button is closed to addons.
 -- total: for the keep row, the buff's full duration, to time the warning glow; else nil.
-local function ButtonStyler(warn, swipe, glow, color, total)
+-- alpha, grey: how the icon looks while the buff is up (its opacity, and greyed or not). They go
+-- on the icon's "face" (icon, border, timer, stacks), not on the glows above it.
+local function ButtonStyler(warn, swipe, glow, color, total, alpha, grey)
 	return function(button)
 		local size = ns.db.size
 		button:SetSize(size, size)
 
-		local edge = button:CreateTexture(nil, "BACKGROUND")
+		local face = CreateFrame("Frame", nil, button)
+		face:SetAllPoints(button)
+		face:SetFrameLevel(button:GetFrameLevel() + 1)
+		face:SetAlpha(alpha or 1)
+
+		local edge = face:CreateTexture(nil, "BACKGROUND")
 		edge:SetPoint("TOPLEFT", -1, 1)
 		edge:SetPoint("BOTTOMRIGHT", 1, -1)
 		edge:SetColorTexture(0, 0, 0, 1)
 
-		local icon = button:CreateTexture(nil, "ARTWORK")
+		local icon = face:CreateTexture(nil, "ARTWORK")
 		icon:SetAllPoints()
 		icon:SetTexCoord(unpack(TEXCOORD))
+		icon:SetDesaturated(grey and true or false)
 		button:SetIcon(icon)
 
 		if swipe then
-			local cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
+			local cooldown = CreateFrame("Cooldown", nil, face, "CooldownFrameTemplate")
 			cooldown:SetAllPoints()
 			cooldown:SetDrawEdge(false)
 			cooldown:SetReverse(true)
@@ -111,7 +123,7 @@ local function ButtonStyler(warn, swipe, glow, color, total)
 			button:SetDurationCooldown(cooldown)
 		end
 
-		local text = button:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
+		local text = face:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
 		text:SetPoint("BOTTOM", 0, 1)
 		local options
 		if warn and warn > 0 then
@@ -119,7 +131,7 @@ local function ButtonStyler(warn, swipe, glow, color, total)
 		end
 		button:SetDurationText(text, options)
 
-		local count = button:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+		local count = face:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
 		count:SetPoint("TOPRIGHT", -1, -1)
 		button:SetApplicationCount(count)
 
@@ -132,13 +144,15 @@ end
 local function AnimKey(e)
 	local Fx = ns.Fx
 	return Fx.Get(e, "expiring") .. ":" .. Fx.Get(e, "expiringColor") .. ":" .. ns.db.size .. ":" .. Fx.Warn(e)
+		.. ":" .. Fx.Get(e, "upAlpha") .. ":" .. tostring(Fx.Get(e, "upGrey"))
 end
 
 -- upRow: the second row's buttons, with a cooldown swipe.
 local function Styler(e, warn, upRow)
 	local Fx = ns.Fx
 	local total = not upRow and not e.enchant and Fx.Duration(e) or nil
-	return ButtonStyler(warn, upRow, Fx.Get(e, "expiring"), Fx.Get(e, "expiringColor"), total)
+	return ButtonStyler(warn, upRow, Fx.Get(e, "expiring"), Fx.Get(e, "expiringColor"), total,
+		Fx.Get(e, "upAlpha"), Fx.Get(e, "upGrey"))
 end
 
 local function NewContainer()
@@ -200,30 +214,41 @@ local function Build()
 end
 
 -- Our own "missing" icon for a keep-row place.
-local function Holder(e)
-	local h = holders[e.key]
-	if not h then
-		h = CreateFrame("Frame", nil, anchor)
-		h:SetFrameLevel(anchor:GetFrameLevel() + 1)
-		h.border = h:CreateTexture(nil, "BACKGROUND")
-		h.border:SetPoint("TOPLEFT", -1, 1)
-		h.border:SetPoint("BOTTOMRIGHT", 1, -1)
-		h.border:SetColorTexture(0.7, 0, 0, 1)
-		h.icon = h:CreateTexture(nil, "ARTWORK")
-		h.icon:SetAllPoints()
-		h.icon:SetTexCoord(unpack(TEXCOORD))
-		h.icon:SetDesaturated(true)
-		h.icon:SetVertexColor(1, 0.4, 0.4)
-		h:SetAlpha(0.8)
-		holders[e.key] = h
-	end
+local function IconTexture(e)
 	local texture = e.icon -- an added buff: the icon it was seen with
 	if not texture and e.enchant then
 		texture = GetInventoryItemTexture("player", e.enchant == "MainHand" and INVSLOT_MAINHAND or INVSLOT_OFFHAND)
 	elseif not texture and e.idList and e.idList[1] then
 		texture = C_Spell.GetSpellTexture(e.idList[1])
 	end
-	h.icon:SetTexture(texture or QUESTION)
+	return texture or QUESTION
+end
+
+-- A dimmed red copy of a buff's icon: the "missing" look.
+local function RedCopy(parent)
+	local c = CreateFrame("Frame", nil, parent)
+	c.border = c:CreateTexture(nil, "BACKGROUND")
+	c.border:SetPoint("TOPLEFT", -1, 1)
+	c.border:SetPoint("BOTTOMRIGHT", 1, -1)
+	c.border:SetColorTexture(0.7, 0, 0, 1)
+	c.icon = c:CreateTexture(nil, "ARTWORK")
+	c.icon:SetAllPoints()
+	c.icon:SetTexCoord(unpack(TEXCOORD))
+	c.icon:SetDesaturated(true)
+	c.icon:SetVertexColor(1, 0.4, 0.4)
+	c:SetAlpha(0.8)
+	return c
+end
+
+-- Our own "missing" icon for a keep-row place, behind Blizzard's button.
+local function Holder(e)
+	local h = holders[e.key]
+	if not h then
+		h = RedCopy(anchor)
+		h:SetFrameLevel(anchor:GetFrameLevel() + 1)
+		holders[e.key] = h
+	end
+	h.icon:SetTexture(IconTexture(e))
 	return h
 end
 
@@ -235,7 +260,9 @@ end
 -- size while the buff is missing and nothing while it's up. The game does the sizing (the size
 -- is secret); Blizzard allows anchoring our frames to a container when they're made with
 -- DisableUntrustedLayoutScriptsTemplate.
-local presence = {} -- buff key -> { container, clip, host, slot (enchants) }
+-- The same frame shows the whole icon for "only when missing" buffs: their red copy sits in it
+-- too, so it's hidden with the glow while the buff is up (they have no Blizzard button).
+local presence = {} -- buff key -> { container, clip, host, copy, glow, slot (enchants) }
 
 local function Invisible(button)
 	button:SetSize(1, 1)
@@ -260,13 +287,19 @@ local function Presence(e)
 		p.clip:SetClipsChildren(true)
 		p.clip:SetFrameLevel(anchor:GetFrameLevel() + 2)
 		p.host = CreateFrame("Frame", nil, p.clip)
+		p.copy = RedCopy(p.host)
+		p.copy:SetAllPoints(p.host)
+		p.glow = CreateFrame("Frame", nil, p.host)
+		p.glow:SetAllPoints(p.host)
+		p.glow:SetFrameLevel(p.copy:GetFrameLevel() + 2) -- the glow above the copy
 		presence[e.key] = p
 	end
 	return p
 end
 
--- Places the expired glow for a keep-row buff whose icon is at x.
-local function PlaceExpired(e, x, size)
+-- Places the expired glow for a keep-row buff whose icon is at x; copy: also its red copy (for
+-- "only when missing" buffs).
+local function PlaceExpired(e, x, size, copy)
 	local p = Presence(e)
 	local margin = Margin(size)
 	local span = size + 2 * margin
@@ -287,7 +320,9 @@ local function PlaceExpired(e, x, size)
 	p.host:ClearAllPoints()
 	p.host:SetPoint("TOPLEFT", anchor, "TOPLEFT", x, 0)
 	p.host:SetSize(size, size)
-	ns.Glow.Show(p.host, ns.Fx.Get(e, "missing"), ns.Fx.Get(e, "missingColor"), size)
+	p.copy:SetShown(copy and true or false)
+	if copy then p.copy.icon:SetTexture(IconTexture(e)) end
+	ns.Glow.Show(p.glow, ns.Fx.Get(e, "missing"), ns.Fx.Get(e, "missingColor"), size)
 end
 
 local function HideExpired(key)
@@ -348,7 +383,7 @@ local function Layout()
 	local count = 0
 	for _, e in ipairs(entries) do
 		local mode = ns.Mode(e)
-		if mode == "keep" or (e.enchant and mode == "up") then count = count + 1 end
+		if mode == "keep" or mode == "missing" or (e.enchant and mode == "up") then count = count + 1 end
 	end
 	local step = size + gap
 	local keepWidth = count > 0 and (count * step - gap) or 0
@@ -358,8 +393,14 @@ local function Layout()
 		for _, e in ipairs(entries) do
 			if (pass == 1) == (e.enchant == nil) then
 				local mode = ns.Mode(e)
-				local placed = mode == "keep" or (e.enchant and mode == "up")
-				if placed then
+				local placed = mode == "keep" or mode == "missing" or (e.enchant and mode == "up")
+				if mode == "missing" then
+					-- Only when missing: no Blizzard button, just the red copy and the expired
+					-- glow, both in the frame the game squeezes to nothing while the buff is up.
+					if holders[e.key] then holders[e.key]:Hide() end
+					PlaceExpired(e, x, size, true)
+					x = x + step
+				elseif placed then
 					local h = Holder(e)
 					Place(h, x, 0, size)
 					h:SetShown(mode == "keep")
@@ -404,7 +445,8 @@ local function Layout()
 	end
 	for key in pairs(presence) do
 		local e = ns.Entry(key)
-		if not e or ns.Mode(e) ~= "keep" then HideExpired(key) end
+		local mode = e and ns.Mode(e)
+		if mode ~= "keep" and mode ~= "missing" then HideExpired(key) end
 	end
 	local upY = keepWidth > 0 and -(size + gap) or 0
 

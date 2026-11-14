@@ -40,7 +40,13 @@ local function NewFrame(kind, name)
 	function f:SetScript(event, fn) self.scripts[event] = fn end
 	function f:RegisterEvent(e) self.events[e] = true end
 	function f:RegisterUnitEvent(e) self.events[e] = true end
-	function f:CreateTexture() return Permissive({}) end
+	function f:SetAlpha(a) self.alpha = a end
+	function f:CreateTexture()
+		local t = Permissive({})
+		function t:SetDesaturated(v) self.desaturated = v end
+		function t:SetTexture(v) self.texture = v end
+		return t
+	end
 	function f:CreateAnimationGroup()
 		local g = Permissive({ animations = {}, playing = false })
 		function g:CreateAnimation(kind)
@@ -58,6 +64,7 @@ local function NewFrame(kind, name)
 	function f:AddAuraShownAnimation(g) table.insert(self.shownAnims, g) end
 	function f:AddPandemicActiveAnimation(g) table.insert(self.pandemicAnims, g) end
 	function f:AddPandemicRegion(r) table.insert(self.pandemicRegions, r) end
+	function f:SetIcon(t) self.iconTexture = t end
 	function f:SetDurationBar(bar, options) self.durationBar, self.durationBarOptions = bar, options end
 	function f:SetMinMaxValues(lo, hi) self.min, self.max = lo, hi end
 	function f:GetStatusBarTexture()

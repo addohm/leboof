@@ -16,10 +16,15 @@ Two rows of icons, a little below the middle of the screen by default:
   Inner Fire, Fortitude, Mark of the Wild or Omen of Clarity. When the buff is up you see its icon
   and time left. When it's missing you see a dimmed red copy instead. Weapon enchants (oils,
   sharpening stones) sit at the end of this row.
+- **Only when missing** (top row too): a place that stays empty while the buff is up and shows
+  the red copy and its glow only while it's missing. The place is kept either way (the game won't
+  say which buffs are missing, so it can't close the gap).
 - **While up** (second row): procs, cooldowns and any other buffs you add, shown only
   while they're on you. The row closes its gaps.
 
-The time left turns red near the end, at the warning time (see below). Procs get a swipe.
+The time left turns red near the end, at the warning time (see below). Procs get a swipe. On the
+Effects tab you can also make icons **see-through** (100% down to 25%) or **grey** while their
+buff is up, so a missing one stands out more; the glows stay at full strength.
 Hovering an icon shows the game's tooltip.
 
 By default you see **your own class's buffs and nothing else** (warrior, priest and druid so
@@ -46,7 +51,7 @@ menu by the minimap. It has five tabs:
     group buffs, procs and cooldowns, world buffs, weapon enchants). Tick to track, untick to
     remove; the menu stays open so you can tick several. They're known to work, with every rank
     and group version.
-  - **Tracked:** the buffs shown, under their headings, each with Keep up / While up and
+  - **Tracked:** the buffs shown, under their headings, each with Keep up / Only when missing / While up and
     **Remove**. Changed ones are marked; hover one for its default and warning time.
   - **Add from the buffs on you now:** your current buffs (out of combat), each with **Add**. This
     is the only way to add a buff of your own, and it's what keeps it to buffs that can work (see
@@ -69,7 +74,7 @@ move it around the minimap.
 
 - `/leboof`: open or close the options window
 - `/leboof list`: every buff and its mode
-- `/leboof <buff> keep|up|off|default`: e.g. `/leboof fort keep` gives Fortitude a fixed place
+- `/leboof <buff> keep|missing|up|off|default`: e.g. `/leboof fort keep` gives Fortitude a fixed place
 - `/leboof unlock`, then drag the blue box; `/leboof lock` when done
 - `/leboof size 16-64`, `/leboof gap 0-20`
 - `/leboof minimap`: show or hide the minimap button

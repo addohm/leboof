@@ -16,6 +16,7 @@ local DEFAULTS = {
 		expiring = "pixel", expiringColor = "gold", missing = "pixel", missingColor = "red",
 		keepLost = "RAID_WARNING", keepExpiring = "MAP_PING", combatMissing = "RAID_WARNING", combatChat = true,
 		upGained = "none", upLost = "none",
+		upAlpha = 1, upGrey = false,    -- how an icon looks while its buff is up
 		warn = "auto",                  -- the warning time: "auto" (each buff's own) or seconds
 	},
 	fx = {},                            -- key -> a buff's own animation and sound choices
@@ -24,7 +25,9 @@ local DEFAULTS = {
 }
 ns.DEFAULTS = DEFAULTS
 
-ns.MODES = { keep = true, up = true, off = true }
+-- keep: a fixed place, the icon or a red copy; missing: a fixed place, only the red copy while it's
+-- missing; up: the second row while it's up; off.
+ns.MODES = { keep = true, missing = true, up = true, off = true }
 
 local function CopyDefaults(dst, src)
 	for k, v in pairs(src) do
@@ -149,23 +152,24 @@ end)
 -- Slash commands ---------------------------------------------------------------------------
 
 local function ListBuffs()
-	local rows = { keep = {}, up = {}, off = {} }
+	local rows = { keep = {}, missing = {}, up = {}, off = {} }
 	for _, e in ipairs(ns.Entries()) do
 		local mode = ns.Mode(e)
 		local text = e.key .. (ns.db.modes[e.key] and "*" or "")
 		table.insert(rows[mode], text)
 	end
 	ns.Print("|cffffd100keep|r: " .. (#rows.keep > 0 and table.concat(rows.keep, ", ") or "none"))
+	ns.Print("|cffffd100missing|r: " .. (#rows.missing > 0 and table.concat(rows.missing, ", ") or "none"))
 	ns.Print("|cffffd100up|r: " .. (#rows.up > 0 and table.concat(rows.up, ", ") or "none"))
 	ns.Print("|cffffd100off|r: " .. (#rows.off > 0 and table.concat(rows.off, ", ") or "none"))
-	ns.Print("* = changed from the default. Set one with /leboof <buff> keep|up|off|default")
+	ns.Print("* = changed from the default. Set one with /leboof <buff> keep|missing|up|off|default")
 end
 
 local function Help()
 	ns.Print(ns.Version())
 	ns.Print("/leboof - open or close the options window")
 	ns.Print("/leboof list - the buffs and their modes")
-	ns.Print("/leboof <buff> keep|up|off|default - keep: always has a place, dim red when missing; up: shown only while up")
+	ns.Print("/leboof <buff> keep|missing|up|off|default - keep: always has a place, dim red when missing; missing: only the dim red copy, while it's missing; up: shown only while up")
 	ns.Print("/leboof unlock | lock - move the icons")
 	ns.Print("/leboof size <16-64> | gap <0-20>")
 	ns.Print("/leboof minimap - show or hide the minimap button")
@@ -213,7 +217,7 @@ SlashCmdList.LEBOOF = function(msg)
 	elseif ns.Entry(cmd) then
 		local e = ns.Entry(cmd)
 		if arg ~= "default" and not ns.MODES[arg or ""] then
-			ns.Print(e.label .. " is " .. ns.Mode(e) .. ". Use keep, up, off or default.")
+			ns.Print(e.label .. " is " .. ns.Mode(e) .. ". Use keep, missing, up, off or default.")
 			return
 		end
 		ns.SetMode(e, arg)

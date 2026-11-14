@@ -117,9 +117,12 @@ for _, row in ipairs(panel.stack.rows) do
 end
 Check(shout, "no Battle Shout row")
 shout.next.scripts.OnClick()
+Check(ns.db.modes.battleshout == "missing", "the arrow didn't change Battle Shout to Only when missing")
+shout.next.scripts.OnClick()
 Check(ns.db.modes.battleshout == "up", "the arrow didn't change Battle Shout to While up")
 Check(shout.label.text:find("(changed)", 1, true), "a changed mode isn't marked")
 Check(not KeepSlot("battleshout").enabled, "the change didn't reach the icons")
+shout.prev.scripts.OnClick()
 shout.prev.scripts.OnClick()
 Check(ns.db.modes.battleshout == nil, "back to the default should clear the saved mode")
 for _, id in ipairs({ "layout", "general", "buffs" }) do
@@ -375,7 +378,7 @@ end
 Check(fortRow and fortRow.gear, "no gear button on a tracked buff")
 fortRow.gear.scripts.OnClick(fortRow.gear)
 local fxMenu = WM.RunMenu(function(root) WM.contextMenu.generator(fortRow.gear, root) end)
-Check(fxMenu.title == "Power Word: Fortitude" and #fxMenu.buttons == 9, "the gear menu should have a submenu per setting")
+Check(fxMenu.title == "Power Word: Fortitude" and #fxMenu.buttons == 11, "the gear menu should have a submenu per setting")
 local lost
 for _, b in ipairs(fxMenu.buttons) do if b.text:find("drops") then lost = b end end
 Check(lost.text:find("drops") and lost.items[1].text:find("Default (Raid warning)", 1, true) and lost.items[1].isSelected(), "Default first, selected")
@@ -559,4 +562,42 @@ ns.db.effects.warn = "auto"
 ns.SetMode(ns.byKey.innerfire, "keep")
 Check(KeepSlot("innerfire") and not KeepSlot("innerfire").button.durationBar and #KeepSlot("innerfire").button.pandemicRegions > 0, "no duration yet: the refresh-window glow")
 ns.SetMode(ns.byKey.innerfire, "default")
+Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
+
+-- Only when missing: a top-row place with no Blizzard button; the red copy and the expired glow
+-- sit in the presence frame the game squeezes to nothing while the buff is up.
+WM.combat = false
+ns.SetMode(ns.byKey.battleshout, "missing")
+Check(not KeepSlot("battleshout").enabled, "an only-when-missing buff shouldn't have a Blizzard button")
+local pcm = PresenceFor(25289)
+Check(pcm and pcm.groups.buff.enabled, "it should keep its presence container")
+local copyShown = false
+for _, f in ipairs(WM.frames) do
+	if f.shown and f.points[1] == nil and f.alpha == 0.8 and f ~= nil then copyShown = true end
+end
+Check(copyShown, "its red copy should be shown in the presence frame")
+Check(ns.Fx.Default(ns.byKey.battleshout, "sCombat") ~= "none", "the entering-combat warning should cover it")
+WM.Slash("battleshout keep")
+Check(KeepSlot("battleshout").enabled, "back to keep up")
+WM.Slash("battleshout missing")
+Check(ns.db.modes.battleshout == "missing", "/leboof battleshout missing")
+ns.SetMode(ns.byKey.battleshout, "default")
+
+-- Opacity and grey while up: on the icon's face, not on the glows; part of the button's key.
+ns.db.effects.upAlpha, ns.db.effects.upGrey = 0.5, true
+ns.Refresh()
+local faded = KeepSlot("battleshout").button
+local face
+for _, f in ipairs(WM.frames) do
+	if f.alpha == 0.5 then face = f end
+end
+Check(face, "the icon's face should be at 50% opacity")
+Check(faded.iconTexture and faded.iconTexture.desaturated == true, "the icon should be grey")
+Check(UpGroup(3) and true, "the second row too")
+ns.db.effects.upAlpha, ns.db.effects.upGrey = 1, false
+ns.Refresh()
+Check(KeepSlot("battleshout").button ~= faded, "changing them should switch to other buttons")
+ns.Fx.Set(ns.byKey.battleshout, "upGrey", true)
+Check(ns.Fx.Get(ns.byKey.battleshout, "upGrey") == true and ns.Fx.Get(ns.byKey.flurry, "upGrey") == false, "a buff's own grey")
+ns.Fx.Set(ns.byKey.battleshout, "upGrey", nil)
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))

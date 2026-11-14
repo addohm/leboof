@@ -35,6 +35,11 @@ Fx.WARNS = {
 	{ 30, "30 s" }, { 60, "1 min" }, { 120, "2 min" }, { 300, "5 min" }, { 600, "10 min" },
 }
 
+Fx.ALPHAS = {
+	{ 1, "100%" }, { 0.9, "90%" }, { 0.75, "75%" }, { 0.6, "60%" }, { 0.5, "50%" }, { 0.4, "40%" }, { 0.25, "25%" },
+}
+Fx.YESNO = { { false, "No" }, { true, "Yes" } }
+
 function Fx.Seconds(s)
 	if s >= 60 and s % 60 == 0 then return (s / 60) .. " min" end
 	return s .. " s"
@@ -60,13 +65,16 @@ end
 -- A buff's setting: its own choice, else the default for its row.
 --   expiring, expiringColor             the warning glow near the end (Glow.STYLES, Glow.COLORS)
 --   missing, missingColor               the expired glow on the red copy
+--   upAlpha, upGrey                     the icon's opacity (0..1) and greyed or not, while it's up
 --   warn                                the warning time: seconds, or "auto" (the buff's own)
 --   sExpiring                           the running-out sound (in combat too, for your own casts)
 --   sGained, sLost, sCombat             out-of-combat sounds (sCombat: entering combat without it)
 function Fx.Default(e, field)
 	local d = ns.db.effects
-	local keep = ns.Mode(e) == "keep"
-	if field == "expiring" or field == "expiringColor" or field == "missing" or field == "missingColor" then
+	local mode = ns.Mode(e)
+	local keep = mode == "keep" or mode == "missing" -- the top row's buffs
+	if field == "expiring" or field == "expiringColor" or field == "missing" or field == "missingColor"
+		or field == "upAlpha" or field == "upGrey" then
 		return d[field]
 	end
 	if field == "sGained" then return keep and "none" or d.upGained end
@@ -209,7 +217,8 @@ local function CombatStarted()
 	if not state then return end
 	local missing, sound = {}, nil
 	for _, e in ipairs(ns.Entries()) do
-		if ns.Mode(e) == "keep" and not state[e.key] then
+		local mode = ns.Mode(e)
+		if (mode == "keep" or mode == "missing") and not state[e.key] then
 			local s = Fx.Get(e, "sCombat")
 			if s ~= "none" then
 				missing[#missing + 1] = e.label

@@ -3,7 +3,7 @@
 local _, ns = ...
 local UI = ns.UI
 
-local MODE_NAMES = { keep = "Keep up", up = "While up", off = "Off" }
+local MODE_NAMES = { keep = "Keep up", missing = "Only when missing", up = "While up", off = "Off" }
 
 local SIZES = {}
 for _, n in ipairs({ 20, 24, 28, 32, 36, 40, 44, 48, 56, 64 }) do SIZES[#SIZES + 1] = { n, n .. " px" } end
@@ -72,8 +72,8 @@ end
 -- Buffs: what's tracked (with Keep up / While up and Remove), then two ways to add one: from
 -- Leboof's own list, or from the buffs on you now (see Custom.lua for why only those). The list
 -- is rebuilt on each refresh from pooled rows.
-local TRACK_CHOICES = { { "keep", "Keep up" }, { "up", "While up" } }
-local TRACK_X, TRACK_BOX = 250, 100
+local TRACK_CHOICES = { { "keep", "Keep up" }, { "missing", "Only when missing" }, { "up", "While up" } }
+local TRACK_X, TRACK_BOX = 220, 130
 
 local function Tracked(e) return ns.Mode(e) ~= "off" end
 
@@ -135,7 +135,8 @@ end
 -- A buff's own animation and sound choices: a submenu per setting, "Default (...)" first.
 function ns.BuildFxMenu(e, root)
 	local Fx = ns.Fx
-	local keep = ns.Mode(e) == "keep"
+	local mode = ns.Mode(e)
+	local keep = mode == "keep" or mode == "missing"
 	root:CreateTitle(e.label)
 	local function Choice(text, field, list)
 		local sub = root:CreateButton(text)
@@ -151,15 +152,20 @@ function ns.BuildFxMenu(e, root)
 				end)
 		end
 	end
-	Choice("Warning glow (near the end)", "expiring", ns.Glow.STYLES)
-	Choice("Warning glow colour", "expiringColor", ns.Glow.COLORS)
+	-- An "only when missing" buff shows nothing while it's up: no warning glow, opacity or grey.
+	if mode ~= "missing" then
+		Choice("Warning glow (near the end)", "expiring", ns.Glow.STYLES)
+		Choice("Warning glow colour", "expiringColor", ns.Glow.COLORS)
+		Choice("Opacity while up", "upAlpha", Fx.ALPHAS)
+		Choice("Grey while up", "upGrey", Fx.YESNO)
+	end
 	if keep then
 		Choice("Expired glow (while missing)", "missing", ns.Glow.STYLES)
 		Choice("Expired glow colour", "missingColor", ns.Glow.COLORS)
 	end
 	Choice("Sound when it appears (out of combat)", "sGained", Fx.SOUNDS)
 	Choice("Sound when it drops (out of combat)", "sLost", Fx.SOUNDS)
-	Choice("Sound when it's running out (out of combat)", "sExpiring", Fx.SOUNDS)
+	Choice("Sound when it's running out", "sExpiring", Fx.SOUNDS)
 	if keep then Choice("Sound entering combat without it", "sCombat", Fx.SOUNDS) end
 	local warns = { { "auto", "Its own (" .. Fx.Seconds(e.warn or 0) .. ")" } }
 	for i = 2, #Fx.WARNS do warns[#warns + 1] = Fx.WARNS[i] end
@@ -255,7 +261,7 @@ end
 Page({
 	id = "buffs",
 	label = "Buffs",
-	note = "Keep up: a fixed place in the top row, a dimmed red copy while it's missing. While up: the second row, only while it's on you. Changes made in combat apply when combat ends.",
+	note = "Keep up: a fixed place in the top row, a dimmed red copy while it's missing. Only when missing: a top-row place that shows the red copy only while it's missing. While up: the second row, only while it's on you. Changes made in combat apply when combat ends.",
 	fill = function(stack, panel)
 		local p = { tracked = {}, sections = {}, current = {} }
 		panel.parts = p
@@ -380,6 +386,12 @@ Page({
 		stack:Add(UI.OptionSelect(stack.inner, "Expired glow (top row, while missing)", ns.Glow.STYLES, EffectGet("missing"), EffectSet("missing"),
 			{ tooltip = { "Expired glow", "Around the red copy of a missing top-row buff, the same size as the warning glow. It's gone the moment the buff is back." } }))
 		stack:Add(UI.OptionSelect(stack.inner, "Expired glow colour", ns.Glow.COLORS, EffectSetting("missingColor")))
+
+		stack:Add(UI.OptionHeading(stack.inner, "Icons while the buff is up"))
+		stack:Add(UI.OptionSelect(stack.inner, "Opacity", Fx.ALPHAS, EffectGet("upAlpha"), EffectSet("upAlpha"),
+			{ tooltip = { "Opacity while up", "How see-through an icon is while its buff is on you. The glows stay at full strength." } }))
+		stack:Add(UI.OptionCheck(stack.inner, "Grey", EffectGet("upGrey"), EffectSet("upGrey"),
+			{ "Grey while up", "Shows an icon in grey while its buff is on you, so a missing one (the red copy) stands out more." }))
 
 		stack:Add(UI.OptionHeading(stack.inner, "Running out"))
 		stack:Add(UI.OptionSelect(stack.inner, "Warning time", Fx.WARNS, EffectGet("warn"), EffectSet("warn"),
