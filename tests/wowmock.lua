@@ -307,7 +307,18 @@ C_CurveUtil = { CreateColorCurve = function()
 	return curve
 end }
 function CreateColor(r, g, b, a) return { r = r, g = g, b = b, a = a } end
-function UnitClass() return "Class", M.class end
+-- WM.group: unit -> class for the other group members ({} = solo); WM.raid: a raid, not a party.
+M.group = {}
+function UnitClass(unit)
+	if unit == nil or unit == "player" then return "Class", M.class end
+	return "Class", M.group[unit]
+end
+function IsInGroup() return next(M.group) ~= nil end
+function IsInRaid() return M.raid == true end
+local function GroupSize() local n = 0 for _ in pairs(M.group) do n = n + 1 end return n end
+function GetNumSubgroupMembers() return GroupSize() end
+function GetNumGroupMembers() return GroupSize() + 1 end
+function UnitIsUnit(a, b) return a == b end
 function InCombatLockdown() return M.combat end
 function GetInventoryItemTexture() return 1234 end
 function print(...)

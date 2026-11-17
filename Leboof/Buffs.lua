@@ -10,6 +10,9 @@
 -- each class sees its own buffs (self-buffs, procs, cooldowns, shields, HoTs) and nothing else.
 -- A "keep" default only applies if the character knows one of the spell's IDs (so a level 10
 -- druid without Omen of Clarity isn't shown it as missing); otherwise it falls back to "up".
+-- `castBy`: the class that can put the buff on others (shared buffs). In combat, the running-out
+-- sound is timed from your own cast, so for a shared buff it's only played when nobody else in
+-- your group could have recast it. Buffs without one are self-only.
 -- `warn` is when the time left turns red, in seconds. `note` is shown in the options window's
 -- tooltips: where a world buff comes from, or which race a racial is for. Sections are the headings in the options
 -- window's Buffs tab; the order here is the order on screen.
@@ -25,20 +28,20 @@ local function Section(name, entries)
 end
 
 Section("Class and group buffs", {
-	{ key = "battleshout", names = { "Battle Shout" }, class = { WARRIOR = "keep" }, warn = 15 },
+	{ key = "battleshout", castBy = "WARRIOR", names = { "Battle Shout" }, class = { WARRIOR = "keep" }, warn = 15 },
 	{ key = "innerfire", names = { "Inner Fire" }, class = { PRIEST = "keep" }, warn = 60 },
-	{ key = "fort", names = { "Power Word: Fortitude", "Prayer of Fortitude" }, class = { PRIEST = "keep" }, warn = 120 },
-	{ key = "motw", names = { "Mark of the Wild", "Gift of the Wild" }, class = { DRUID = "keep" }, warn = 120 },
+	{ key = "fort", castBy = "PRIEST", names = { "Power Word: Fortitude", "Prayer of Fortitude" }, class = { PRIEST = "keep" }, warn = 120 },
+	{ key = "motw", castBy = "DRUID", names = { "Mark of the Wild", "Gift of the Wild" }, class = { DRUID = "keep" }, warn = 120 },
 	{ key = "omen", names = { "Omen of Clarity" }, class = { DRUID = "keep" }, warn = 60 },
-	{ key = "thorns", names = { "Thorns" }, class = { DRUID = "up" }, warn = 60 },
-	{ key = "spirit", names = { "Divine Spirit", "Prayer of Spirit" }, class = { PRIEST = "keep" }, warn = 120 },
-	{ key = "shadowprot", names = { "Shadow Protection", "Prayer of Shadow Protection" }, class = { PRIEST = "up" }, warn = 120 },
+	{ key = "thorns", castBy = "DRUID", names = { "Thorns" }, class = { DRUID = "up" }, warn = 60 },
+	{ key = "spirit", castBy = "PRIEST", names = { "Divine Spirit", "Prayer of Spirit" }, class = { PRIEST = "keep" }, warn = 120 },
+	{ key = "shadowprot", castBy = "PRIEST", names = { "Shadow Protection", "Prayer of Shadow Protection" }, class = { PRIEST = "up" }, warn = 120 },
 	{ key = "shadowguard", names = { "Shadowguard" }, class = { PRIEST = "keep" }, warn = 60, note = "Troll priests." },
 	{ key = "touchofweakness", names = { "Touch of Weakness" }, class = { PRIEST = "keep" }, warn = 60, note = "Undead priests." },
-	{ key = "intellect", names = { "Arcane Intellect", "Arcane Brilliance" }, warn = 120 },
-	{ key = "might", names = { "Blessing of Might", "Greater Blessing of Might" }, warn = 60 },
-	{ key = "wisdom", names = { "Blessing of Wisdom", "Greater Blessing of Wisdom" }, warn = 60 },
-	{ key = "kings", names = { "Blessing of Kings", "Greater Blessing of Kings" }, warn = 60 },
+	{ key = "intellect", castBy = "MAGE", names = { "Arcane Intellect", "Arcane Brilliance" }, warn = 120 },
+	{ key = "might", castBy = "PALADIN", names = { "Blessing of Might", "Greater Blessing of Might" }, warn = 60 },
+	{ key = "wisdom", castBy = "PALADIN", names = { "Blessing of Wisdom", "Greater Blessing of Wisdom" }, warn = 60 },
+	{ key = "kings", castBy = "PALADIN", names = { "Blessing of Kings", "Greater Blessing of Kings" }, warn = 60 },
 })
 
 Section("Procs and cooldowns", {
@@ -59,10 +62,10 @@ Section("Procs and cooldowns", {
 	{ key = "innerfocus", names = { "Inner Focus" }, class = { PRIEST = "up" }, warn = 0 },
 	{ key = "fade", names = { "Fade" }, class = { PRIEST = "up" }, warn = 3 },
 	{ key = "spirittap", names = { "Spirit Tap" }, class = { PRIEST = "up" }, warn = 3 },
-	{ key = "darkinspiration", names = { "Dark Inspiration" }, class = { PRIEST = "up" }, warn = 3 },
-	{ key = "inspiration", names = { "Inspiration" }, class = { PRIEST = "up" }, warn = 3 },
-	{ key = "divineaegis", names = { "Divine Aegis" }, class = { PRIEST = "up" }, warn = 3 },
-	{ key = "prayerofmending", names = { "Prayer of Mending" }, class = { PRIEST = "up" }, warn = 5 },
+	{ key = "darkinspiration", castBy = "PRIEST", names = { "Dark Inspiration" }, class = { PRIEST = "up" }, warn = 3 },
+	{ key = "inspiration", castBy = "PRIEST", names = { "Inspiration" }, class = { PRIEST = "up" }, warn = 3 },
+	{ key = "divineaegis", castBy = "PRIEST", names = { "Divine Aegis" }, class = { PRIEST = "up" }, warn = 3 },
+	{ key = "prayerofmending", castBy = "PRIEST", names = { "Prayer of Mending" }, class = { PRIEST = "up" }, warn = 5 },
 	{ key = "elunesgrace", names = { "Elune's Grace" }, class = { PRIEST = "up" }, warn = 3, note = "Night elf priests." },
 	{ key = "feedback", names = { "Feedback" }, class = { PRIEST = "up" }, warn = 3, note = "Human priests." },
 	{ key = "darksacrifice", names = { "Dark Sacrifice" }, class = { PRIEST = "up" }, warn = 3, note = "Undead priests." },
@@ -74,16 +77,16 @@ Section("Procs and cooldowns", {
 	{ key = "naturesswiftness", names = { "Nature's Swiftness" }, class = { DRUID = "up" }, warn = 0 },
 	{ key = "naturesgrace", names = { "Nature's Grace" }, class = { DRUID = "up" }, warn = 1 },
 	{ key = "eclipse", names = { "Eclipse" }, class = { DRUID = "up" }, warn = 3 },
-	{ key = "leaderofthepack", names = { "Leader of the Pack" }, class = { DRUID = "up" }, warn = 0 },
-	{ key = "moonkinaura", names = { "Moonkin Aura" }, class = { DRUID = "up" }, warn = 0 },
-	{ key = "wildgrowth", names = { "Wild Growth" }, class = { DRUID = "up" }, warn = 3 },
-	{ key = "powerinfusion", names = { "Power Infusion" }, class = { PRIEST = "up" }, warn = 3 },
-	{ key = "innervate", names = { "Innervate" }, class = { DRUID = "up" }, warn = 3 },
-	{ key = "fearward", names = { "Fear Ward" }, class = { PRIEST = "up" }, warn = 30 },
-	{ key = "shield", names = { "Power Word: Shield" }, class = { PRIEST = "up" }, warn = 5 },
-	{ key = "renew", names = { "Renew" }, class = { PRIEST = "up" }, warn = 3 },
-	{ key = "rejuv", names = { "Rejuvenation" }, class = { DRUID = "up" }, warn = 3 },
-	{ key = "regrowth", names = { "Regrowth" }, class = { DRUID = "up" }, warn = 3 },
+	{ key = "leaderofthepack", castBy = "DRUID", names = { "Leader of the Pack" }, class = { DRUID = "up" }, warn = 0 },
+	{ key = "moonkinaura", castBy = "DRUID", names = { "Moonkin Aura" }, class = { DRUID = "up" }, warn = 0 },
+	{ key = "wildgrowth", castBy = "DRUID", names = { "Wild Growth" }, class = { DRUID = "up" }, warn = 3 },
+	{ key = "powerinfusion", castBy = "PRIEST", names = { "Power Infusion" }, class = { PRIEST = "up" }, warn = 3 },
+	{ key = "innervate", castBy = "DRUID", names = { "Innervate" }, class = { DRUID = "up" }, warn = 3 },
+	{ key = "fearward", castBy = "PRIEST", names = { "Fear Ward" }, class = { PRIEST = "up" }, warn = 30 },
+	{ key = "shield", castBy = "PRIEST", names = { "Power Word: Shield" }, class = { PRIEST = "up" }, warn = 5 },
+	{ key = "renew", castBy = "PRIEST", names = { "Renew" }, class = { PRIEST = "up" }, warn = 3 },
+	{ key = "rejuv", castBy = "DRUID", names = { "Rejuvenation" }, class = { DRUID = "up" }, warn = 3 },
+	{ key = "regrowth", castBy = "DRUID", names = { "Regrowth" }, class = { DRUID = "up" }, warn = 3 },
 })
 
 Section("World buffs", {

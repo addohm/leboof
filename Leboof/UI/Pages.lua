@@ -396,7 +396,7 @@ Page({
 		stack:Add(UI.OptionHeading(stack.inner, "Running out"))
 		stack:Add(UI.OptionSelect(stack.inner, "Warning time", Fx.WARNS, EffectGet("warn"), EffectSet("warn"),
 			{ tooltip = { "Warning time", "When a buff counts as running out: its time left turns red and the running-out sound plays. \"Each buff's own\" uses Leboof's time for each (15 s for Battle Shout, 2 min for Fortitude...). A buff's gear menu can set its own." } }))
-		stack:Add(UI.OptionText(stack.inner, "Out of combat the sound comes from the buff's own timer. In combat Leboof can't read it, so it's timed from your own cast instead: buffs someone else cast on you only warn out of combat.", 40))
+		stack:Add(UI.OptionText(stack.inner, "Out of combat the sound comes from the buff's own timer. In combat Leboof can't read it, so it's timed from your own cast instead: buffs someone else cast on you only warn out of combat, and a shared buff (Battle Shout, Fortitude...) only warns in combat when nobody else in your group could have recast it.", 54))
 
 		stack:Add(UI.OptionHeading(stack.inner, "Sounds: buffs to keep up"))
 		stack:Add(UI.OptionSound(stack.inner, "When one is running out", EffectGet("keepExpiring"), EffectSet("keepExpiring"),

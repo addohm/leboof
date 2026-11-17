@@ -234,6 +234,33 @@ end
 
 -- In combat: "running out" timed from your own casts --------------------------------------------
 
+-- Whether anyone else in the group is of this class (and so could recast a shared buff). A class
+-- the game won't tell counts as yes: better silent than wrong.
+local function OtherOfClass(class)
+	if not IsInGroup() then return false end
+	local raid = IsInRaid()
+	local count = raid and GetNumGroupMembers() or GetNumSubgroupMembers()
+	for i = 1, count do
+		local unit = (raid and "raid" or "party") .. i
+		local okSelf, isSelf = pcall(UnitIsUnit, unit, "player")
+		if not (okSelf and isSelf == true) then
+			local ok, _, c = pcall(UnitClass, unit)
+			if not ok or Secret(c) or c == class then return true end
+		end
+	end
+	return false
+end
+
+-- Whether a cast-timed sound for this buff can be trusted: self-only buffs always; shared buffs
+-- (castBy) only when nobody else in the group could have recast them. Buffs you added count as
+-- shared with your own class.
+function Fx.CastTimingHolds(e)
+	local by = e.castBy
+	if not by and e.custom then by = select(2, UnitClass("player")) end
+	if not by then return true end
+	return not OtherOfClass(by)
+end
+
 local castTimers = {} -- key -> timer
 
 local function OnCast(spellID)
@@ -255,6 +282,8 @@ local function OnCast(spellID)
 		castTimers[e.key] = nil
 		-- Out of combat the buff's real timer does it (CheckExpiring).
 		if not InCombatLockdown() then return end
+		-- Someone else in the group may have recast a shared buff since: the timing can't be trusted.
+		if not Fx.CastTimingHolds(e) then return end
 		castPlayed[e.key] = ends
 		Fx.Play(Fx.Get(e, "sExpiring"), "running out: " .. e.label .. " (timed from your cast)")
 	end)

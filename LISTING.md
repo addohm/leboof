@@ -74,7 +74,8 @@ them itself. So the icons, timers and glows keep working in every fight.
 #### Sounds
 
 - **Running out:** a sound when a buff's time left goes under your warning time (each buff's own,
-  or anything from 3 seconds to 10 minutes). In combat it's timed from your own cast.
+  or anything from 3 seconds to 10 minutes). In combat it's timed from your own cast (for shared buffs, only when nobody else in your group
+  could have recast them).
 - **Dropped** and **appeared** sounds out of combat, and a warning when you pull with a buff
   missing, with the missing ones listed in chat.
 - Every sound picker has a Test button.

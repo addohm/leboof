@@ -634,3 +634,37 @@ Check(keptCopy, "the keep-up buff's red copy should be in its presence frame")
 ns.db.effects.upAlpha = 1
 ns.SetMode(ns.byKey.battleshout, "default")
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
+
+-- In combat, cast-timed running-out sounds: self-only buffs always; shared buffs only when nobody
+-- else in the group could have recast them.
+WM.combat = false
+ns.db.effects.warn = "auto"
+ns.SetMode(ns.byKey.battleshout, "default")
+WM.buffs = { { spellId = 25289, name = "Battle Shout", icon = 1, duration = 120, expirationTime = WM.now + 120 } }
+WM.Fire("UNIT_AURA", "player")
+WM.buffs = {}
+WM.Fire("UNIT_AURA", "player")
+local function CombatCast(spellId, seconds)
+	WM.sounds = {}
+	WM.combat = true
+	WM.Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", spellId)
+	WM.Advance(seconds)
+	WM.combat = false
+	WM.Fire("PLAYER_REGEN_ENABLED")
+	return #WM.sounds
+end
+WM.group = { party1 = "PRIEST" }
+Check(CombatCast(25289, 110) == 1, "Battle Shout should be timed with no other warrior in the group")
+WM.group = { party1 = "WARRIOR" }
+Check(CombatCast(25289, 110) == 0, "Battle Shout shouldn't be timed with another warrior in the group")
+WM.raid = true
+WM.group = { raid1 = "PRIEST", raid2 = "WARRIOR", raid3 = "WARRIOR" }
+Check(not ns.Fx.CastTimingHolds(ns.byKey.battleshout), "a raid with another warrior")
+WM.group = { raid1 = "WARRIOR", raid2 = "PRIEST" } -- raid1 is us here only if UnitIsUnit says so
+Check(not ns.Fx.CastTimingHolds(ns.byKey.battleshout), "raid1 isn't the player in the mock")
+WM.raid, WM.group = nil, { party1 = "WARRIOR" }
+Check(ns.Fx.CastTimingHolds(ns.byKey.flurry), "a self-only buff is always timed")
+Check(ns.Fx.CastTimingHolds(ns.byKey.innerfire), "Inner Fire is self-only")
+WM.group = {}
+Check(ns.Fx.CastTimingHolds(ns.byKey.battleshout), "solo: always timed")
+Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))

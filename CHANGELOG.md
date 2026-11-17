@@ -8,6 +8,11 @@ All notable changes to leboof. The format follows
 
 ### Changed
 
+- In combat, the running-out sound for a shared buff (Battle Shout, Fortitude, Mark of the Wild,
+  Intellect, blessings, HoTs, shields) only plays when nobody else in your group could have recast
+  it: their cast replaces yours without Leboof seeing it, so the timing would be wrong. Self-only
+  buffs are timed as before (2026-11-17).
+
 - Faded and grey icons go back to normal at the warning time, not when the buff drops: top-row
   icons fully, in combat too (once Leboof knows the buff's duration); second-row icons regain
   their opacity in the game's refresh window, but stay grey. The timer brightens and turns red at

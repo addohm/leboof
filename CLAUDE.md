@@ -31,7 +31,9 @@ off the table.
     buff's own; `ns.Fx.Get(e, field)` resolves them), sounds out of combat (from `ns.ReadBuffs()`),
     the warning on entering combat, the running-out sound (out of combat from the real timer, in
     combat timed from your own casts: `UNIT_SPELLCAST_SUCCEEDED`, durations learned per character
-    in `LeboofDB.durations`; `castPlayed` stops a second play after combat), the warning time
+    in `LeboofDB.durations`; `castPlayed` stops a second play after combat; shared buffs, with a
+    `castBy` class in `Buffs.lua`, only when no one else in the group is of that class:
+    `Fx.CastTimingHolds`), the warning time
     (`Fx.Warn(e)`: the player's choice or "auto" = the buff's built-in `warn`; it also sets the
     red text, so it's part of a button's key), and the Cooldown Manager check.
   - `SoundLog.lua`: `/leboof soundlog`: hooks PlaySound, PlaySoundFile,

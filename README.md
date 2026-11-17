@@ -137,7 +137,11 @@ old glow with marching ants). The Effects tab shows both glows on sample icons a
   Fortitude...) or per buff in its ⚙ menu. The time left turns red at the same moment. Out of
   combat it comes from the buff's own timer; in combat, where that's hidden, it's timed from your
   own cast with the duration last seen out of combat. So in combat it only works for buffs you
-  cast yourself, and it can't know about a dispel. It never plays twice for one cast.
+  cast yourself, and it can't know about a dispel. A **shared** buff (Battle Shout, Fortitude, Mark
+  of the Wild, Intellect, blessings, HoTs and shields) is only timed in combat when nobody else in
+  your group is of the class that casts it, since their cast would replace yours unseen; with
+  another warrior along, Battle Shout's running-out sound waits for the end of the fight. It never
+  plays twice for one cast.
 - **Out of combat**, Leboof reads your buffs: a sound when a buff appears or drops, with
   separate defaults for the two rows.
 - **Entering combat** with a "keep up" buff missing: a warning sound, and the missing ones listed

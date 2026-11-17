@@ -57,6 +57,9 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
     of combat) is faded and grey until 15 s left, then full colour and strength, in combat too; its
     timer brightens and turns red then. A second-row proc with a refresh window regains its
     opacity near its end but stays grey.
+1l. Shared buffs in groups: in a group with no other warrior, Battle Shout's running-out sound
+    plays in combat at the warning time; with another warrior in the group it doesn't (out of
+    combat it still does). Inner Fire (self-only) warns in combat whatever the group.
 2. The icons appear a little below the middle of the screen. `/leboof unlock` shows a blue box to
    drag; `/leboof lock` hides it; the place is kept after `/reload`.
 3. Keep row: with the class buff missing (e.g. Battle Shout, Inner Fire), a dimmed red copy shows.
