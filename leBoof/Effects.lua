@@ -1,4 +1,4 @@
--- Leboof: animations and sounds.
+-- leBoof: animations and sounds.
 --
 -- Glows are handed to Blizzard's aura buttons (Display.lua, Glow.lua), which show them in combat
 -- too: a warning glow in the game's refresh window (the end of the buff), and an expired glow on
@@ -12,7 +12,7 @@
 --   out of combat   sounds when a buff appears or drops, and a warning on entering combat with a
 --                   "keep up" buff missing (from the last out-of-combat look)
 --   Blizzard's Cooldown Manager can play sounds in combat when a buff is applied or removed:
---   Leboof only points there.
+--   leBoof only points there.
 --
 -- Settings: ns.db.effects holds the defaults, ns.db.fx[key] a buff's own choices (nil = default).
 local _, ns = ...
@@ -121,8 +121,8 @@ local played = {} -- key -> the expiration a "running out" sound was played for
 
 -- Learned durations, per character (talents change them): spellID -> seconds.
 local function Durations()
-	local all = LeboofDB.durations or {}
-	LeboofDB.durations = all
+	local all = leBoofDB.durations or {}
+	leBoofDB.durations = all
 	local me = ns.Profiles.CharKey()
 	all[me] = all[me] or {}
 	return all[me]

@@ -1,4 +1,4 @@
--- Leboof: glow styles. Glow.Build(owner, style, color, size) makes a glow on `owner` out of its
+-- leBoof: glow styles. Glow.Build(owner, style, color, size) makes a glow on `owner` out of its
 -- own textures and animation groups, and returns { regions = {...}, groups = {...} }:
 --   on Blizzard's aura buttons (Display.lua) the regions become pandemic regions and the groups
 --   pandemic animations, so the game shows and plays them near the end of the buff, in combat too;

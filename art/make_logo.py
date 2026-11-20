@@ -1,5 +1,5 @@
-"""Draws the Leboof icon into art/ (512, 400, 256 and 128 px PNGs; 400 is the CurseForge and Wago
-avatar), the in-game icon Leboof/Media/Icon.tga (128 px; the game reads TGA with power-of-two
+"""Draws the leBoof icon into art/ (512, 400, 256 and 128 px PNGs; 400 is the CurseForge and Wago
+avatar), the in-game icon leBoof/Media/Icon.tga (128 px; the game reads TGA with power-of-two
 sizes; the .toc's IconTexture uses it for the AddOns list and the addon compartment), and the
 listing banner art/leboof-banner.png (1600x500: the icon, the name, the tagline and a sample row).
 
@@ -16,7 +16,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 ART = ROOT / "art"
-GAME_ICON = ROOT / "Leboof" / "Media" / "Icon.tga"
+GAME_ICON = ROOT / "leBoof" / "Media" / "Icon.tga"
 S = 2048  # draw big, downsample for smooth edges
 
 TEAL_TOP = (36, 120, 128)
@@ -143,7 +143,7 @@ def banner(icon):
     d = ImageDraw.Draw(img)
     title = ImageFont.truetype(BOLD, 140)
     tag = ImageFont.truetype(SEMI, 46)
-    d.text((500, 52), "Leboof", font=title, fill=GOLD_TOP)
+    d.text((500, 52), "leBoof", font=title, fill=GOLD_TOP)
     d.line([(506, 228), (1530, 228)], fill=GOLD_BOT + (255,), width=3)
     d.text((506, 244), TAGLINE, font=tag, fill=(214, 236, 236))
     # A sample keep row: two buffs up, one missing (dimmed red, glowing).
@@ -154,7 +154,7 @@ def banner(icon):
         x += 104 + 22
     img.convert("RGB").save(ART / "leboof-banner.png")
     # Sanity checks without looking at it: the text fits, the tiles sit inside the canvas.
-    tb = d.textbbox((500, 52), "Leboof", font=title)
+    tb = d.textbbox((500, 52), "leBoof", font=title)
     tg = d.textbbox((506, 244), TAGLINE, font=tag)
     print("title", tb, "tagline", tg, "fits:", tg[2] < W - 40 and tb[3] < 228, "tiles end at x", x, "y", 318 + 156)
 

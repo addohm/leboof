@@ -1,5 +1,5 @@
--- Leboof: profiles. Every setting (buff modes, size, spacing, icon position, the options window,
--- the minimap button) lives in a profile. LeboofDB.profiles holds them by name and LeboofDB.chars
+-- leBoof: profiles. Every setting (buff modes, size, spacing, icon position, the options window,
+-- the minimap button) lives in a profile. leBoofDB.profiles holds them by name and leBoofDB.chars
 -- says which one each character uses ("First Last" -> profile name). Both are account-wide so
 -- every character can see and share them. A character starts with a profile named after itself.
 local _, ns = ...
@@ -61,7 +61,7 @@ end
 -- Points ns.db at a profile (created with the defaults if it's new) and records it as this
 -- character's. Doesn't touch the display: Switch does that.
 local function Use(name)
-	local db = LeboofDB
+	local db = leBoofDB
 	if not db.profiles[name] then fresh[name] = true end
 	db.profiles[name] = ns.CopyDefaults(db.profiles[name] or {}, ns.DEFAULTS)
 	db.chars[CharKey()] = name
@@ -74,15 +74,18 @@ local function Apply()
 end
 
 function P.Init()
-	LeboofDB = LeboofDB or {}
-	local db = LeboofDB
+	-- Before the rename to leBoof (1.2.0) the settings were LeboofDB: carry them over once.
+	if leBoofDB == nil and type(LeboofDB) == "table" then leBoofDB = LeboofDB end
+	LeboofDB = nil
+	leBoofDB = leBoofDB or {}
+	local db = leBoofDB
 	db.profiles = db.profiles or {}
 	db.chars = db.chars or {}
 	local me = CharKey()
 	for _, old in ipairs(OldKeys()) do Rename(db, old, me) end
 
 	-- Before profiles (0.1.0), settings were per character (LeboofCharDB) and the window and
-	-- minimap button account-wide (LeboofDB.window, .minimap). Move them into this character's
+	-- minimap button account-wide (leBoofDB.window, .minimap). Move them into this character's
 	-- profile the first time it logs in with profiles.
 	if not db.chars[me] and not db.profiles[me] and type(LeboofCharDB) == "table" and LeboofCharDB.modes then
 		local p = DeepCopy(LeboofCharDB)
@@ -98,12 +101,12 @@ function P.Init()
 end
 
 function P.Current()
-	return LeboofDB.chars[CharKey()]
+	return leBoofDB.chars[CharKey()]
 end
 
 function P.Names()
 	local names = {}
-	for name in pairs(LeboofDB.profiles) do names[#names + 1] = name end
+	for name in pairs(leBoofDB.profiles) do names[#names + 1] = name end
 	table.sort(names)
 	return names
 end
@@ -111,7 +114,7 @@ end
 -- The characters using a profile, as "Name - Realm".
 function P.UsedBy(name)
 	local list = {}
-	for char, profile in pairs(LeboofDB.chars) do
+	for char, profile in pairs(leBoofDB.chars) do
 		if profile == name then list[#list + 1] = char end
 	end
 	table.sort(list)
@@ -127,7 +130,7 @@ end
 -- Each of these returns true, or nil and a reason to show the player.
 
 function P.Switch(name)
-	if not LeboofDB.profiles[name] then return nil, "there's no profile called " .. tostring(name) .. "." end
+	if not leBoofDB.profiles[name] then return nil, "there's no profile called " .. tostring(name) .. "." end
 	if name == P.Current() then return true end
 	Use(name)
 	Apply()
@@ -139,7 +142,7 @@ function P.New(name)
 	local err
 	name, err = CleanName(name)
 	if not name then return nil, err end
-	if LeboofDB.profiles[name] then return nil, "there's already a profile called " .. name .. "." end
+	if leBoofDB.profiles[name] then return nil, "there's already a profile called " .. name .. "." end
 	Use(name)
 	Apply()
 	return true
@@ -147,7 +150,7 @@ end
 
 -- Replaces this profile's settings with a copy of another profile's.
 function P.CopyFrom(name)
-	local source = LeboofDB.profiles[name]
+	local source = leBoofDB.profiles[name]
 	if not source then return nil, "there's no profile called " .. tostring(name) .. "." end
 	if name == P.Current() then return nil, "that's the profile in use." end
 	local copy = DeepCopy(source)
@@ -165,22 +168,22 @@ function P.Rename(name)
 	if not name then return nil, err end
 	local old = P.Current()
 	if name == old then return true end
-	if LeboofDB.profiles[name] then return nil, "there's already a profile called " .. name .. "." end
-	LeboofDB.profiles[name] = LeboofDB.profiles[old]
-	LeboofDB.profiles[old] = nil
-	for char, profile in pairs(LeboofDB.chars) do
-		if profile == old then LeboofDB.chars[char] = name end
+	if leBoofDB.profiles[name] then return nil, "there's already a profile called " .. name .. "." end
+	leBoofDB.profiles[name] = leBoofDB.profiles[old]
+	leBoofDB.profiles[old] = nil
+	for char, profile in pairs(leBoofDB.chars) do
+		if profile == old then leBoofDB.chars[char] = name end
 	end
 	return true
 end
 
 -- Deletes another profile. Characters that used it get a fresh profile of their own next login.
 function P.Delete(name)
-	if not LeboofDB.profiles[name] then return nil, "there's no profile called " .. tostring(name) .. "." end
+	if not leBoofDB.profiles[name] then return nil, "there's no profile called " .. tostring(name) .. "." end
 	if name == P.Current() then return nil, "switch to another profile before deleting this one." end
-	LeboofDB.profiles[name] = nil
-	for char, profile in pairs(LeboofDB.chars) do
-		if profile == name then LeboofDB.chars[char] = nil end
+	leBoofDB.profiles[name] = nil
+	for char, profile in pairs(leBoofDB.chars) do
+		if profile == name then leBoofDB.chars[char] = nil end
 	end
 	return true
 end

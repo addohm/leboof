@@ -1,4 +1,4 @@
--- Leboof: a draggable minimap button (no libraries), and the game's addon compartment entry.
+-- leBoof: a draggable minimap button (no libraries), and the game's addon compartment entry.
 -- Left-click opens the options window; right-click unlocks or locks the icons.
 local _, ns = ...
 
@@ -31,7 +31,7 @@ local function OnClick(mouseButton)
 end
 
 local function Build()
-	button = CreateFrame("Button", "LeboofMinimapButton", Minimap)
+	button = CreateFrame("Button", "leBoofMinimapButton", Minimap)
 	button:SetSize(31, 31)
 	button:SetFrameStrata("MEDIUM")
 	button:SetFrameLevel(8)
@@ -60,7 +60,7 @@ local function Build()
 	button:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
 	button:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-		GameTooltip:AddLine("Leboof")
+		GameTooltip:AddLine("leBoof")
 		GameTooltip:AddLine("Click for options.", 1, 1, 1)
 		GameTooltip:AddLine(ns.db.locked and "Right-click to move the icons." or "Right-click to lock the icons.", 1, 1, 1)
 		GameTooltip:AddLine("Drag to move this button.", 0.7, 0.7, 0.7)
@@ -70,7 +70,7 @@ local function Build()
 end
 
 -- The game's addon menu by the minimap (AddonCompartmentFunc in the .toc).
-function Leboof_OnAddonCompartmentClick(_, mouseButton)
+function leBoof_OnAddonCompartmentClick(_, mouseButton)
 	OnClick(mouseButton)
 end
 

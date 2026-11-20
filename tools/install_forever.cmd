@@ -1,7 +1,7 @@
 @echo off
-rem Update this repo from GitHub, copy Leboof into the WoW: Forever client, and pack
-rem Leboof-<version>.zip on the desktop.
-rem Run it from a terminal (from any folder), then restart the client, or /reload if Leboof was
+rem Update this repo from GitHub, copy leBoof into the WoW: Forever client, and pack
+rem leBoof-<version>.zip on the desktop.
+rem Run it from a terminal (from any folder), then restart the client, or /reload if leBoof was
 rem already loaded. It only pulls what's on GitHub: push your commits first.
 setlocal
 
@@ -19,10 +19,10 @@ for %%i in ("%~2..") do set "REPO=%%~fi"
 rem Change WOW if your client lives elsewhere (for example the _classic_beta_ folder).
 rem Inside ( ) blocks, always quote paths: the ) in "Program Files (x86)" would end the block.
 set "WOW=C:\Program Files (x86)\World of Warcraft\_forever_"
-set "ADDON=%WOW%\Interface\AddOns\Leboof"
+set "ADDON=%WOW%\Interface\AddOns\leBoof"
 
-if not exist "%REPO%\Leboof\Leboof.toc" (
-  echo Can't find the addon in "%REPO%\Leboof". Is this script in the repo's tools folder?
+if not exist "%REPO%\leBoof\leBoof.toc" (
+  echo Can't find the addon in "%REPO%\leBoof". Is this script in the repo's tools folder?
   set "RESULT=1"
   goto done
 )
@@ -39,6 +39,16 @@ if errorlevel 1 (
   goto done
 )
 
+rem Earlier builds were installed as "Leboof". Windows ignores letter case, so copying over that
+rem folder would keep its old spelling, which is the addon's name in game: remove it first.
+rem findstr /i finds every spelling; "if" compares with case, so only the wrong ones go.
+for /f "delims=" %%d in ('dir /b /ad "%WOW%\Interface\AddOns" 2^>nul ^| findstr /x /i /c:"leBoof"') do (
+  if not "%%d"=="leBoof" (
+    echo Removing the old "%%d" folder: leBoof replaces it.
+    rmdir /s /q "%WOW%\Interface\AddOns\%%d"
+  )
+)
+
 rem First install: create the addon folder (and Interface\AddOns if the client has none yet).
 if not exist "%ADDON%\" (
   echo Creating "%ADDON%"
@@ -53,12 +63,12 @@ if not exist "%ADDON%\" (
 rem WoW reads the addon's file list (the .toc) only when the game starts. If it changed, /reload
 rem isn't enough: the game must be restarted.
 set "RESTART=1"
-if exist "%ADDON%\Leboof.toc" (
-  fc /b "%REPO%\Leboof\Leboof.toc" "%ADDON%\Leboof.toc" >nul && set "RESTART=0"
+if exist "%ADDON%\leBoof.toc" (
+  fc /b "%REPO%\leBoof\leBoof.toc" "%ADDON%\leBoof.toc" >nul && set "RESTART=0"
 )
 
 rem /MIR makes the installed folder an exact copy (files no longer in the repo are deleted).
-robocopy "%REPO%\Leboof" "%ADDON%" /MIR /IS /IT
+robocopy "%REPO%\leBoof" "%ADDON%" /MIR /IS /IT
 rem robocopy exit codes below 8 mean success.
 if errorlevel 8 (
   echo Copy failed. Is the WoW folder writable, and the path above right?
@@ -69,29 +79,29 @@ if errorlevel 8 (
 rem Stamp the installed copy with the commit, so /leboof shows which build is running.
 rem "-dirty" means the copy includes changes that aren't committed.
 for /f %%h in ('git -C "%REPO%" rev-parse --short HEAD') do set "BUILD=%%h"
-for /f %%s in ('git -C "%REPO%" status --porcelain -- Leboof') do set "BUILD=%BUILD%-dirty"
+for /f %%s in ('git -C "%REPO%" status --porcelain -- leBoof') do set "BUILD=%BUILD%-dirty"
 > "%ADDON%\Build.lua" (
   echo local _, ns = ...
   echo ns.build = "%BUILD%"
 )
-echo Installed Leboof build %BUILD% into "%ADDON%"
+echo Installed leBoof build %BUILD% into "%ADDON%"
 
-rem Also pack the committed addon as Leboof-<version>.zip on the desktop, ready to share
+rem Also pack the committed addon as leBoof-<version>.zip on the desktop, ready to share
 rem or upload. git archive takes only committed files (without the build stamp above),
-rem under a Leboof folder. The version is ## Version in the .toc. The desktop comes from
+rem under a leBoof folder. The version is ## Version in the .toc. The desktop comes from
 rem Windows, since OneDrive can move it.
 set "VERSION="
-for /f "tokens=3" %%v in ('findstr /b /c:"## Version:" "%REPO%\Leboof\Leboof.toc"') do set "VERSION=%%v"
+for /f "tokens=3" %%v in ('findstr /b /c:"## Version:" "%REPO%\leBoof\leBoof.toc"') do set "VERSION=%%v"
 set "DESKTOP=%USERPROFILE%\Desktop"
 for /f "usebackq delims=" %%d in (`powershell -NoProfile -Command "[Environment]::GetFolderPath('Desktop')"`) do set "DESKTOP=%%d"
 if "%VERSION%"=="" (
   echo No ## Version in the .toc, so no zip was made.
 ) else (
-  git -C "%REPO%" archive --format=zip --output="%DESKTOP%\Leboof-%VERSION%.zip" HEAD Leboof
+  git -C "%REPO%" archive --format=zip --output="%DESKTOP%\leBoof-%VERSION%.zip" HEAD leBoof
   if errorlevel 1 (
-    echo Couldn't write "%DESKTOP%\Leboof-%VERSION%.zip".
+    echo Couldn't write "%DESKTOP%\leBoof-%VERSION%.zip".
   ) else (
-    echo Packed "%DESKTOP%\Leboof-%VERSION%.zip" from the last commit.
+    echo Packed "%DESKTOP%\leBoof-%VERSION%.zip" from the last commit.
   )
 )
 if "%RESTART%"=="1" (

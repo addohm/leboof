@@ -1,4 +1,4 @@
--- A small fake WoW client for Leboof's tests. Frames accept any method call; aura containers
+-- A small fake WoW client for leBoof's tests. Frames accept any method call; aura containers
 -- check what Blizzard's CustomAuraContainer checks (unique slot/group keys, known keys, valid
 -- filter strings) and record what the addon asked for.
 local M = { printed = {}, combat = false, class = "WARRIOR", known = {}, frames = {} }
@@ -279,7 +279,7 @@ end
 -- A call stack whose file names look like an addon's.
 function debugstack(start)
 	local tb = debug.traceback("", (start or 1) + 1)
-	return (tb:gsub("([%w_]+%.lua):", "Interface/AddOns/Leboof/%1:"))
+	return (tb:gsub("([%w_]+%.lua):", "Interface/AddOns/leBoof/%1:"))
 end
 function date(fmt) return "12:00:00" end
 ChatFontNormal = {}

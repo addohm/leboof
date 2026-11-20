@@ -1,12 +1,12 @@
-# leboof
+# leBoof
 
-Leboof is a World of Warcraft addon for **WoW: Forever** (Interface 16001) that shows your own
+leBoof is a World of Warcraft addon for **WoW: Forever** (Interface 16001) that shows your own
 buffs in combat, where the game hides aura data from addons. The icons don't read any aura data:
-Blizzard's aura containers fill them themselves. Leboof only says which buffs to show and where to
+Blizzard's aura containers fill them themselves. leBoof only says which buffs to show and where to
 put them. (Out of combat it reads your buffs for one thing: the list you add buffs from.)
 
 The source lives at `github.com/addohm/leboof`. Status: 1.1.1, released 2026-11-14.
-Download `release/Leboof-1.1.1.zip` and unzip it into `<WoW>\_forever_\Interface\AddOns\`.
+Download `release/Leboof-1.1.1.zip` (the last release, from before the rename to leBoof) and unzip it into `<WoW>\_forever_\Interface\AddOns\`.
 
 ## What it shows
 
@@ -25,7 +25,7 @@ Two rows of icons, a little below the middle of the screen by default:
 The time left turns red near the end, at the warning time (see below). Procs get a swipe. On the
 Effects tab you can also make icons **see-through** (100% down to 25%) or **grey** while their
 buff is up, so a missing one stands out more. They go back to normal at the **warning time**, in
-combat too: top-row icons fully (once Leboof knows the buff's duration, as for the warning glow);
+combat too: top-row icons fully (once leBoof knows the buff's duration, as for the warning glow);
 second-row icons regain their opacity in the game's refresh window but stay grey. The glows
 always stay at full strength, and the timer brightens and turns red at the warning time.
 Hovering an icon shows the game's tooltip.
@@ -41,7 +41,7 @@ Fortitude.
 
 ## Getting started
 
-Copy the `Leboof` folder into `<WoW>\_forever_\Interface\AddOns\` and start the game. To install
+Copy the `leBoof` folder into `<WoW>\_forever_\Interface\AddOns\` and start the game. To install
 straight from this repo on Windows, see [DEPLOY.md](DEPLOY.md) (`tools\install_forever.cmd`).
 
 ## Usage
@@ -50,7 +50,7 @@ straight from this repo on Windows, see [DEPLOY.md](DEPLOY.md) (`tools\install_f
 menu by the minimap. It has five tabs:
 
 - **Buffs:** add and remove what's tracked.
-  - **Leboof's buffs ▾:** a checklist of the built-in buffs, with a submenu per section (class and
+  - **leBoof's buffs ▾:** a checklist of the built-in buffs, with a submenu per section (class and
     group buffs, procs and cooldowns, world buffs, weapon enchants). Tick to track, untick to
     remove; the menu stays open so you can tick several. They're known to work, with every rank
     and group version.
@@ -65,7 +65,7 @@ menu by the minimap. It has five tabs:
 - **Effects:** the default glows, how icons look while their buff is up (opacity, grey), the
   warning time and the sounds (see below). Each tracked buff's ⚙ button on the Buffs tab sets
   its own.
-- **General:** show or hide the minimap button, the version, and how Leboof works.
+- **General:** show or hide the minimap button, the version, and how leBoof works.
 - **Profiles:** which profile this character uses, a new profile, copy settings from another
   profile, rename, delete, or reset every setting to the defaults.
 
@@ -84,8 +84,8 @@ move it around the minimap.
 - `/leboof minimap`: show or hide the minimap button
 - `/leboof profile`: the profile in use, and the others
 - `/leboof soundlog`: log every sound any addon plays, with the addon that played it (and, for
-  Leboof's own, why). `/leboof soundlog show` opens it ready to copy (Ctrl+C); `off` stops it,
-  `clear` empties it. It's also saved in `WTF\Account\<account>\SavedVariables\Leboof.lua`.
+  leBoof's own, why). `/leboof soundlog show` opens it ready to copy (Ctrl+C); `off` stops it,
+  `clear` empties it. It's also saved in `WTF\Account\<account>\SavedVariables\leBoof.lua`.
 - `/leboof reset`: default modes, size and position
 
 **Profiles:** every setting (buff modes, size, spacing, where the icons and the window are, the
@@ -99,12 +99,12 @@ let addons touch the icons while auras are secret.
 ## What it can track
 
 Blizzard's containers only match a spell ID for **buffs on you**, and only the buff's own ID. So
-Leboof can't show debuffs, buffs on other players or your target, abilities that leave no buff,
+leBoof can't show debuffs, buffs on other players or your target, abilities that leave no buff,
 or hidden passive talents. That's why you add your own buffs by picking them while they're on you:
 anything on that list is a buff the game shows on you, with the exact ID the container will see.
-Names and IDs can't be typed in, since Leboof couldn't check them.
+Names and IDs can't be typed in, since leBoof couldn't check them.
 
-A buff you add starts with the one spell ID it was seen with. When Leboof later sees a buff with
+A buff you add starts with the one spell ID it was seen with. When leBoof later sees a buff with
 the same name out of combat (another rank, a group version), it adds that ID too. Its warning time
 is a tenth of its duration, from 3 seconds to 2 minutes.
 
@@ -116,7 +116,7 @@ them itself on its own buttons:
 - **Warning glow:** top-row buffs glow from the **warning time** (see Sounds below), in combat
   too. The game drives an invisible bar from the buff's time left, and the glow is revealed as the
   bar crosses the warning time (see CLAUDE.md for how). It needs the buff's full duration, which
-  Leboof learns the first time it sees the buff out of combat; until then, and in the second row,
+  leBoof learns the first time it sees the buff out of combat; until then, and in the second row,
   the glow shows in the game's refresh window instead (the end of a buff where recasting keeps
   some of the time left; buffs without one don't glow).
 - **Expired glow:** around the red copy of a missing top-row buff, the same size as the warning
@@ -142,19 +142,19 @@ old glow with marching ants). The Effects tab shows both glows on sample icons a
   your group is of the class that casts it, since their cast would replace yours unseen; with
   another warrior along, Battle Shout's running-out sound waits for the end of the fight. It never
   plays twice for one cast.
-- **Out of combat**, Leboof reads your buffs: a sound when a buff appears or drops, with
+- **Out of combat**, leBoof reads your buffs: a sound when a buff appears or drops, with
   separate defaults for the two rows.
 - **Entering combat** with a "keep up" buff missing: a warning sound, and the missing ones listed
-  in chat, from what Leboof saw just before the fight.
+  in chat, from what leBoof saw just before the fight.
 - **Blizzard's Cooldown Manager** is the only way the game plays a sound in combat when a buff is
   applied or removed. The Effects tab says whether Forever has it on and opens it; the alerts are
-  set there, not in Leboof.
+  set there, not in leBoof.
 
 Every sound picker has a Test button, and picking a sound plays it.
 
 ## What it can't do
 
-The game decides what's visible in combat, and the addon never learns it. So nothing in Leboof
+The game decides what's visible in combat, and the addon never learns it. So nothing in leBoof
 can react to a buff changing in combat: no logic, and no sounds except running out (timed from your
 own casts) and Blizzard's Cooldown Manager above. The animations and the "missing" look are the game's own
 display, layered.

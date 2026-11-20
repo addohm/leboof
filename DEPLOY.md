@@ -1,6 +1,6 @@
 # Deploying leboof
 
-Leboof is a World of Warcraft addon. It runs inside the game client (WoW: Forever, Interface
+leBoof is a World of Warcraft addon. It runs inside the game client (WoW: Forever, Interface
 16001), and there's no server.
 
 ## First-time setup
@@ -12,10 +12,10 @@ On the Windows test PC:
 2. Open `tools\install_forever.cmd` and check `WOW` at the top: it's the client folder, by default
    `C:\Program Files (x86)\World of Warcraft\_forever_`, the live game. Change it to
    `_classic_beta_` for the beta client.
-3. Run `tools\install_forever.cmd` from a terminal, then start the game. Check that Leboof is
+3. Run `tools\install_forever.cmd` from a terminal, then start the game. Check that leBoof is
    enabled under AddOns on the character-select screen.
 
-To install by hand instead, copy the `Leboof` folder (not the repo root) into
+To install by hand instead, copy the `leBoof` folder (not the repo root) into
 `<WoW>\_forever_\Interface\AddOns\`.
 
 ## Shipping a change
@@ -23,10 +23,18 @@ To install by hand instead, copy the `Leboof` folder (not the repo root) into
 1. Run the tests: `.venv/bin/python tests/run_tests.py`.
 2. Commit and push.
 3. On Windows, run `tools\install_forever.cmd`, then `/reload` (or restart the game if it says so).
-4. For a release: bump `## Version` in `Leboof/Leboof.toc`, move the CHANGELOG's Unreleased
+4. For a release: bump `## Version` in `leBoof/leBoof.toc`, move the CHANGELOG's Unreleased
    entries under the new version, and commit. Then `python3 tools/make_release.py` writes
-   `release/Leboof-<version>.zip` from the committed `Leboof/` folder (it refuses if `Leboof/` has
+   `release/leBoof-<version>.zip` from the committed `leBoof/` folder (it refuses if `leBoof/` has
    uncommitted changes); commit the zip, tag (`git tag v1.0.0`) and push with `--tags`.
+
+## Renamed to leBoof
+
+Builds before 1.2.0 were called Leboof. The install script removes an installed `Leboof` folder
+before copying (Windows ignores letter case, so it would otherwise keep the old spelling, which is
+the addon's name in game). Settings carry over by themselves: the saved file is the same, and
+leBoof moves `LeboofDB` into `leBoofDB` at the first login. If you install by hand, delete the
+old `Leboof` folder first.
 
 ## The install script
 
@@ -34,11 +42,11 @@ To install by hand instead, copy the `Leboof` folder (not the repo root) into
 
 - `git pull --ff-only` (it only gets what's pushed, so push first). The pull can update the
   script itself, so it runs from a copy in `%TEMP%`.
-- Mirrors `Leboof\` into `<WOW>\Interface\AddOns\Leboof` (`robocopy /MIR`), creating the folder
+- Mirrors `leBoof\` into `<WOW>\Interface\AddOns\leBoof` (`robocopy /MIR`), creating the folder
   on the first run. If `WOW` itself doesn't exist it stops, since the path is probably wrong.
 - Writes the commit into the installed `Build.lua`, so `/leboof` shows `v<version> build <commit>`.
   "-dirty" means the copy included uncommitted changes.
-- Packs `Leboof-<version>.zip` on the desktop: `git archive` of the committed `Leboof\` folder,
+- Packs `leBoof-<version>.zip` on the desktop: `git archive` of the committed `leBoof\` folder,
   without the build stamp.
 - Says whether `/reload` is enough. WoW reads the addon's file list only when the game starts, so
   when the `.toc` changed you must restart the game.
@@ -47,13 +55,13 @@ If creating or copying fails, the WoW folder may need the script to run as admin
 
 ## Rolling back
 
-Install an older version: `git checkout <tag> -- Leboof` in the clone, copy it over the installed
-folder, then `git checkout main -- Leboof` to return.
+Install an older version: `git checkout <tag> -- leBoof` in the clone, copy it over the installed
+folder, then `git checkout main -- leBoof` to return.
 
 ## Configuration
 
 There are no secrets or environment settings. In-game settings are profiles, saved in
-`WTF/Account/<account>/SavedVariables/Leboof.lua` with which profile each character uses. The
+`WTF/Account/<account>/SavedVariables/leBoof.lua` with which profile each character uses. The
 per-character file from 0.1.0 is moved into a profile at the first login and then emptied.
 
 ## Troubleshooting

@@ -1,8 +1,8 @@
--- Leboof: settings, modes and events. All settings live in a profile (Profiles.lua); ns.db is the
+-- leBoof: settings, modes and events. All settings live in a profile (Profiles.lua); ns.db is the
 -- profile the character uses, by default its own.
 local ADDON, ns = ...
 
-ns.ICON = "Interface\\AddOns\\Leboof\\Media\\Icon" -- art/make_logo.py
+ns.ICON = "Interface\\AddOns\\leBoof\\Media\\Icon" -- art/make_logo.py
 
 local DEFAULTS = {
 	point = "CENTER", x = 0, y = -180, -- the anchor's position, relative to UIParent
@@ -42,7 +42,7 @@ end
 ns.CopyDefaults = CopyDefaults
 
 function ns.Print(msg)
-	print("|cff66ccffLeboof|r: " .. msg)
+	print("|cff66ccffleBoof|r: " .. msg)
 end
 
 function ns.Version()

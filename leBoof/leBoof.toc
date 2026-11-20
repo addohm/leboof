@@ -1,12 +1,12 @@
 ## Interface: 16001
-## Title: Leboof
+## Title: leBoof
 ## Notes: Your buffs in combat: a fixed row for the ones to keep up (dim red when missing) and a row for procs and the rest while they're up.
 ## Author: addohm
 ## Version: 1.1.1
-## IconTexture: Interface\AddOns\Leboof\Media\Icon
-## SavedVariables: LeboofDB
+## IconTexture: Interface\AddOns\leBoof\Media\Icon
+## SavedVariables: leBoofDB, LeboofDB
 ## SavedVariablesPerCharacter: LeboofCharDB
-## AddonCompartmentFunc: Leboof_OnAddonCompartmentClick
+## AddonCompartmentFunc: leBoof_OnAddonCompartmentClick
 
 Build.lua
 Data.lua

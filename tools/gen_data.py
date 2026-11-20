@@ -1,4 +1,4 @@
-"""Generate Leboof/Data.lua: the spell IDs for every buff name in Leboof/Buffs.lua.
+"""Generate leBoof/Data.lua: the spell IDs for every buff name in leBoof/Buffs.lua.
 
 Run it with no arguments: python3 tools/gen_data.py
 
@@ -16,8 +16,8 @@ import time
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-BUFFS = ROOT / "Leboof" / "Buffs.lua"
-DATA = ROOT / "Leboof" / "Data.lua"
+BUFFS = ROOT / "leBoof" / "Buffs.lua"
+DATA = ROOT / "leBoof" / "Data.lua"
 CACHE = ROOT / ".scratch" / "SpellName.csv"
 URL = "https://wago.tools/db2/SpellName/csv?product=wowf"
 

@@ -1,4 +1,4 @@
--- Leboof: the options window, in the same style as Nothing Wasted's: tabs across the top, a
+-- leBoof: the options window, in the same style as Nothing Wasted's: tabs across the top, a
 -- Defaults button for the page shown, a resize grip. Pages register with Window.AddPage.
 local _, ns = ...
 
@@ -100,7 +100,7 @@ local function AddResizeGrip()
 end
 
 local function Build()
-	frame = CreateFrame("Frame", "LeboofFrame", UIParent, "BackdropTemplate")
+	frame = CreateFrame("Frame", "leBoofFrame", UIParent, "BackdropTemplate")
 	local size = ns.db.window.size
 	if size then
 		frame:SetSize(math.max(MIN_W, math.min(MAX_W, size[1])), math.max(MIN_H, math.min(MAX_H, size[2])))
@@ -132,7 +132,7 @@ local function Build()
 		frame:SetPoint("CENTER")
 	end
 	frame:Hide()
-	tinsert(UISpecialFrames, "LeboofFrame") -- Escape closes the window
+	tinsert(UISpecialFrames, "leBoofFrame") -- Escape closes the window
 
 	-- Title bar: icon, name, build and close.
 	local icon = frame:CreateTexture(nil, "ARTWORK")
@@ -141,7 +141,7 @@ local function Build()
 	icon:SetTexture(ns.ICON)
 	local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	title:SetPoint("LEFT", icon, "RIGHT", 6, 0)
-	title:SetText("Leboof")
+	title:SetText("leBoof")
 	local version = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 	version:SetPoint("LEFT", title, "RIGHT", 8, 0)
 	version:SetText(ns.Version())

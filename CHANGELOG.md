@@ -8,6 +8,10 @@ All notable changes to leboof. The format follows
 
 ### Changed
 
+- Renamed to **leBoof**: the folder, title, chat prefix, saved settings (`leBoofDB`), frames and
+  zips. Your settings carry over from `LeboofDB` at the first login. The install script removes an
+  installed `Leboof` folder first, since Windows would otherwise keep the old spelling
+  (2026-11-20).
 - In combat, the running-out sound for a shared buff (Battle Shout, Fortitude, Mark of the Wild,
   Intellect, blessings, HoTs, shields) only plays when nobody else in your group could have recast
   it: their cast replaces yours without Leboof seeing it, so the timing would be wrong. Self-only

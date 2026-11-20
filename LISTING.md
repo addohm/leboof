@@ -1,4 +1,4 @@
-# Leboof: CurseForge and Wago listing
+# leBoof: CurseForge and Wago listing
 
 Copy-paste material for the project pages. Placeholders are in [brackets]. Keep the feature list
 in step with README.md.
@@ -9,7 +9,7 @@ in step with README.md.
 
 | Field | Value |
 | --- | --- |
-| Name | Leboof |
+| Name | leBoof |
 | Slug | `leboof` |
 | Game version | WoW: Forever (Interface 16001) |
 | Author | addohm |
@@ -40,11 +40,11 @@ in step with README.md.
 
 *(Paste as Markdown. Both sites accept it.)*
 
-### Leboof
+### leBoof
 
 **Your buffs in combat, built for WoW: Forever.**
 
-In Forever, the game hides buff data from addons once combat starts. Leboof works with that
+In Forever, the game hides buff data from addons once combat starts. leBoof works with that
 instead of around it: it hands your buffs to Blizzard's own aura containers, and the game shows
 them itself. So the icons, timers and glows keep working in every fight.
 
@@ -79,7 +79,7 @@ them itself. So the icons, timers and glows keep working in every fight.
 - **Dropped** and **appeared** sounds out of combat, and a warning when you pull with a buff
   missing, with the missing ones listed in chat.
 - Every sound picker has a Test button.
-- `/leboof soundlog` tells you which addon played any sound you hear, Leboof or not.
+- `/leboof soundlog` tells you which addon played any sound you hear, leBoof or not.
 
 #### Your buffs, your list
 
@@ -113,13 +113,13 @@ addon menu by the minimap.
 
 #### Good to know
 
-- **Does it read buff data in combat?** No. The game doesn't allow it, and Leboof doesn't try.
-  Blizzard's containers do the showing; Leboof only says which buffs and where. Out of combat it
+- **Does it read buff data in combat?** No. The game doesn't allow it, and leBoof doesn't try.
+  Blizzard's containers do the showing; leBoof only says which buffs and where. Out of combat it
   reads your buffs for the "add from the buffs on you" list and its sounds.
 - **In combat, sounds can't know about buffs someone else cast on you** (Fortitude from another
   priest, say), because the game hides them. Those warn out of combat.
 - **Blizzard's Cooldown Manager** can play its own sounds in combat when a buff is applied or
-  removed. Leboof's Effects tab tells you whether it's available and opens it.
+  removed. leBoof's Effects tab tells you whether it's available and opens it.
 - No libraries, no automation: display and sound only.
 
 ---
@@ -129,7 +129,7 @@ addon menu by the minimap.
 1. Both rows in combat, with one top-row buff missing (its red copy and expired glow showing) and
    another near its end with the warning glow.
 2. The Effects tab: the two sample icons and the glow and sound pickers.
-3. The Buffs tab with the Leboof's buffs checklist open on a section.
+3. The Buffs tab with the leBoof's buffs checklist open on a section.
 4. A tracked buff's gear menu.
 5. The Profiles tab.
 6. The icons unlocked (the blue box) being moved.

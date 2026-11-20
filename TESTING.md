@@ -6,7 +6,7 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
 ## To check (1.1.0)
 
 0. After installing this build, fully restart the game (the `.toc` changed). The AddOns list and
-   the addon compartment show Leboof's icon: gold chevrons on dark teal.
+   the addon compartment show leBoof's icon: gold chevrons on dark teal.
 1. No Lua errors on login. `/leboof help` prints the commands with a build number.
 1a. `/leboof` opens the options window (and closes it again); so do the minimap button and the
     addon menu by the minimap. Escape closes it; it can be dragged and resized, and comes back in
@@ -24,7 +24,7 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
     Copy, rename, delete (asks first) and reset work. Settings from an earlier build are kept.
 1f. Minimap button: right-click unlocks and locks the icons; drag moves it around the minimap,
     clear of Nothing Wasted's and Ticky's buttons.
-1g. Adding and removing: "Leboof's buffs" opens a menu with four sections; each opens a checklist
+1g. Adding and removing: "leBoof's buffs" opens a menu with four sections; each opens a checklist
     with icons, ticked for what's tracked. Tick a few without the menu closing: each one appears in
     Tracked and on screen, and the button's count goes up. Untick, or Remove in Tracked, and it
     goes. Out of combat, with a buff on you that isn't tracked (a food or elixir
@@ -60,6 +60,9 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
 1l. Shared buffs in groups: in a group with no other warrior, Battle Shout's running-out sound
     plays in combat at the warning time; with another warrior in the group it doesn't (out of
     combat it still does). Inner Fire (self-only) warns in combat whatever the group.
+1m. The rename: after the install script, the AddOns folder is `leBoof` (no `Leboof` left), the
+    AddOns list and the window title say leBoof, chat lines start with leBoof, and your profiles,
+    buffs and positions are all still there.
 2. The icons appear a little below the middle of the screen. `/leboof unlock` shows a blue box to
    drag; `/leboof lock` hides it; the place is kept after `/reload`.
 3. Keep row: with the class buff missing (e.g. Battle Shout, Inner Fire), a dimmed red copy shows.

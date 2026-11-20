@@ -1,4 +1,4 @@
--- Leboof: the icons. The addon never reads aura data. Blizzard's aura containers
+-- leBoof: the icons. The addon never reads aura data. Blizzard's aura containers
 -- (Blizzard_AuraContainer: CustomAuraContainerTemplate) are told which spell IDs to show on the
 -- player, and the game fills the buttons itself, in combat too. Everything the addon decides
 -- (which buffs, where, how big) is set up out of combat.
@@ -67,7 +67,7 @@ end
 -- whatever is in it is hidden above the warning time and shown under it. In it: the warning glow,
 -- and, if the icon is faded or grey while up (reveal), the real icon at full strength, so the
 -- icon "returns to normal" at the warning time. As with the expired glow, the game does the sizing
--- with secret values and Leboof never learns them.
+-- with secret values and leBoof never learns them.
 -- total: the buff's full duration (learned out of combat). Returns the window's host frame (its
 -- icon texture in host.icon when revealing), or nil if it can't be timed.
 local function AddTimedGlow(button, glow, color, size, warn, total, reveal)
@@ -234,7 +234,7 @@ local function Build()
 		pcall(C_AddOns.LoadAddOn, "Blizzard_AuraContainer")
 	end
 
-	anchor = CreateFrame("Frame", "LeboofAnchor", UIParent)
+	anchor = CreateFrame("Frame", "leBoofAnchor", UIParent)
 	anchor:SetMovable(true)
 	anchor:SetClampedToScreen(true)
 	anchor:SetSize(1, 1)
@@ -264,7 +264,7 @@ local function Build()
 	bg:SetColorTexture(0.2, 0.6, 1, 0.35)
 	local label = mover:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	label:SetPoint("BOTTOM", mover, "TOP", 0, 2)
-	label:SetText("Leboof: drag to move, /leboof lock when done")
+	label:SetText("leBoof: drag to move, /leboof lock when done")
 	mover:Hide()
 
 	ns.built = true

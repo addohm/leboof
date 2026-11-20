@@ -27,12 +27,12 @@ end
 -- A warrior who knows Battle Shout logs in, with settings saved by 0.1.0 (per character, the
 -- window and minimap button account-wide): they move into a profile named after the character.
 LeboofCharDB = { point = "CENTER", x = 0, y = -180, size = 32, gap = 4, locked = true, modes = { thorns = "off" } }
-LeboofDB = { window = { tab = "layout" }, minimap = { angle = 10, hide = false } }
+leBoofDB = { window = { tab = "layout" }, minimap = { angle = 10, hide = false } }
 WM.known[6673] = true
-WM.Fire("ADDON_LOADED", "Leboof")
+WM.Fire("ADDON_LOADED", "leBoof")
 WM.Fire("PLAYER_LOGIN")
 Check(ns.Profiles.Current() == "Tester Smith", "the character's profile isn't in use")
-Check(ns.db == LeboofDB.profiles["Tester Smith"], "ns.db isn't the profile")
+Check(ns.db == leBoofDB.profiles["Tester Smith"], "ns.db isn't the profile")
 Check(ns.db.modes.thorns == "off" and ns.db.minimap.angle == 10 and ns.db.window.tab == "layout", "old settings weren't moved")
 Check(LeboofCharDB == nil, "the old per-character settings weren't cleared")
 Check(ns.built, "display not built: " .. table.concat(WM.printed, " | "))
@@ -133,17 +133,17 @@ WM.Slash("")
 Check(not ns.Window.IsShown(), "/leboof didn't close the window")
 
 -- Minimap button and the addon compartment.
-Check(LeboofMinimapButton and LeboofMinimapButton.shown, "no minimap button")
-Leboof_OnAddonCompartmentClick(nil, "RightButton")
+Check(leBoofMinimapButton and leBoofMinimapButton.shown, "no minimap button")
+leBoof_OnAddonCompartmentClick(nil, "RightButton")
 Check(ns.db.locked == false, "right-click didn't unlock the icons")
-Leboof_OnAddonCompartmentClick(nil, "RightButton")
+leBoof_OnAddonCompartmentClick(nil, "RightButton")
 Check(ns.db.locked == true, "right-click didn't lock the icons")
-Leboof_OnAddonCompartmentClick(nil, "LeftButton")
+leBoof_OnAddonCompartmentClick(nil, "LeftButton")
 Check(ns.Window.IsShown(), "left-click didn't open the window")
 WM.Slash("minimap")
-Check(ns.db.minimap.hide and not LeboofMinimapButton.shown, "/leboof minimap didn't hide the button")
+Check(ns.db.minimap.hide and not leBoofMinimapButton.shown, "/leboof minimap didn't hide the button")
 WM.Slash("minimap")
-Check(not ns.db.minimap.hide and LeboofMinimapButton.shown, "/leboof minimap didn't show the button")
+Check(not ns.db.minimap.hide and leBoofMinimapButton.shown, "/leboof minimap didn't show the button")
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
 
 -- Profiles: new, separate, copy, rename, delete, reset, and a deleted profile at login.
@@ -160,8 +160,8 @@ Check(P.CopyFrom("Shared") and ns.db.modes.fort == "keep" and KeepSlot("fort").e
 Check(not P.CopyFrom("Tester Smith"), "copied a profile onto itself")
 Check(not P.Delete("Tester Smith"), "deleted the profile in use")
 Check(P.Rename("Main") and P.Current() == "Main", "Rename failed")
-Check(LeboofDB.profiles.Main == ns.db and LeboofDB.profiles["Tester Smith"] == nil, "Rename left the old name")
-LeboofDB.chars["Alt Jones"] = "Shared"
+Check(leBoofDB.profiles.Main == ns.db and leBoofDB.profiles["Tester Smith"] == nil, "Rename left the old name")
+leBoofDB.chars["Alt Jones"] = "Shared"
 Check(P.UsedBy("Shared")[1] == "Alt Jones", "UsedBy")
 
 -- The Profiles tab: the picker switches, Delete asks first.
@@ -178,16 +178,16 @@ Check(P.Current() == "Shared", "the picker didn't switch profiles")
 inUse.prev.scripts.OnClick()
 Check(P.Current() == "Main", "the picker didn't switch back")
 delete.button.scripts.OnClick()
-Check(LeboofDB.profiles.Shared, "Delete didn't ask first")
+Check(leBoofDB.profiles.Shared, "Delete didn't ask first")
 WM.Accept()
-Check(LeboofDB.profiles.Shared == nil and LeboofDB.chars["Alt Jones"] == nil, "Delete didn't delete")
+Check(leBoofDB.profiles.Shared == nil and leBoofDB.chars["Alt Jones"] == nil, "Delete didn't delete")
 
 Check(P.Reset() and next(ns.db.modes) == nil and ns.db.minimap.angle == 250, "Reset didn't reset")
 
 -- A character whose profile was deleted elsewhere gets its own at the next login.
-LeboofDB.chars["Tester Smith"] = "Gone"
+leBoofDB.chars["Tester Smith"] = "Gone"
 P.Init()
-Check(P.Current() == "Tester Smith" and ns.db == LeboofDB.profiles["Tester Smith"], "no fallback profile")
+Check(P.Current() == "Tester Smith" and ns.db == leBoofDB.profiles["Tester Smith"], "no fallback profile")
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
 
 -- Adding and removing buffs.
@@ -240,12 +240,12 @@ Check(KeepSlot("c999001") and KeepSlot("c999001").enabled and KeepSlot("c999001"
 TrackedRowFor("c999001").remove.scripts.OnClick()
 Check(ns.db.custom.c999001 == nil and ns.db.modes.c999001 == nil and not KeepSlot("c999001").enabled, "Remove didn't delete the added buff")
 
--- Leboof's buffs: a checklist dropdown, a submenu per section; ticking tracks, unticking removes.
+-- leBoof's buffs: a checklist dropdown, a submenu per section; ticking tracks, unticking removes.
 local checklist
 for _, row in ipairs(BuffsRows()) do
 	if row.dropdown then checklist = row end
 end
-Check(checklist, "no Leboof's buffs dropdown")
+Check(checklist, "no leBoof's buffs dropdown")
 local menu = WM.Menu(checklist.dropdown)
 Check(#menu.buttons == 4 and menu.buttons[4].text == "Weapon enchants", "the menu should have a submenu per section")
 local total = 0
@@ -480,56 +480,56 @@ Check(not enchantPresence.enchants[0].enabled, "the enchant's presence container
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
 
 -- Characters by first and last name; old "Name - Realm" keys and profiles are renamed.
-LeboofDB.profiles["Tester Smith"] = nil
-LeboofDB.chars["Tester Smith"] = nil
-LeboofDB.profiles["Tester - Realm"] = { size = 44, modes = { fort = "keep" } }
-LeboofDB.chars["Tester - Realm"] = "Tester - Realm"
-LeboofDB.chars["Alt - Realm"] = "Tester - Realm"
-LeboofDB.durations = { ["Tester - Realm"] = { [25289] = 180 } }
+leBoofDB.profiles["Tester Smith"] = nil
+leBoofDB.chars["Tester Smith"] = nil
+leBoofDB.profiles["Tester - Realm"] = { size = 44, modes = { fort = "keep" } }
+leBoofDB.chars["Tester - Realm"] = "Tester - Realm"
+leBoofDB.chars["Alt - Realm"] = "Tester - Realm"
+leBoofDB.durations = { ["Tester - Realm"] = { [25289] = 180 } }
 ns.Profiles.Init()
 Check(ns.Profiles.Current() == "Tester Smith" and ns.db.size == 44 and ns.db.modes.fort == "keep", "the old profile wasn't moved to First Last")
-Check(LeboofDB.profiles["Tester - Realm"] == nil and LeboofDB.chars["Tester - Realm"] == nil, "the old key is still there")
-Check(LeboofDB.chars["Alt - Realm"] == "Tester Smith", "a character sharing the renamed profile should follow it")
-Check(LeboofDB.durations["Tester Smith"][25289] == 180, "learned durations should move too")
+Check(leBoofDB.profiles["Tester - Realm"] == nil and leBoofDB.chars["Tester - Realm"] == nil, "the old key is still there")
+Check(leBoofDB.chars["Alt - Realm"] == "Tester Smith", "a character sharing the renamed profile should follow it")
+Check(leBoofDB.durations["Tester Smith"][25289] == 180, "learned durations should move too")
 -- A profile the player named themselves keeps its name.
-LeboofDB.chars["Tester Smith"] = nil
-LeboofDB.chars["Tester - Realm"] = "Main"
-LeboofDB.profiles.Main = { size = 40 }
+leBoofDB.chars["Tester Smith"] = nil
+leBoofDB.chars["Tester - Realm"] = "Main"
+leBoofDB.profiles.Main = { size = 40 }
 ns.Profiles.Init()
-Check(ns.Profiles.Current() == "Main" and LeboofDB.profiles.Main, "a named profile should keep its name")
+Check(ns.Profiles.Current() == "Main" and leBoofDB.profiles.Main, "a named profile should keep its name")
 
 -- The surname isn't known at first: a defaults profile made under the first name is dropped once
 -- it is, and the character goes back to its own.
-LeboofDB.chars["Tester Smith"] = "Tester Smith"
-LeboofDB.profiles["Tester Smith"] = { size = 48 }
-LeboofDB.chars["Tester - Realm"] = nil
+leBoofDB.chars["Tester Smith"] = "Tester Smith"
+leBoofDB.profiles["Tester Smith"] = { size = 48 }
+leBoofDB.chars["Tester - Realm"] = nil
 WM.surname = nil
 ns.Profiles.Init()
-Check(ns.Profiles.Current() == "Tester" and LeboofDB.profiles.Tester, "without a surname the key is the first name")
+Check(ns.Profiles.Current() == "Tester" and leBoofDB.profiles.Tester, "without a surname the key is the first name")
 WM.surname = "Smith"
 ns.Profiles.Init()
 Check(ns.Profiles.Current() == "Tester Smith" and ns.db.size == 48, "back to the First Last profile")
-Check(LeboofDB.profiles.Tester == nil and LeboofDB.chars.Tester == nil, "the throwaway first-name profile should go")
+Check(leBoofDB.profiles.Tester == nil and leBoofDB.chars.Tester == nil, "the throwaway first-name profile should go")
 
--- The sound log: every sound, which addon played it, and why for Leboof's own.
+-- The sound log: every sound, which addon played it, and why for leBoof's own.
 WM.printed = {}
 WM.Slash("soundlog")
-Check(LeboofDB.soundlog.on, "/leboof soundlog didn't turn the log on")
+Check(leBoofDB.soundlog.on, "/leboof soundlog didn't turn the log on")
 ns.Fx.Play("RAID_WARNING", "dropped: Battle Shout")
-local last = LeboofDB.soundlog.entries[#LeboofDB.soundlog.entries]
-Check(last and last:find("from Leboof", 1, true) and last:find("(dropped: Battle Shout)", 1, true), "Leboof's sound wasn't logged with its reason: " .. tostring(last))
+local last = leBoofDB.soundlog.entries[#leBoofDB.soundlog.entries]
+Check(last and last:find("from leBoof", 1, true) and last:find("(dropped: Battle Shout)", 1, true), "leBoof's sound wasn't logged with its reason: " .. tostring(last))
 PlaySound(8960)
-last = LeboofDB.soundlog.entries[#LeboofDB.soundlog.entries]
-Check(last:find("READY_CHECK (8960)", 1, true) and not last:find("(dropped", 1, true), "another sound should be logged by name, without Leboof's reason: " .. last)
+last = leBoofDB.soundlog.entries[#leBoofDB.soundlog.entries]
+Check(last:find("READY_CHECK (8960)", 1, true) and not last:find("(dropped", 1, true), "another sound should be logged by name, without leBoof's reason: " .. last)
 Check(Printed("sound"), "the log should print to chat")
 WM.Slash("soundlog show")
-Check(LeboofSoundLog and LeboofSoundLog.shown, "/leboof soundlog show didn't open the window")
+Check(leBoofSoundLog and leBoofSoundLog.shown, "/leboof soundlog show didn't open the window")
 WM.Slash("soundlog off")
-local n = #LeboofDB.soundlog.entries
+local n = #leBoofDB.soundlog.entries
 PlaySound(8960)
-Check(#LeboofDB.soundlog.entries == n, "logged while off")
+Check(#leBoofDB.soundlog.entries == n, "logged while off")
 WM.Slash("soundlog clear")
-Check(#LeboofDB.soundlog.entries == 0, "clear didn't clear")
+Check(#leBoofDB.soundlog.entries == 0, "clear didn't clear")
 
 -- The keep row's warning glow is timed from the buff's duration: an invisible bar the game drives
 -- from the time left, and the glow in a window from the bar's fill end to its far end.
@@ -622,13 +622,13 @@ ns.db.effects.upAlpha = 0.5
 ns.Refresh()
 Check(KeepSlot("battleshout").enabled and PresenceFor(25289), "keep up: Blizzard's button and a presence frame")
 for _, f in ipairs(WM.frames) do
-	if f.parent == LeboofAnchor and f.alpha == 0.8 and f.shown then
+	if f.parent == leBoofAnchor and f.alpha == 0.8 and f.shown then
 		error("a red copy sits behind the buttons on the anchor")
 	end
 end
 local keptCopy = false
 for _, f in ipairs(WM.frames) do
-	if f.alpha == 0.8 and f.shown and f.parent and f.parent.parent and f.parent.parent.parent == LeboofAnchor then keptCopy = true end
+	if f.alpha == 0.8 and f.shown and f.parent and f.parent.parent and f.parent.parent.parent == leBoofAnchor then keptCopy = true end
 end
 Check(keptCopy, "the keep-up buff's red copy should be in its presence frame")
 ns.db.effects.upAlpha = 1
@@ -668,3 +668,15 @@ Check(ns.Fx.CastTimingHolds(ns.byKey.innerfire), "Inner Fire is self-only")
 WM.group = {}
 Check(ns.Fx.CastTimingHolds(ns.byKey.battleshout), "solo: always timed")
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
+
+-- Renamed to leBoof: settings saved as LeboofDB carry over once, and the old name is cleared.
+do
+	local saved = leBoofDB
+	leBoofDB = nil
+	LeboofDB = { profiles = { Old = { size = 50 } }, chars = { ["Tester Smith"] = "Old" } }
+	ns.Profiles.Init()
+	Check(leBoofDB and leBoofDB.profiles.Old and ns.Profiles.Current() == "Old" and ns.db.size == 50, "LeboofDB wasn't carried over")
+	Check(LeboofDB == nil, "the old LeboofDB should be cleared")
+	leBoofDB = saved
+	ns.Profiles.Init()
+end

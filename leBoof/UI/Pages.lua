@@ -1,4 +1,4 @@
--- Leboof: the options window's tabs: Buffs (what's tracked, adding and removing), Layout (size,
+-- leBoof: the options window's tabs: Buffs (what's tracked, adding and removing), Layout (size,
 -- spacing, moving the icons), General (minimap button, about) and Profiles.
 local _, ns = ...
 local UI = ns.UI
@@ -70,7 +70,7 @@ local function Page(def)
 end
 
 -- Buffs: what's tracked (with Keep up / While up and Remove), then two ways to add one: from
--- Leboof's own list, or from the buffs on you now (see Custom.lua for why only those). The list
+-- leBoof's own list, or from the buffs on you now (see Custom.lua for why only those). The list
 -- is rebuilt on each refresh from pooled rows.
 local TRACK_CHOICES = { { "keep", "Keep up" }, { "missing", "Only when missing" }, { "up", "While up" } }
 local TRACK_X, TRACK_BOX = 220, 130
@@ -80,7 +80,7 @@ local function Tracked(e) return ns.Mode(e) ~= "off" end
 local function EntryTooltip(e)
 	local lines = { e.label }
 	if e.custom then
-		lines[#lines + 1] = "Added by you. Spell IDs seen: " .. #e.idList .. " (more ranks are added when Leboof sees them out of combat)."
+		lines[#lines + 1] = "Added by you. Spell IDs seen: " .. #e.idList .. " (more ranks are added when leBoof sees them out of combat)."
 	elseif e.names and #e.names > 1 then
 		lines[#lines + 1] = "Counts: " .. table.concat(e.names, ", ")
 	end
@@ -181,7 +181,7 @@ local function CurrentRow(parent)
 		local lines = { b.name }
 		local e = ns.EntryForSpell(b.spellId)
 		if e then
-			lines[#lines + 1] = "One of Leboof's buffs: Add switches it on, with every rank."
+			lines[#lines + 1] = "One of leBoof's buffs: Add switches it on, with every rank."
 		else
 			lines[#lines + 1] = "Adds it as your own buff (spell ID " .. b.spellId .. ")."
 		end
@@ -199,7 +199,7 @@ local function Duration(seconds)
 	return math.floor(seconds + 0.5) .. " s"
 end
 
--- Leboof's own buffs as a checklist: a dropdown (Blizzard's menu system) with a submenu per
+-- leBoof's own buffs as a checklist: a dropdown (Blizzard's menu system) with a submenu per
 -- section; ticking tracks a buff, unticking removes it, and the menu stays open between ticks.
 local function SetTracked(e, on)
 	if on then
@@ -243,7 +243,7 @@ local function ChecklistRow(parent)
 	row:SetHeight(36)
 	row.label = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	row.label:SetPoint("LEFT", 16, 0)
-	row.label:SetText("Leboof's buffs")
+	row.label:SetText("leBoof's buffs")
 	local dropdown = CreateFrame("DropdownButton", nil, row, "WowStyle1FilterDropdownTemplate")
 	dropdown:SetPoint("LEFT", 330, 0)
 	dropdown:SetupMenu(ns.BuildBuffMenu)
@@ -267,7 +267,7 @@ Page({
 		panel.parts = p
 		p.checklist = ChecklistRow(stack.inner)
 		p.headTracked = UI.OptionHeading(stack.inner, "Tracked")
-		p.noneTracked = UI.OptionText(stack.inner, "Nothing is tracked. Tick buffs in Leboof's buffs above, or add one below.", 24)
+		p.noneTracked = UI.OptionText(stack.inner, "Nothing is tracked. Tick buffs in leBoof's buffs above, or add one below.", 24)
 
 		p.headCurrent = UI.OptionHeading(stack.inner, "Add from the buffs on you now")
 		p.currentNote = UI.OptionText(stack.inner, function() return p.noteText end, 44)
@@ -381,7 +381,7 @@ Page({
 		stack:Add(UI.OptionHeading(stack.inner, "Glows (in combat too)"))
 		stack:Add(UI.GlowPreview(stack.inner))
 		stack:Add(UI.OptionSelect(stack.inner, "Warning glow (near the end)", ns.Glow.STYLES, EffectGet("expiring"), EffectSet("expiring"),
-			{ tooltip = { "Warning glow", "Top row: from the warning time on, in combat too (once Leboof has seen the buff out of combat and knows how long it lasts). Second row: in the game's refresh window, the last part of a buff where recasting keeps some of the time left; buffs without one don't glow there." } }))
+			{ tooltip = { "Warning glow", "Top row: from the warning time on, in combat too (once leBoof has seen the buff out of combat and knows how long it lasts). Second row: in the game's refresh window, the last part of a buff where recasting keeps some of the time left; buffs without one don't glow there." } }))
 		stack:Add(UI.OptionSelect(stack.inner, "Warning glow colour", ns.Glow.COLORS, EffectSetting("expiringColor")))
 		stack:Add(UI.OptionSelect(stack.inner, "Expired glow (top row, while missing)", ns.Glow.STYLES, EffectGet("missing"), EffectSet("missing"),
 			{ tooltip = { "Expired glow", "Around the red copy of a missing top-row buff, the same size as the warning glow. It's gone the moment the buff is back." } }))
@@ -395,15 +395,15 @@ Page({
 
 		stack:Add(UI.OptionHeading(stack.inner, "Running out"))
 		stack:Add(UI.OptionSelect(stack.inner, "Warning time", Fx.WARNS, EffectGet("warn"), EffectSet("warn"),
-			{ tooltip = { "Warning time", "When a buff counts as running out: its time left turns red and the running-out sound plays. \"Each buff's own\" uses Leboof's time for each (15 s for Battle Shout, 2 min for Fortitude...). A buff's gear menu can set its own." } }))
-		stack:Add(UI.OptionText(stack.inner, "Out of combat the sound comes from the buff's own timer. In combat Leboof can't read it, so it's timed from your own cast instead: buffs someone else cast on you only warn out of combat, and a shared buff (Battle Shout, Fortitude...) only warns in combat when nobody else in your group could have recast it.", 54))
+			{ tooltip = { "Warning time", "When a buff counts as running out: its time left turns red and the running-out sound plays. \"Each buff's own\" uses leBoof's time for each (15 s for Battle Shout, 2 min for Fortitude...). A buff's gear menu can set its own." } }))
+		stack:Add(UI.OptionText(stack.inner, "Out of combat the sound comes from the buff's own timer. In combat leBoof can't read it, so it's timed from your own cast instead: buffs someone else cast on you only warn out of combat, and a shared buff (Battle Shout, Fortitude...) only warns in combat when nobody else in your group could have recast it.", 54))
 
 		stack:Add(UI.OptionHeading(stack.inner, "Sounds: buffs to keep up"))
 		stack:Add(UI.OptionSound(stack.inner, "When one is running out", EffectGet("keepExpiring"), EffectSet("keepExpiring"),
 			{ "When one is running out", "When its time left goes under the warning time. In combat too, for buffs you cast yourself." }))
 		stack:Add(UI.OptionSound(stack.inner, "When one drops (out of combat)", EffectSetting("keepLost")))
 		stack:Add(UI.OptionSound(stack.inner, "Entering combat without one", EffectGet("combatMissing"), EffectSet("combatMissing"),
-			{ "Entering combat without one", "From what Leboof saw just before the fight." }))
+			{ "Entering combat without one", "From what leBoof saw just before the fight." }))
 		stack:Add(UI.OptionCheck(stack.inner, "Also list the missing ones in chat", EffectSetting("combatChat")))
 
 		stack:Add(UI.OptionHeading(stack.inner, "Sounds: buffs while up"))
@@ -436,8 +436,8 @@ Page({
 			function(v) ns.Minimap.SetShown(v) end))
 		stack:Add(UI.OptionHeading(stack.inner, "About"))
 		stack:Add(UI.OptionText(stack.inner, function()
-			return "Leboof " .. ns.Version() .. "\n\n"
-				.. "Leboof's icons never read aura data. In combat the game hides it from addons, so Leboof "
+			return "leBoof " .. ns.Version() .. "\n\n"
+				.. "leBoof's icons never read aura data. In combat the game hides it from addons, so leBoof "
 				.. "tells Blizzard's aura containers which of your buffs to show, and the game fills the "
 				.. "icons itself. That's also why nothing can react to a buff (no sounds or glows), and why "
 				.. "changes wait until combat ends.\n\n"

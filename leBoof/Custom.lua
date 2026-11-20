@@ -1,4 +1,4 @@
--- Leboof: buffs the player adds. The aura containers can only match spell IDs of buffs on the
+-- leBoof: buffs the player adds. The aura containers can only match spell IDs of buffs on the
 -- player, and only the buff's own ID. So buffs are added from the ones on the player right now
 -- (read out of combat, with the HELPFUL filter the containers use): whatever is on that list is a
 -- buff the game shows on you, with the exact ID it will see. Nothing can be typed in.
@@ -41,7 +41,7 @@ local function CustomEntries()
 	return entries
 end
 
--- Every buff Leboof can show: the built-in ones, then the ones added to this profile.
+-- Every buff leBoof can show: the built-in ones, then the ones added to this profile.
 function ns.Entries()
 	local list = {}
 	for _, e in ipairs(ns.Catalogue) do list[#list + 1] = e end
@@ -83,11 +83,11 @@ function ns.ReadBuffs()
 			end
 		end
 	end)
-	if not ok then return nil, "The game won't let Leboof read your buffs right now." end
+	if not ok then return nil, "The game won't let leBoof read your buffs right now." end
 	return list
 end
 
--- Adds a buff read by ReadBuffs. A buff in Leboof's own list is switched on instead (it already
+-- Adds a buff read by ReadBuffs. A buff in leBoof's own list is switched on instead (it already
 -- covers every rank).
 function ns.AddBuff(buff)
 	local e = ns.EntryForSpell(buff.spellId)

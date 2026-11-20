@@ -1,4 +1,4 @@
-"""Leboof's checks: Lua 5.1 syntax, the TOC file list, globals, and the scenarios in smoke.lua
+"""leBoof's checks: Lua 5.1 syntax, the TOC file list, globals, and the scenarios in smoke.lua
 against the fake client in wowmock.lua.
 
 Run: .venv/bin/python tests/run_tests.py   (needs lupa: python3 -m venv .venv && .venv/bin/pip install lupa)
@@ -12,10 +12,10 @@ except ImportError:
     sys.exit("lupa is not installed: python3 -m venv .venv && .venv/bin/pip install lupa")
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-ADDON = ROOT / "Leboof"
+ADDON = ROOT / "leBoof"
 TESTS = ROOT / "tests"
-ALLOWED_GLOBALS = {"LeboofCharDB", "LeboofDB", "LeboofAnchor", "LeboofFrame", "LeboofMinimapButton", "LeboofSoundLog",
-                   "SLASH_LEBOOF1", "SLASH_LEBOOF2", "Leboof_OnAddonCompartmentClick"}
+ALLOWED_GLOBALS = {"LeboofCharDB", "leBoofDB", "leBoofAnchor", "leBoofFrame", "leBoofMinimapButton", "leBoofSoundLog",
+                   "SLASH_LEBOOF1", "SLASH_LEBOOF2", "leBoof_OnAddonCompartmentClick"}
 
 failed = False
 
@@ -29,15 +29,15 @@ def fail(msg):
 lua = lua51.LuaRuntime(unpack_returned_tuples=True)
 compile_chunk = lua.eval("function(src, name) local f, err = loadstring(src, '@' .. name) return f or false, err end")
 
-toc = [line.strip().replace("\\", "/") for line in (ADDON / "Leboof.toc").read_text(encoding="utf-8").splitlines()
+toc = [line.strip().replace("\\", "/") for line in (ADDON / "leBoof.toc").read_text(encoding="utf-8").splitlines()
        if line.strip().endswith(".lua") and not line.startswith("#")]
 on_disk = sorted(str(p.relative_to(ADDON)) for p in ADDON.rglob("*.lua"))
 for f in on_disk:
     if f not in toc:
-        fail(f"{f} is not in Leboof.toc")
+        fail(f"{f} is not in leBoof.toc")
 for f in toc:
     if f not in on_disk:
-        fail(f"Leboof.toc lists {f}, which doesn't exist")
+        fail(f"leBoof.toc lists {f}, which doesn't exist")
 
 chunks = []
 for name in toc:
@@ -56,7 +56,7 @@ if not failed:
     ns = lua.table()
     for name, chunk in chunks:
         try:
-            chunk("Leboof", ns)
+            chunk("leBoof", ns)
         except Exception as e:
             fail(f"loading {name}: {e}")
     after = set(lua.eval("function() local t = {} for k in pairs(_G) do t[#t+1] = k end return t end")().values())

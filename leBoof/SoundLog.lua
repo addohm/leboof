@@ -1,7 +1,7 @@
--- Leboof: the sound log (/leboof soundlog). While it's on, every sound any addon plays is logged
+-- leBoof: the sound log (/leboof soundlog). While it's on, every sound any addon plays is logged
 -- with the time, the sound's name (if it's a standard one) and the addon that played it, found
--- from the call stack. Leboof's own sounds also say why they played. The log is printed to chat,
--- kept in LeboofDB.soundlog (saved at /reload or logout), and shown in a window ready to copy.
+-- from the call stack. leBoof's own sounds also say why they played. The log is printed to chat,
+-- kept in leBoofDB.soundlog (saved at /reload or logout), and shown in a window ready to copy.
 -- It only watches: hooksecurefunc runs after the game has played the sound.
 local _, ns = ...
 
@@ -13,8 +13,8 @@ local hooked = false
 local kitNames -- sound kit ID -> SOUNDKIT name, made when first needed
 
 local function Data()
-	LeboofDB.soundlog = LeboofDB.soundlog or { on = false, entries = {} }
-	return LeboofDB.soundlog
+	leBoofDB.soundlog = leBoofDB.soundlog or { on = false, entries = {} }
+	return leBoofDB.soundlog
 end
 
 local function KitName(id)
@@ -40,7 +40,7 @@ local function Source()
 	return "the game (no addon in the call stack)"
 end
 
--- Set by Leboof just before it plays a sound, so its entry says why.
+-- Set by leBoof just before it plays a sound, so its entry says why.
 local reason
 
 function Log.Reason(text)
@@ -100,7 +100,7 @@ end
 local window
 function Log.Show()
 	if not window then
-		window = CreateFrame("Frame", "LeboofSoundLog", UIParent, "BackdropTemplate")
+		window = CreateFrame("Frame", "leBoofSoundLog", UIParent, "BackdropTemplate")
 		window:SetSize(620, 360)
 		window:SetPoint("CENTER")
 		window:SetFrameStrata("DIALOG")
@@ -117,11 +117,11 @@ function Log.Show()
 		window:RegisterForDrag("LeftButton")
 		window:SetScript("OnDragStart", window.StartMoving)
 		window:SetScript("OnDragStop", window.StopMovingOrSizing)
-		tinsert(UISpecialFrames, "LeboofSoundLog")
+		tinsert(UISpecialFrames, "leBoofSoundLog")
 
 		local title = window:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		title:SetPoint("TOPLEFT", 14, -12)
-		title:SetText("Leboof sound log: Ctrl+C copies it (it's selected)")
+		title:SetText("leBoof sound log: Ctrl+C copies it (it's selected)")
 		local close = CreateFrame("Button", nil, window, "UIPanelCloseButton")
 		close:SetPoint("TOPRIGHT", -2, -2)
 

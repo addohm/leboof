@@ -1,4 +1,4 @@
--- Leboof: the buffs it can track. Each entry is matched by spell name: tools/gen_data.py writes
+-- leBoof: the buffs it can track. Each entry is matched by spell name: tools/gen_data.py writes
 -- every spell ID with one of these names into Data.lua, so all ranks (and the group versions,
 -- like Prayer of Fortitude) count as the same buff.
 --
