@@ -69,6 +69,7 @@ end
 -- { spellId, name, icon, duration, expirationTime }, or nil and the reason.
 function ns.ReadBuffs()
 	if InCombatLockdown() then return nil, "Your buffs can only be read out of combat." end
+	if ns.AurasHidden() then return nil, "The game is hiding your buffs from addons here." end
 	local list = {}
 	local ok = pcall(function()
 		for i = 1, 255 do
@@ -138,21 +139,23 @@ local function Learn()
 	if changed then ns.Refresh(true) end
 end
 
--- UNIT_AURA on the player, out of combat only, at most once a second: learn IDs, and refresh the
--- options window (its list of current buffs).
+-- UNIT_AURA on the player, while auras can be read, at most once a second: learn IDs, and
+-- refresh the options window (its list of current buffs).
 local scheduled = false
 local function OnAurasChanged()
 	scheduled = false
-	if InCombatLockdown() or not ns.db then return end
+	if ns.AurasHidden() or not ns.db then return end
 	Learn()
 	if ns.Window then ns.Window.Refresh() end
 end
 
-local events = CreateFrame("Frame")
-events:RegisterUnitEvent("UNIT_AURA", "player")
-events:RegisterEvent("PLAYER_REGEN_ENABLED")
-events:SetScript("OnEvent", function()
-	if InCombatLockdown() or scheduled then return end
+local function Schedule()
+	if ns.AurasHidden() or scheduled then return end
 	scheduled = true
 	C_Timer.After(1, OnAurasChanged)
-end)
+end
+
+local events = CreateFrame("Frame")
+events:RegisterUnitEvent("UNIT_AURA", "player")
+events:SetScript("OnEvent", Schedule)
+ns.OnAurasShown(Schedule)

@@ -35,7 +35,7 @@ for the same reason.
     animations only (`Glow.Build`); `Glow.Show` keeps one active on our own frames.
   - `Effects.lua`: glow, icon-look and sound settings (`ns.db.effects` defaults, `ns.db.fx[key]` a
     buff's own; `ns.Fx.Get(e, field)` resolves them), sounds out of combat (from `ns.ReadBuffs()`),
-    the warning on entering combat, the running-out sound (out of combat from the real timer, in
+    the warning on entering combat (skipped when `stale`: a buff changed while hidden), the running-out sound (out of combat from the real timer, in
     combat timed from your own casts: `UNIT_SPELLCAST_SUCCEEDED`, durations learned per character
     in `leBoofDB.durations`; `castPlayed` stops a second play after combat; shared buffs, with a
     `castBy` class in `Buffs.lua`, only when no one else in the group is of that class:
@@ -98,15 +98,20 @@ for the same reason.
 
 - **The display never reads aura data.** In combat it's secret (in instances even the aura IDs
   are refused). Displays go through the aura containers. The one reader is `ns.ReadBuffs()` in
-  `Custom.lua`: the player's buffs, out of combat only, in `pcall`, skipping secret values, for
-  adding buffs and learning their other IDs by name.
+  `Custom.lua`: the player's buffs, only while auras aren't hidden (`ns.AurasHidden()`), in
+  `pcall`, skipping secret values, for adding buffs and learning their other IDs by name.
 - **Only buffs on the player can be tracked** (the containers match spell IDs only for helpful
   auras on assistable units). Added buffs come from `ns.ReadBuffs()`, never typed names or IDs.
 - Loop over buffs with `ns.Entries()` (built-in, then the profile's added ones) and look them up
   with `ns.Entry(key)`; `ns.Catalogue` and `ns.byKey` are the built-in ones only.
-- **Touch the containers only out of combat.** Their buttons are closed to addons while auras are
-  secret (`DenyTaintedAccessWhenAurasAreSecret`). Changes go through `ns.Refresh()`, which waits
-  for `PLAYER_REGEN_ENABLED`. Button parts are built in `initializeFrame`.
+- **Touch the containers only while auras aren't hidden.** Their buttons are closed to addons
+  while auras are secret (`DenyTaintedAccessWhenAurasAreSecret`), and that's not only in combat:
+  battlegrounds, boss fights and some maps hide them too (`C_Secrets.ShouldAurasBeSecret`). So
+  check `ns.AurasHidden()` (combat or that), never `InCombatLockdown()` alone; it gates reading
+  buffs and the sounds' out-of-combat paths too (while hidden they work as in combat). Changes go
+  through `ns.Refresh()` (settings) or `ns.Relayout()` (gear, spells), which wait; Core retries
+  after `PLAYER_REGEN_ENABLED` or `ADDON_RESTRICTION_STATE_CHANGED`, a frame later, and calls the
+  `ns.OnAurasShown` handlers. Button parts are built in `initializeFrame`.
 - Container slots and groups can't be removed: create each once, then enable, disable or
   re-filter it. A button's warning glow is fixed when the game creates it (`initializeFrame`), so
   slots, groups and enchant containers are keyed by buff (or warn time) *and* glow

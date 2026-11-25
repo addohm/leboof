@@ -94,7 +94,9 @@ name ("Brenna Ashford"). Pick another character's profile to share it, say betwe
 then shows on both. `/leboof profile` shows the one in use.
 
 Changes made in combat apply when combat ends: the game won't
-let addons touch the icons while auras are secret.
+let addons touch the icons while auras are secret. Some places hide your buffs from addons outside
+combat too (a battleground, a boss fight); there leBoof waits the same way, and a change applies
+once the game stops hiding them.
 
 ## What it can track
 
@@ -136,16 +138,18 @@ old glow with marching ants). The Effects tab shows both glows on sample icons a
   choose on the Effects tab ("Each buff's own" by default: 15 s for Battle Shout, 2 min for
   Fortitude...) or per buff in its ⚙ menu. The time left turns red at the same moment. Out of
   combat it comes from the buff's own timer; in combat, where that's hidden, it's timed from your
-  own cast with the duration last seen out of combat. So in combat it only works for buffs you
+  own cast with the duration last seen out of combat (the same wherever the game hides your buffs
+  outside combat, such as a battleground). So in combat it only works for buffs you
   cast yourself, and it can't know about a dispel. A **shared** buff (Battle Shout, Fortitude, Mark
   of the Wild, Intellect, blessings, HoTs and shields) is only timed in combat when nobody else in
   your group is of the class that casts it, since their cast would replace yours unseen; with
   another warrior along, Battle Shout's running-out sound waits for the end of the fight. It never
   plays twice for one cast.
 - **Out of combat**, leBoof reads your buffs: a sound when a buff appears or drops, with
-  separate defaults for the two rows.
+  separate defaults for the two rows (not where the game hides them, as in a battleground).
 - **Entering combat** with a "keep up" buff missing: a warning sound, and the missing ones listed
-  in chat, from what leBoof saw just before the fight.
+  in chat, from what leBoof saw just before the fight. If a buff changed while the game was
+  hiding them, leBoof can't tell, so there's no warning.
 - **Blizzard's Cooldown Manager** is the only way the game plays a sound in combat when a buff is
   applied or removed. The Effects tab says whether Forever has it on and opens it; the alerts are
   set there, not in leBoof.

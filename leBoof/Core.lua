@@ -108,20 +108,44 @@ function ns.ResetLayout()
 	end
 end
 
--- The icons can only be rebuilt out of combat (the game closes the aura buttons to addons while
--- auras are secret). Changes made in combat wait for it to end.
-local pending = false
+-- Whether the game hides aura data from addons now. It always does in combat, and can outside it
+-- too (C_Secrets: a battleground, a boss fight, some maps). While it does, the aura buttons are
+-- closed to addons and buffs can't be read, so leBoof waits, as in combat.
+function ns.AurasHidden()
+	if InCombatLockdown() then return true end
+	return C_Secrets ~= nil and C_Secrets.ShouldAurasBeSecret ~= nil and C_Secrets.ShouldAurasBeSecret() == true
+end
+
+-- Calls fn whenever the game may have stopped hiding auras: after combat, or a restriction lifting.
+local shownHandlers = {}
+function ns.OnAurasShown(fn)
+	table.insert(shownHandlers, fn)
+end
+
+-- The icons can only be rebuilt while auras aren't hidden. Changes made meanwhile wait (and the
+-- player is told once).
+local pending, told = false, false
 function ns.Refresh(quiet)
 	if ns.Window then ns.Window.Refresh() end
-	if InCombatLockdown() then
-		if not pending and not quiet then ns.Print("the change applies when combat ends.") end
+	if ns.AurasHidden() then
+		if not told and not quiet then
+			ns.Print(InCombatLockdown() and "the change applies when combat ends."
+				or "the game is hiding your buffs from addons here: the change applies once it stops.")
+			told = true
+		end
 		pending = true
 		return
 	end
-	pending = false
+	pending, told = false, false
 	ns.Layout()
 	-- What's tracked may have changed: take the buffs that are up as the new starting point.
 	if ns.Fx then ns.Fx.Update(true) end
+end
+
+-- Places the icons again (gear or spells changed), now or once auras aren't hidden.
+function ns.Relayout()
+	if not ns.built then return end
+	if ns.AurasHidden() then pending = true else ns.Layout() end
 end
 
 function ns.SetLocked(locked)
@@ -133,6 +157,7 @@ local events = CreateFrame("Frame")
 events:RegisterEvent("ADDON_LOADED")
 events:RegisterEvent("PLAYER_LOGIN")
 events:RegisterEvent("PLAYER_REGEN_ENABLED")
+events:RegisterEvent("ADDON_RESTRICTION_STATE_CHANGED")
 events:RegisterEvent("SPELLS_CHANGED")
 events:SetScript("OnEvent", function(_, event, arg)
 	if event == "ADDON_LOADED" and arg == ADDON then
@@ -141,11 +166,17 @@ events:SetScript("OnEvent", function(_, event, arg)
 		ns.Profiles.Init() -- again: the surname may only be known now
 		ns.Refresh(true)
 		ns.Minimap.Init()
-	elseif event == "PLAYER_REGEN_ENABLED" then
-		if pending then ns.Refresh() end
+	elseif event == "PLAYER_REGEN_ENABLED" or event == "ADDON_RESTRICTION_STATE_CHANGED" then
+		-- Combat ended, or a restriction changed (the event comes before one starts and after one
+		-- ends). Look again once the event is over; auras may still be hidden for another reason.
+		C_Timer.After(0, function()
+			if ns.AurasHidden() then return end
+			if pending then ns.Refresh(true) end
+			for _, fn in ipairs(shownHandlers) do fn() end
+		end)
 	elseif event == "SPELLS_CHANGED" then
 		-- Learning a spell can change a default ("keep" needs the spell known).
-		if ns.built and not InCombatLockdown() then ns.Layout() end
+		ns.Relayout()
 	end
 end)
 

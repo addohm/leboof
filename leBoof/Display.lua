@@ -541,6 +541,4 @@ end
 -- Weapon icons for the enchants' red copies follow the equipped weapon.
 local events = CreateFrame("Frame")
 events:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
-events:SetScript("OnEvent", function()
-	if ns.built and not InCombatLockdown() then ns.Layout() end
-end)
+events:SetScript("OnEvent", function() ns.Relayout() end)

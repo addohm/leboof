@@ -669,6 +669,44 @@ WM.group = {}
 Check(ns.Fx.CastTimingHolds(ns.byKey.battleshout), "solo: always timed")
 Check(not Printed("couldn't"), "layout error: " .. table.concat(WM.printed, " | "))
 
+-- Outside combat the game can hide auras too (a battleground, a boss fight). leBoof then waits as
+-- in combat: a gear change (a trinket swap) used to touch Blizzard's closed buttons and fail.
+WM.combat, WM.secret, WM.group = false, false, {}
+local shout = function() return { { spellId = 25289, name = "Battle Shout", icon = 1, duration = 120, expirationTime = WM.now + 120 } } end
+WM.buffs = shout()
+WM.Fire("UNIT_AURA", "player")
+local sizeBefore = KeepSlot("battleshout").button.w
+WM.printed, WM.sounds = {}, {}
+WM.secret = true
+WM.Fire("ADDON_RESTRICTION_STATE_CHANGED", 3, 1)
+WM.Fire("PLAYER_EQUIPMENT_CHANGED")
+WM.Fire("SPELLS_CHANGED")
+Check(not Printed("couldn't"), "touched the buttons while auras were hidden: " .. table.concat(WM.printed, " | "))
+Check(select(2, ns.ReadBuffs()):find("hiding"), "ReadBuffs should say the game is hiding them")
+WM.Slash("size 40")
+Check(Printed("hiding your buffs") and KeepSlot("battleshout").button.w == sizeBefore, "a change while auras are hidden should wait")
+-- A drop can't be seen, so no sound; and the pull can't trust the last look, so no warning.
+WM.buffs = {}
+WM.Fire("UNIT_AURA", "player")
+WM.Advance(1)
+WM.combat = true
+WM.Fire("PLAYER_REGEN_DISABLED")
+Check(#WM.sounds == 0 and not Printed("missing:"), "sounds from a look taken before auras were hidden")
+WM.combat = false
+WM.Fire("PLAYER_REGEN_ENABLED") -- still in the battleground: still waiting
+Check(not Printed("couldn't") and KeepSlot("battleshout").button.w == sizeBefore, "applied while auras were still hidden")
+-- Running out is timed from your cast, as in combat, and plays once.
+WM.buffs = shout()
+WM.Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 25289)
+WM.Advance(106)
+Check(#WM.sounds == 1 and WM.Played("MAP_PING"), "while auras are hidden, running out should be timed from your cast")
+WM.secret = false
+WM.Fire("ADDON_RESTRICTION_STATE_CHANGED", 3, 0)
+Check(not Printed("couldn't") and KeepSlot("battleshout").button.w == 40, "the waiting change wasn't applied once auras showed")
+WM.Advance(3)
+Check(#WM.sounds == 1, "running out played twice for one cast")
+WM.Slash("size 32")
+
 -- Renamed to leBoof: settings saved as LeboofDB carry over once, and the old name is cleared.
 do
 	local saved = leBoofDB

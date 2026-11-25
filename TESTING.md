@@ -63,6 +63,10 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
 1m. The rename: after the install script, the AddOns folder is `leBoof` (no `Leboof` left), the
     AddOns list and the window title say leBoof, chat lines start with leBoof, and your profiles,
     buffs and positions are all still there.
+1n. Buffs hidden outside combat: in a battleground or a dungeon, out of combat, swap a trinket
+    (TrinketMenu, or by hand) and mount: no "couldn't set up the icons" in chat. `/leboof size 40`
+    there says the change applies once the game stops hiding your buffs, and it does when you
+    leave. Out in the world the icons still appear at login and after a trinket swap.
 2. The icons appear a little below the middle of the screen. `/leboof unlock` shows a blue box to
    drag; `/leboof lock` hides it; the place is kept after `/reload`.
 3. Keep row: with the class buff missing (e.g. Battle Shout, Inner Fire), a dimmed red copy shows.
@@ -92,4 +96,6 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
 
 ## Problems
 
-None reported yet.
+- Gear changes where the game hides buffs outside combat printed "couldn't set up the icons:
+  ...Display.lua:402: calling 'ClearAllPoints' on bad self (Attempt to access forbidden object
+  ...)" (a player's TrinketMenu swaps, reported 2026-11-25). Fixed on main; check 1n.

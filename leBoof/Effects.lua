@@ -117,6 +117,8 @@ local Secret = function(v) return (issecretvalue and issecretvalue(v)) or false 
 
 -- key -> expiration time (0 for no time limit) for every tracked buff that's up; nil if unknown.
 local state
+-- Whether a buff changed since state was read, while the game hid them (it can outside combat too).
+local stale = false
 local played = {} -- key -> the expiration a "running out" sound was played for
 
 -- Learned durations, per character (talents change them): spellID -> seconds.
@@ -178,13 +180,16 @@ local function Compare(old, new)
 	end
 end
 
--- Re-reads the buffs out of combat; quiet = take them as the new starting point, without sounds.
+-- Re-reads the buffs while the game shows them; quiet = take them as the new starting point,
+-- without sounds.
 function Fx.Update(quiet)
-	if InCombatLockdown() then return end
-	local new = ReadState()
-	if not new then return end
+	local new = not ns.AurasHidden() and ReadState()
+	if not new then
+		stale = true -- leBoof couldn't look, so a change may have gone unseen
+		return
+	end
 	if state and not quiet then Compare(state, new) end
-	state = new
+	state, stale = new, false
 	-- A new or changed duration retimes the keep row's warning glows: rebuild after this read.
 	if learned then
 		learned = false
@@ -194,9 +199,9 @@ end
 
 local castPlayed = {} -- key -> when the cast it was played for in combat should end
 
--- Every second out of combat: "running out" sounds, from the expirations last read.
+-- Every second while buffs can be read: "running out" sounds, from the expirations last read.
 local function CheckExpiring()
-	if InCombatLockdown() or not state then return end
+	if ns.AurasHidden() or not state then return end
 	local now = GetTime()
 	for _, e in ipairs(ns.Entries()) do
 		local exp = state[e.key]
@@ -212,9 +217,10 @@ local function CheckExpiring()
 	end
 end
 
--- Entering combat: one warning if a "keep up" buff was missing just before.
+-- Entering combat: one warning if a "keep up" buff was missing just before. Not if a buff changed
+-- since leBoof last could look (in a battleground, say): it can't tell what's missing then.
 local function CombatStarted()
-	if not state then return end
+	if not state or stale then return end
 	local missing, sound = {}, nil
 	for _, e in ipairs(ns.Entries()) do
 		local mode = ns.Mode(e)
@@ -280,8 +286,8 @@ local function OnCast(spellID)
 	if castTimers[e.key] then castTimers[e.key]:Cancel() end
 	castTimers[e.key] = C_Timer.NewTimer(duration - warn, function()
 		castTimers[e.key] = nil
-		-- Out of combat the buff's real timer does it (CheckExpiring).
-		if not InCombatLockdown() then return end
+		-- While buffs can be read, the buff's real timer does it (CheckExpiring).
+		if not ns.AurasHidden() then return end
 		-- Someone else in the group may have recast a shared buff since: the timing can't be trusted.
 		if not Fx.CastTimingHolds(e) then return end
 		castPlayed[e.key] = ends
@@ -318,7 +324,6 @@ local scheduled = false
 local events = CreateFrame("Frame")
 events:RegisterEvent("PLAYER_LOGIN")
 events:RegisterEvent("PLAYER_REGEN_DISABLED")
-events:RegisterEvent("PLAYER_REGEN_ENABLED")
 events:RegisterEvent("WEAPON_ENCHANT_CHANGED")
 events:RegisterUnitEvent("UNIT_AURA", "player")
 events:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
@@ -328,12 +333,11 @@ events:SetScript("OnEvent", function(_, event, _, _, spellID)
 		C_Timer.NewTicker(1, CheckExpiring)
 	elseif event == "PLAYER_REGEN_DISABLED" then
 		CombatStarted()
-	elseif event == "PLAYER_REGEN_ENABLED" then
-		-- What changed during the fight isn't announced: start again from what's up now.
-		Fx.Update(true)
 	elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
 		OnCast(spellID)
-	elseif not InCombatLockdown() and not scheduled then
+	elseif ns.AurasHidden() then
+		stale = true
+	elseif not scheduled then
 		-- UNIT_AURA, WEAPON_ENCHANT_CHANGED: a moment later, so several changes count as one.
 		scheduled = true
 		C_Timer.After(0.2, function()
@@ -342,3 +346,6 @@ events:SetScript("OnEvent", function(_, event, _, _, spellID)
 		end)
 	end
 end)
+-- What changed while buffs were hidden (a fight, a battleground) isn't announced: start again from
+-- what's up now.
+ns.OnAurasShown(function() Fx.Update(true) end)

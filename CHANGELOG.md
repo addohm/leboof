@@ -6,6 +6,15 @@ All notable changes to leboof. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Changing gear (a trinket swap by TrinketMenu, say) where the game hides buffs outside combat,
+  such as a battleground or a boss fight, printed "couldn't set up the icons: ... Attempt to
+  access forbidden object". leBoof only waited for the end of combat; it now asks the game whether
+  buffs are hidden and waits until they aren't. Meanwhile it works as in combat: changes wait,
+  running out is timed from your casts, and no "dropped" sounds or pull warnings come from an
+  out-of-date look (2026-11-25).
+
 ### Changed
 
 - Renamed to **leBoof**: the folder, title, chat prefix, saved settings (`leBoofDB`), frames and

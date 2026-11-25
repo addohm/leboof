@@ -2,6 +2,10 @@
 -- check what Blizzard's CustomAuraContainer checks (unique slot/group keys, known keys, valid
 -- filter strings) and record what the addon asked for.
 local M = { printed = {}, combat = false, class = "WARRIOR", known = {}, frames = {} }
+-- M.secret: the game hides auras outside combat too (a battleground, a boss fight).
+local function Hidden() return M.combat or M.secret == true end
+C_Secrets = { ShouldAurasBeSecret = function() return Hidden() end }
+local FORBIDDEN = "Attempt to access forbidden object from code tainted by an AddOn"
 
 -- Unknown methods (capitalised names) do nothing; unknown fields are nil, as on a real frame.
 local function Permissive(t)
@@ -84,9 +88,24 @@ local function NewFrame(kind, name)
 	return Permissive(f)
 end
 
+-- After initializeFrame the game closes aura buttons to addons while auras are hidden
+-- (DenyTaintedAccessWhenAurasAreSecret): every method call fails then.
 local function NewButton(init)
 	local b = NewFrame("AuraButton")
 	if init then init(b) end
+	for k, v in pairs(b) do
+		if type(v) == "function" then
+			b[k] = function(...)
+				if Hidden() then error(FORBIDDEN) end
+				return v(...)
+			end
+		end
+	end
+	setmetatable(b, { __index = function(_, k)
+		if type(k) == "string" and k:match("^%u") then
+			return function() if Hidden() then error(FORBIDDEN) end end
+		end
+	end })
 	return b
 end
 
@@ -225,11 +244,11 @@ C_AddOns = {
 	LoadAddOn = function() return true end,
 	GetAddOnMetadata = function(_, field) if field == "Version" then return "0.0.0" end end,
 }
--- The player's buffs (WM.buffs), readable out of combat only, as on Forever.
+-- The player's buffs (WM.buffs), readable only while auras aren't hidden, as on Forever.
 M.buffs = {}
 C_UnitAuras = { GetAuraDataByIndex = function(unit, i, filter)
 	assert(unit == "player" and filter == "HELPFUL")
-	if M.combat then error("aura data is secret") end
+	if Hidden() then error("aura data is secret") end
 	return M.buffs[i]
 end }
 -- A clock the tests move (WM.Advance). C_Timer.After runs at once; NewTimer and NewTicker wait
