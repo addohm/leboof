@@ -98,4 +98,4 @@ build `/leboof` shows. Results go in Confirmed or Problems below.
 
 - Gear changes where the game hides buffs outside combat printed "couldn't set up the icons:
   ...Display.lua:402: calling 'ClearAllPoints' on bad self (Attempt to access forbidden object
-  ...)" (a player's TrinketMenu swaps, reported 2026-11-25). Fixed on main; check 1n.
+  ...)" (a player's TrinketMenu swaps, reported 2026-11-25). Fixed in 831d061; check 1n.
