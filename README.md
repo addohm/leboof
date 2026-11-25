@@ -5,8 +5,10 @@ buffs in combat, where the game hides aura data from addons. The icons don't rea
 Blizzard's aura containers fill them themselves. leBoof only says which buffs to show and where to
 put them. (Out of combat it reads your buffs for one thing: the list you add buffs from.)
 
-The source lives at `github.com/addohm/leboof`. Status: 1.1.1, released 2026-11-14.
-Download `release/Leboof-1.1.1.zip` (the last release, from before the rename to leBoof) and unzip it into `<WoW>\_forever_\Interface\AddOns\`.
+The source lives at `github.com/addohm/leboof`. Status: 1.2.0, released 2026-11-25.
+Download `release/leBoof-1.2.0.zip` and unzip it into `<WoW>\_forever_\Interface\AddOns\`.
+Coming from 1.1.1 or earlier (called Leboof then)? Delete the old `Leboof` folder there first;
+your settings carry over.
 
 ## What it shows
 

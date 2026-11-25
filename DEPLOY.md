@@ -74,4 +74,7 @@ per-character file from 0.1.0 is moved into a profile at the first login and the
   `/leboof soundlog show` and copy the lines. Each says which addon played the sound.
 - **Lua errors:** `/console scriptErrors 1` shows them; report them with the `/leboof` build.
 
-TODO: where should public releases go (CurseForge, Wago, GitHub Releases, or nowhere yet)?
+## Where releases go
+
+Every release goes to both **CurseForge** and **Wago**: upload `release/leBoof-<version>.zip`, and
+take the page text and release notes from [LISTING.md](LISTING.md).

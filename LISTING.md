@@ -57,7 +57,8 @@ them itself. So the icons, timers and glows keep working in every fight.
   only when it's gone.
 - **While up:** procs, cooldowns and other buffs, shown only while they're on you. The row closes
   its gaps.
-- Make icons see-through or grey while their buff is up, so the missing ones stand out.
+- Make icons see-through or grey while their buff is up, so the missing ones stand out. They go
+  back to normal at your warning time.
 - Both rows grow from the centre (or from the left or right). Icons just appear and disappear: no
   bouncing, fading or growing.
 
@@ -120,6 +121,8 @@ addon menu by the minimap.
   priest, say), because the game hides them. Those warn out of combat.
 - **Blizzard's Cooldown Manager** can play its own sounds in combat when a buff is applied or
   removed. leBoof's Effects tab tells you whether it's available and opens it.
+- **Battlegrounds and boss fights** hide your buffs from addons even out of combat. leBoof
+  treats that like combat: the icons keep working, and setting changes apply once it's over.
 - No libraries, no automation: display and sound only.
 
 ---
@@ -137,6 +140,16 @@ addon menu by the minimap.
 ---
 
 ## Release notes
+
+### 1.2.0
+
+- **Renamed to leBoof.** If you install by hand, delete the old `Leboof` folder in
+  `Interface\AddOns` before unzipping. Your settings carry over at the first login.
+- See-through and grey icons go back to normal at your warning time, not when the buff drops.
+- In combat, the running-out sound for a shared buff (Battle Shout, Fortitude, Mark of the Wild,
+  blessings...) only plays when nobody else in your group could have recast it.
+- Fixed: "couldn't set up the icons: ... forbidden object" when your gear changed (a TrinketMenu
+  swap, say) in a battleground or boss fight. leBoof now waits there as it does in combat.
 
 ### 1.1.1
 
